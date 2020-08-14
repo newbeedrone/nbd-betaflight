@@ -225,7 +225,7 @@ static uint8_t max7456Send(uint8_t add, uint8_t data)
 {
     spiTransferByte(busdev->busdev_u.spi.instance, add);
 #ifdef USE_MAX7456_SIM
-    delayMicroseconds(10);
+    delayMicroseconds(5);
 #endif
     return spiTransferByte(busdev->busdev_u.spi.instance, data);
 }
@@ -682,7 +682,7 @@ void max7456DrawScreen(void)
             __spiBusTransactionBegin(busdev);
 #ifdef USE_MAX7456_SIM
             for (int len = 0; len < buff_len; len++) {
-                delayMicroseconds(5);
+                delayMicroseconds(3);
                 spiTransferByte(busdev->busdev_u.spi.instance, spiBuff[len]);
             }
 #else
@@ -777,7 +777,7 @@ void max7456WriteNvm(uint8_t char_address, const uint8_t *font_data)
 
     while ((max7456Send(MAX7456ADD_STAT, 0x00) & STAT_NVR_BUSY) != 0x00) {
 #ifdef USE_MAX7456_SIM
-        delayMicroseconds(10000);
+        delayMicroseconds(5);
 #endif
     }
 
