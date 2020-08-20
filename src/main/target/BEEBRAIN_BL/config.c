@@ -206,7 +206,7 @@ void targetConfiguration(void)
     gyroConfigMutable()->dyn_lpf_gyro_max_hz = 400;
 
     rxConfigMutable()->mincheck = 1075;
-    rxConfigMutable()->rssi_channel = AUX6;
+    rxConfigMutable()->rssi_channel = AUX5 + 1;
     for (uint8_t rxRangeIndex = 0; rxRangeIndex < NON_AUX_CHANNEL_COUNT; rxRangeIndex++) {
 
         rxChannelRangeConfig_t *channelRangeConfig = rxChannelRangeConfigsMutable(rxRangeIndex);
@@ -214,6 +214,9 @@ void targetConfiguration(void)
         channelRangeConfig->min = 1062;
         channelRangeConfig->max = 1936;
     }
+
+    rxFailsafeChannelConfigsMutable(AUX5)->mode = RX_FAILSAFE_MODE_SET;
+    rxFailsafeChannelConfigsMutable(AUX5)->step = 10;
 
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
