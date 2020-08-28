@@ -88,7 +88,7 @@ void targetConfiguration(void)
 
 #ifdef USE_VTX_TABLE
     const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
-    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"5", "25"};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"MIN", "MAX"};
     vtxTableConfigMutable()->powerLevels = 2;
 
     #if defined(USE_VTX_US_TABLE)
@@ -186,9 +186,9 @@ void targetConfiguration(void)
     motorConfigMutable()->motorPoleCount = 12;
 
     batteryConfigMutable()->vbatmincellvoltage = 290;
-    batteryConfigMutable()->vbatmaxcellvoltage = 450;
+    batteryConfigMutable()->vbatmaxcellvoltage = 440;
     batteryConfigMutable()->vbatfullcellvoltage = 410;
-    batteryConfigMutable()->vbatwarningcellvoltage = 320;
+    batteryConfigMutable()->vbatwarningcellvoltage = 310;
 
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
     modeActivationConditionsMutable(0)->auxChannelIndex = AUX1 - NON_AUX_CHANNEL_COUNT;
