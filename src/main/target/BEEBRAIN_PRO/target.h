@@ -71,17 +71,17 @@
     #define USE_SPI_GYRO
     #define USE_ACCGYRO_BMI160
 
-    #define BMI160_SPI_DIVISOR              16
+    #define BMI160_SPI_DIVISOR          16
 
     #define USE_EXTI
     #define USE_GYRO_EXTI
-    #define GYRO_1_EXTI_PIN                 PB0
+    #define GYRO_1_EXTI_PIN             PB0
     #define USE_MPU_DATA_READY_SIGNAL
 
-    #define GYRO_1_CS_PIN                   SPI3_NSS_PIN
-    #define GYRO_1_SPI_INSTANCE             SPI3
+    #define GYRO_1_CS_PIN               SPI3_NSS_PIN
+    #define GYRO_1_SPI_INSTANCE         SPI3
 
-    #define GYRO_1_ALIGN                    CW90_DEG
+    #define GYRO_1_ALIGN                CW0_DEG
 
 #else
     #define USE_ACC_SPI_MPU6000
@@ -89,13 +89,13 @@
 
     #define USE_EXTI
     #define USE_GYRO_EXTI
-    #define GYRO_1_EXTI_PIN                 PB0
+    #define GYRO_1_EXTI_PIN             PB0
     #define USE_MPU_DATA_READY_SIGNAL
 
-    #define GYRO_1_CS_PIN                   SPI3_NSS_PIN
-    #define GYRO_1_SPI_INSTANCE             SPI3
+    #define GYRO_1_CS_PIN               SPI3_NSS_PIN
+    #define GYRO_1_SPI_INSTANCE         SPI3
 
-    #define GYRO_1_ALIGN                    CW90_DEG
+    #define GYRO_1_ALIGN                CW90_DEG
 
 #endif
 
@@ -149,13 +149,17 @@
 #define ADC1_INSTANCE                   ADC1
 
 #define VBAT_ADC_PIN                    PB1
-#define CURRENT_METER_ADC_PIN           PA5
+#if defined(BEEBRAIN_PRO_DSM)
+    #define CURRENT_METER_ADC_PIN       PA5
+#endif
 
 #define CURRENT_METER_SCALE_DEFAULT     510
 #define VBAT_SCALE_DEFAULT              110
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
-#define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
+#if defined(BEEBRAIN_PRO_DSM)
+    #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
+#endif
 
 /* ======== ESC ======== */
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
