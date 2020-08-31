@@ -22,10 +22,11 @@
 
 #if defined(BEEBRAIN_PRO_DSM)
     #define TARGET_BOARD_IDENTIFIER     "BeeBrain Pro DSM Rev_A"
+    #define USBD_PRODUCT_STRING         "BeeBrain Pro DSM"
 #else
     #define TARGET_BOARD_IDENTIFIER     "BeeBrain Pro Rev_A"
+    #define USBD_PRODUCT_STRING         "BeeBrain Pro"
 #endif
-#define USBD_PRODUCT_STRING             "BeeBrain Pro"
 
 #define USE_TARGET_CONFIG
 

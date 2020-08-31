@@ -75,14 +75,14 @@ void targetConfiguration(void)
         pidProfile->pid[PID_LEVEL].I = 40;
         pidProfile->pid[PID_LEVEL].D = 40;
 
-        pidProfile->d_min[FD_ROLL] = 15;
+        pidProfile->d_min[FD_ROLL]  = 15;
         pidProfile->d_min[FD_PITCH] = 17;
 
         pidProfile->levelAngleLimit = 85;
     }
 
-    for(uint8_t controlRateProfileIndex = 0; controlRateProfileIndex < CONTROL_RATE_PROFILE_COUNT; controlRateProfileIndex++)
-    {
+    for (uint8_t controlRateProfileIndex = 0; controlRateProfileIndex < CONTROL_RATE_PROFILE_COUNT; controlRateProfileIndex++) {
+
         controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_ROLL] = 73;
         controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_PITCH] = 73;
         controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_YAW] = 73;
@@ -179,8 +179,11 @@ void targetConfiguration(void)
     }
 
 #endif /* USE_VTX_TABLE */
-
+#if defined(BEEBRAIN_PRO_DSM)
+    strcpy(pilotConfigMutable()->name, "BeeBrain Pro DSM");
+#else
     strcpy(pilotConfigMutable()->name, "BeeBrain Pro");
+#endif
 
     pidConfigMutable()->pid_process_denom = 1;
 
