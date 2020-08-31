@@ -109,8 +109,9 @@ void targetConfiguration(void)
     }
 
 #ifdef USE_VTX_TABLE
-    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1, 2};
-    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"5", "25", "100"};
+    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"MIN", "MAX"};
+    vtxTableConfigMutable()->powerLevels = 2;
 
     #if defined(USE_VTX_US_TABLE)
         const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
@@ -170,8 +171,6 @@ void targetConfiguration(void)
 
     #endif
 
-    vtxTableConfigMutable()->powerLevels = 3;
-
     for (int band = 0; band < VTX_TABLE_MAX_BANDS; band++) {
         for (int channel = 0; channel < VTX_TABLE_MAX_CHANNELS; channel++) {
             vtxTableConfigMutable()->frequency[band][channel] = vtxTableFrequency[band][channel];
@@ -227,9 +226,9 @@ void targetConfiguration(void)
     motorConfigMutable()->digitalIdleOffsetValue = 1000;
 
     batteryConfigMutable()->vbatmincellvoltage = 290;
-    batteryConfigMutable()->vbatmaxcellvoltage = 450;
+    batteryConfigMutable()->vbatmaxcellvoltage = 440;
     batteryConfigMutable()->vbatfullcellvoltage = 410;
-    batteryConfigMutable()->vbatwarningcellvoltage = 320;
+    batteryConfigMutable()->vbatwarningcellvoltage = 310;
 
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
     modeActivationConditionsMutable(0)->auxChannelIndex = AUX1 - NON_AUX_CHANNEL_COUNT;
@@ -256,7 +255,7 @@ void targetConfiguration(void)
     osdConfigMutable()->item_pos[OSD_VTX_CHANNEL]       = OSD_POS(10, 10) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_WARNINGS]          = OSD_POS(10, 11) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_CRAFT_NAME]        = OSD_POS(10, 11) | OSD_PROFILE_1_FLAG;
-    osdConfigMutable()->item_pos[OSD_FLYMODE]           = OSD_POS(17, 10) | OSD_PROFILE_1_FLAG;
+    osdConfigMutable()->item_pos[OSD_FLYMODE]           = OSD_POS(18, 10) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE] = OSD_POS(24, 10) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_CURRENT_DRAW]      = OSD_POS(23, 11) | OSD_PROFILE_1_FLAG;
 
