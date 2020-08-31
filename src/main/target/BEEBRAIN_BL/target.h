@@ -101,8 +101,8 @@
 #define RTC6705_POWER_PIN               PA8
 
 /* ======== RX ======== */
-#define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_UART                   SERIAL_PORT_USART2
+#define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_SBUS
 
 /* ======== ADC ======== */
@@ -122,7 +122,6 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
-#define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
