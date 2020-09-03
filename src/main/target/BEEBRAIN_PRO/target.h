@@ -163,7 +163,10 @@
 #endif
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define USE_BRUSHED_TURTLE
+
+/* ======== PINIO ======== */
+#define PINIO1_PIN                      PA8
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)

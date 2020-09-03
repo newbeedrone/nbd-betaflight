@@ -232,6 +232,10 @@ void initActiveBoxIds(void)
     }
 #endif
 
+#ifdef USE_BRUSHED_TURTLE
+    BME(BOXFLIPOVERAFTERCRASH);
+#endif
+
     if (featureIsEnabled(FEATURE_SERVO_TILT)) {
         BME(BOXCAMSTAB);
     }
