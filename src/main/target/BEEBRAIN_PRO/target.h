@@ -83,7 +83,6 @@
     #define GYRO_1_SPI_INSTANCE         SPI3
 
     #define GYRO_1_ALIGN                CW0_DEG
-
 #else
     #define USE_ACC_SPI_MPU6000
     #define USE_GYRO_SPI_MPU6000
@@ -97,7 +96,6 @@
     #define GYRO_1_SPI_INSTANCE         SPI3
 
     #define GYRO_1_ALIGN                CW90_DEG
-
 #endif
 
 /* ======== OSD ======== */
@@ -122,7 +120,6 @@
     #define SERIALRX_UART               SERIAL_PORT_USART2
     #define DEFAULT_RX_FEATURE          FEATURE_RX_SERIAL
     #define SERIALRX_PROVIDER           SERIALRX_SPEKTRUM2048
-
 #else
     #define USE_RX_SPI
 
@@ -142,7 +139,6 @@
 
     #define DEFAULT_RX_FEATURE          FEATURE_RX_SPI
     #define RX_SPI_DEFAULT_PROTOCOL     RX_SPI_FRSKY_D
-
 #endif
 
 /* ======== ADC ======== */
@@ -160,10 +156,9 @@
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #if defined(BEEBRAIN_PRO_DSM)
     #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
+#else
+    #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_NONE
 #endif
-
-/* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)
