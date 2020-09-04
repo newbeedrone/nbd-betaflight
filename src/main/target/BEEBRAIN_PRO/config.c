@@ -57,44 +57,31 @@
 
 void targetConfiguration(void)
 {
-    for (uint8_t pidProfileIndex = 0; pidProfileIndex < PID_PROFILE_COUNT; pidProfileIndex++) {
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 66;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 40;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 44;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 20;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 72;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 45;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 43;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 20;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 95;
+    pidProfilesMutable(0)->pid[PID_YAW].I   = 45;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 0;
+    pidProfilesMutable(0)->pid[PID_LEVEL].P = 40;
+    pidProfilesMutable(0)->pid[PID_LEVEL].I = 40;
+    pidProfilesMutable(0)->pid[PID_LEVEL].D = 40;
+    pidProfilesMutable(0)->levelAngleLimit = 85;
+    pidProfilesMutable(0)->d_min[FD_ROLL] = 15;
+    pidProfilesMutable(0)->d_min[FD_PITCH] = 17;
 
-        pidProfile_t *pidProfile = pidProfilesMutable(pidProfileIndex);
-
-        pidProfile->pid[PID_ROLL].P  = 66;
-        pidProfile->pid[PID_ROLL].I  = 40;
-        pidProfile->pid[PID_ROLL].D  = 44;
-        pidProfile->pid[PID_ROLL].F  = 20;
-        pidProfile->pid[PID_PITCH].P = 72;
-        pidProfile->pid[PID_PITCH].I = 45;
-        pidProfile->pid[PID_PITCH].D = 43;
-        pidProfile->pid[PID_PITCH].F = 20;
-        pidProfile->pid[PID_YAW].P   = 95;
-        pidProfile->pid[PID_YAW].I   = 45;
-        pidProfile->pid[PID_YAW].D   = 0;
-        pidProfile->pid[PID_YAW].F   = 0;
-        pidProfile->pid[PID_LEVEL].P = 40;
-        pidProfile->pid[PID_LEVEL].I = 40;
-        pidProfile->pid[PID_LEVEL].D = 40;
-
-        pidProfile->d_min[FD_ROLL]  = 15;
-        pidProfile->d_min[FD_PITCH] = 17;
-
-        pidProfile->levelAngleLimit = 85;
-    }
-
-    for (uint8_t controlRateProfileIndex = 0; controlRateProfileIndex < CONTROL_RATE_PROFILE_COUNT; controlRateProfileIndex++) {
-
-        controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_ROLL] = 73;
-        controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_PITCH] = 73;
-        controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_YAW] = 73;
-
-        controlRateProfilesMutable(controlRateProfileIndex)->rcExpo[FD_ROLL] = 15;
-        controlRateProfilesMutable(controlRateProfileIndex)->rcExpo[FD_PITCH] = 15;
-        controlRateProfilesMutable(controlRateProfileIndex)->rcExpo[FD_YAW] = 15;
-
-        controlRateProfilesMutable(controlRateProfileIndex)->dynThrPID = 55;
-    }
+    controlRateProfilesMutable(0)->rates[FD_ROLL]   = 73;
+    controlRateProfilesMutable(0)->rates[FD_PITCH]  = 73;
+    controlRateProfilesMutable(0)->rates[FD_YAW]    = 73;
+    controlRateProfilesMutable(0)->rcExpo[FD_ROLL]  = 15;
+    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 15;
+    controlRateProfilesMutable(0)->rcExpo[FD_YAW]   = 15;
+    controlRateProfilesMutable(0)->dynThrPID        = 55;
 
 #ifdef USE_VTX_TABLE
     const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
@@ -118,24 +105,6 @@ void targetConfiguration(void)
             "1", "2", "3", "4", "5", "6", "7", "8",
         };
         vtxTableConfigMutable()->bands = 6;
-        vtxTableConfigMutable()->channels = 8;
-
-    #elif defined(USE_VTX_EU_TABLE)
-        const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
-            {5865, 5845, 5825, 5805, 5785, 5765, 5745,    0}, // Boscam A
-            {5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866}, // Boscam B
-            {5740, 5760, 5780, 5800, 5820, 5840, 5860,    0}, // FatShark
-            {   0,    0, 5732, 5769, 5806, 5843,    0,    0}, // RaceBand
-            {5732, 5765, 5828, 5840, 5866, 5740,    0,    0} // IMD6
-        };
-        const char *vtxTableBandNames[VTX_TABLE_MAX_BANDS] = {
-            "BOSCAM A", "BOSCAM B", "FATSHARK", "RACEBAND", "IMD6",
-        };
-        const char vtxTableBandLetters[VTX_TABLE_MAX_BANDS] = "ABFRI";
-        const char *vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS] = {
-            "1", "2", "3", "4", "5", "6", "7", "8",
-        };
-        vtxTableConfigMutable()->bands = 5;
         vtxTableConfigMutable()->channels = 8;
 
     #else

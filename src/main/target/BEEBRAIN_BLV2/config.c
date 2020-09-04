@@ -55,36 +55,23 @@
 
 void targetConfiguration(void)
 {
-    for (uint8_t pidProfileIndex = 0; pidProfileIndex < PID_PROFILE_COUNT; pidProfileIndex++) {
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 84;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 50;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 58;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 87;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 55;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 58;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 110;
+    pidProfilesMutable(0)->pid[PID_YAW].I   = 75;
+    pidProfilesMutable(0)->pid[PID_YAW].D   = 25;
 
-        pidProfile_t *pidProfile = pidProfilesMutable(pidProfileIndex);
-
-        pidProfile->pid[PID_ROLL].P  = 84;
-        pidProfile->pid[PID_ROLL].I  = 50;
-        pidProfile->pid[PID_ROLL].D  = 58;
-        pidProfile->pid[PID_ROLL].F  = 90;
-        pidProfile->pid[PID_PITCH].P = 87;
-        pidProfile->pid[PID_PITCH].I = 55;
-        pidProfile->pid[PID_PITCH].D = 58;
-        pidProfile->pid[PID_PITCH].F = 95;
-        pidProfile->pid[PID_YAW].P   = 110;
-        pidProfile->pid[PID_YAW].I   = 75;
-        pidProfile->pid[PID_YAW].D   = 25;
-        pidProfile->pid[PID_YAW].F   = 90;
-    }
-
-    for(uint8_t controlRateProfileIndex = 0; controlRateProfileIndex < CONTROL_RATE_PROFILE_COUNT; controlRateProfileIndex++)
-    {
-        controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_ROLL] = 73;
-        controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_PITCH] = 73;
-        controlRateProfilesMutable(controlRateProfileIndex)->rates[FD_YAW] = 73;
-
-        controlRateProfilesMutable(controlRateProfileIndex)->rcExpo[FD_ROLL] = 15;
-        controlRateProfilesMutable(controlRateProfileIndex)->rcExpo[FD_PITCH] = 15;
-        controlRateProfilesMutable(controlRateProfileIndex)->rcExpo[FD_YAW] = 15;
-
-        controlRateProfilesMutable(controlRateProfileIndex)->dynThrPID = 55;
-    }
+    controlRateProfilesMutable(0)->rates[FD_ROLL]   = 73;
+    controlRateProfilesMutable(0)->rates[FD_PITCH]  = 73;
+    controlRateProfilesMutable(0)->rates[FD_YAW]    = 73;
+    controlRateProfilesMutable(0)->rcExpo[FD_ROLL]  = 15;
+    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 15;
+    controlRateProfilesMutable(0)->rcExpo[FD_YAW]   = 15;
+    controlRateProfilesMutable(0)->dynThrPID        = 55;
 
 #ifdef USE_VTX_TABLE
     const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
@@ -108,24 +95,6 @@ void targetConfiguration(void)
             "1", "2", "3", "4", "5", "6", "7", "8",
         };
         vtxTableConfigMutable()->bands = 6;
-        vtxTableConfigMutable()->channels = 8;
-
-    #elif defined(USE_VTX_EU_TABLE)
-        const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
-            {5865, 5845, 5825, 5805, 5785, 5765, 5745,    0}, // Boscam A
-            {5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866}, // Boscam B
-            {5740, 5760, 5780, 5800, 5820, 5840, 5860,    0}, // FatShark
-            {   0,    0, 5732, 5769, 5806, 5843,    0,    0}, // RaceBand
-            {5732, 5765, 5828, 5840, 5866, 5740,    0,    0} // IMD6
-        };
-        const char *vtxTableBandNames[VTX_TABLE_MAX_BANDS] = {
-            "BOSCAM A", "BOSCAM B", "FATSHARK", "RACEBAND", "IMD6",
-        };
-        const char vtxTableBandLetters[VTX_TABLE_MAX_BANDS] = "ABFRI";
-        const char *vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS] = {
-            "1", "2", "3", "4", "5", "6", "7", "8",
-        };
-        vtxTableConfigMutable()->bands = 5;
         vtxTableConfigMutable()->channels = 8;
 
     #else
