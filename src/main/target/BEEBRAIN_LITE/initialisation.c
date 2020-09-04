@@ -35,6 +35,6 @@ void targetPreInit(void)
     IO_t mcoPin = IOGetByTag(IO_TAG(MOC_PIN));
     IOInit(mcoPin, OWNER_SYSTEM, 0);
     IOConfigGPIOAF(mcoPin, MOC_AF_CFG, GPIO_AF_MCO);
-    RCC_MCO1Config(RCC_MCO1Source_HSE, RCC_MCO1Div_5); // 19.2 MHz
+    RCC_MCO1Config(RCC_MCO1Source_HSE, RCC_MCO1Div_5);
 }
 #endif
