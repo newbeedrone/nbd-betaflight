@@ -91,7 +91,7 @@ void targetConfiguration(void)
             {5732, 5765, 5828, 5840, 5866, 5740,    0,    0}, // IMD6
         };
         const char *vtxTableBandNames[VTX_TABLE_MAX_BANDS] = {
-            "BOSCAM A", "BOSCAM B", "BOSCAM E", "FATSHARK", "RACEBAND", "IMD6",
+            "BOSCAM A", "BOSCAM B", "BOSCAM E", "FATSHARK", "RACEBAND", "    IMD6",
         };
         const char vtxTableBandLetters[VTX_TABLE_MAX_BANDS] = "ABEFRI";
         const char *vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS] = {
@@ -110,7 +110,7 @@ void targetConfiguration(void)
             {5732, 5765, 5828, 5840, 5866, 5740,    0,    0}, // IMD6
         };
         const char *vtxTableBandNames[VTX_TABLE_MAX_BANDS] = {
-            "BOSCAM A", "BOSCAM B", "BOSCAM E", "FATSHARK", "RACEBAND", "IMD6",
+            "BOSCAM A", "BOSCAM B", "BOSCAM E", "FATSHARK", "RACEBAND", "    IMD6",
         };
         const char vtxTableBandLetters[VTX_TABLE_MAX_BANDS] = "ABEFRI";
         const char *vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS] = {
