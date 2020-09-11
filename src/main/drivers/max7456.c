@@ -773,11 +773,11 @@ void max7456WriteNvm(uint8_t char_address, const uint8_t *font_data)
 
     max7456Send(MAX7456ADD_CMM, WRITE_NVR);
 
-    // Wait until bit 5 in the status register returns to 0 (12ms)
+    // Wait until bit 5 in the status register returns to 0 (22ms)
 
     while ((max7456Send(MAX7456ADD_STAT, 0x00) & STAT_NVR_BUSY) != 0x00) {
 #ifdef USE_MAX7456_SIM
-        delayMicroseconds(5);
+        delayMicroseconds(2200);
 #endif
     }
 
