@@ -143,11 +143,8 @@ void targetConfiguration(void)
     }
 
 #endif /* USE_VTX_TABLE */
-#if defined(BEEBRAIN_PRO_DSM)
-    strcpy(pilotConfigMutable()->name, "BeeBrain Lite DSM");
-#else
+
     strcpy(pilotConfigMutable()->name, "BeeBrain Lite");
-#endif
 
     pidConfigMutable()->pid_process_denom = 1;
 

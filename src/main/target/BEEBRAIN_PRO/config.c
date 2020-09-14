@@ -150,11 +150,8 @@ void targetConfiguration(void)
     }
 
 #endif /* USE_VTX_TABLE */
-#if defined(BEEBRAIN_PRO_DSM)
-    strcpy(pilotConfigMutable()->name, "BeeBrain Pro DSM");
-#else
+
     strcpy(pilotConfigMutable()->name, "BeeBrain Pro");
-#endif
 
     pinioConfigMutable()->config[0] = PINIO_CONFIG_MODE_OUT_PP;
     pinioBoxConfigMutable()->permanentId[0] = 35;
@@ -162,6 +159,21 @@ void targetConfiguration(void)
     pidConfigMutable()->pid_process_denom = 1;
 
     imuConfigMutable()->small_angle = 180;
+
+#if defined(BEEBRAIN_PRO_DSM)
+    rxConfigMutable()->mincheck = 1165;
+    rxConfigMutable()->rssi_channel = AUX5 + 1;
+    for (uint8_t rxRangeIndex = 0; rxRangeIndex < NON_AUX_CHANNEL_COUNT; rxRangeIndex++) {
+
+        rxChannelRangeConfig_t *channelRangeConfig = rxChannelRangeConfigsMutable(rxRangeIndex);
+
+        channelRangeConfig->min = 1160;
+        channelRangeConfig->max = 1840;
+    }
+
+    rxFailsafeChannelConfigsMutable(AUX5)->mode = RX_FAILSAFE_MODE_SET;
+    rxFailsafeChannelConfigsMutable(AUX5)->step = 10;
+#endif
 
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
@@ -203,7 +215,9 @@ void targetConfiguration(void)
     osdConfigMutable()->item_pos[OSD_CRAFT_NAME]        = OSD_POS(10, 11) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_FLYMODE]           = OSD_POS(18, 10) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE] = OSD_POS(24, 10) | OSD_PROFILE_1_FLAG;
+#if defined(BEEBRAIN_PRO_DSM)
     osdConfigMutable()->item_pos[OSD_CURRENT_DRAW]      = OSD_POS(23, 11) | OSD_PROFILE_1_FLAG;
+#endif
 
     ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED(7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
     ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED(8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
