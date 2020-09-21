@@ -32,8 +32,6 @@
 
 #include "pg/rx.h"
 #include "pg/motor.h"
-#include "pg/pinio.h"
-#include "pg/piniobox.h"
 
 #include "io/vtx.h"
 #include "io/ledstrip.h"
@@ -152,9 +150,6 @@ void targetConfiguration(void)
 #endif /* USE_VTX_TABLE */
 
     strcpy(pilotConfigMutable()->name, "BeeBrain Pro");
-
-    pinioConfigMutable()->config[0] = PINIO_CONFIG_MODE_OUT_PP;
-    pinioBoxConfigMutable()->permanentId[0] = 35;
 
     pidConfigMutable()->pid_process_denom = 1;
 
