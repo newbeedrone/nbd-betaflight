@@ -232,7 +232,7 @@ void initActiveBoxIds(void)
     }
 #endif
 
-#ifdef USE_BRUSHED_TURTLE
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
     BME(BOXFLIPOVERAFTERCRASH);
 #endif
 

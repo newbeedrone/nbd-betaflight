@@ -48,6 +48,9 @@ typedef struct motorDevConfig_s {
     uint8_t  motorTransportProtocol;
     uint8_t  useDshotBitbang;
     uint8_t  useDshotBitbangedTimer;
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+    ioTag_t  reverseTag;
+#endif
 } motorDevConfig_t;
 
 typedef struct motorConfig_s {

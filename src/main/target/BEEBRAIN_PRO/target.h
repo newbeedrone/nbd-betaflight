@@ -161,10 +161,8 @@
 #endif
 
 /* ======== ESC ======== */
-#define USE_BRUSHED_TURTLE
-
-/* ======== PINIO ======== */
-#define PINIO1_PIN                      PA8
+#define USE_BRUSHED_FLIPOVERAFTERCRASH
+#define BRUSHED_REVERSE_PIN             PA8
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)

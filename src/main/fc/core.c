@@ -452,27 +452,17 @@ void tryArm(void)
         }
 #endif
 
-#ifdef USE_BRUSHED_TURTLE
-        if (tryingToArm == ARMING_DELAYED_DISARMED) {
-            if (IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-                tryingToArm = ARMING_DELAYED_CRASHFLIP;
-#ifdef USE_LAUNCH_CONTROL
-            } else if (canUseLaunchControl()) {
-                tryingToArm = ARMING_DELAYED_LAUNCH_CONTROL;
-#endif
-            } else {
-                tryingToArm = ARMING_DELAYED_NORMAL;
-            }
-        }
-
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
         if (isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH)) {
-            if (!(IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH) || (tryingToArm == ARMING_DELAYED_CRASHFLIP))) {
+            if (!IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
                 flipOverAfterCrashActive = false;
+                motorReverse(false);
             } else {
                 flipOverAfterCrashActive = true;
 #ifdef USE_RUNAWAY_TAKEOFF
                 runawayTakeoffCheckDisabled = false;
 #endif
+                motorReverse(true);
             }
         }
 #endif
