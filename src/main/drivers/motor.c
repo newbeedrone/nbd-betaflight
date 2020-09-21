@@ -270,6 +270,13 @@ void motorEnable(void)
     }
 }
 
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+void motorReverse(bool status)
+{
+    motorDevice->vTable.reverse(status);
+}
+#endif
+
 bool motorIsEnabled(void)
 {
     return motorDevice->enabled;

@@ -37,6 +37,10 @@
 
 FAST_RAM_ZERO_INIT pwmOutputPort_t motors[MAX_SUPPORTED_MOTORS];
 
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+FAST_RAM_ZERO_INIT IO_t ioBrushedReverse;
+#endif
+
 static void pwmOCConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t value, uint8_t output)
 {
 #if defined(USE_HAL_DRIVER)
@@ -144,6 +148,17 @@ bool pwmEnableMotors(void)
     return (motorPwmVTable.write != &pwmWriteUnused);
 }
 
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+void pwmReverseMotors(bool status)
+{
+    if (status == true) {
+        IOHi(ioBrushedReverse);
+    } else {
+        IOLo(ioBrushedReverse);
+    }
+}
+#endif
+
 bool pwmIsMotorEnabled(uint8_t index)
 {
     return motors[index].enabled;
@@ -175,6 +190,9 @@ static motorVTable_t motorPwmVTable = {
     .postInit = motorPostInitNull,
     .enable = pwmEnableMotors,
     .disable = pwmDisableMotors,
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+    .reverse = pwmReverseMotors,
+#endif
     .isMotorEnabled = pwmIsMotorEnabled,
     .shutdown = pwmShutdownPulsesForAllMotors,
     .convertExternalToMotor = pwmConvertFromExternal,
@@ -217,6 +235,12 @@ motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idl
     motorPwmDevice.vTable.write = pwmWriteStandard;
     motorPwmDevice.vTable.updateStart = motorUpdateStartNull;
     motorPwmDevice.vTable.updateComplete = useUnsyncedPwm ? motorUpdateCompleteNull : pwmCompleteOneshotMotorUpdate;
+
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+    ioBrushedReverse = IOGetByTag(motorConfig->reverseTag);
+    IOInit(ioBrushedReverse, OWNER_BRUSHED_REVERSE, 0);
+    IOConfigGPIO(ioBrushedReverse, IOCFG_OUT_PP);
+#endif
 
     for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < motorCount; motorIndex++) {
         const ioTag_t tag = motorConfig->ioTags[motorIndex];

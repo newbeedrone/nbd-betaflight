@@ -48,6 +48,9 @@ typedef struct motorVTable_s {
     uint16_t (*convertMotorToExternal)(float motorValue);
     bool (*enable)(void);
     void (*disable)(void);
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+    void (*reverse)(bool);
+#endif
     bool (*isMotorEnabled)(uint8_t index);
     bool (*updateStart)(void);
     void (*write)(uint8_t index, float value);
@@ -86,6 +89,9 @@ bool isMotorProtocolDshot(void);
 
 void motorDisable(void);
 void motorEnable(void);
+#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
+void motorReverse(bool status);
+#endif
 bool motorIsEnabled(void);
 bool motorIsMotorEnabled(uint8_t index);
 timeMs_t motorGetMotorEnableTimeMs(void);
