@@ -102,8 +102,8 @@
 #define USE_MAX7456
 #define USE_MAX7456_SIM // For NBD7456
 
-#define MAX7456_SPI_INSTANCE            SPI3
 #define MAX7456_SPI_CS_PIN              PA15
+#define MAX7456_SPI_INSTANCE            SPI3
 
 /* ======== VTX ======== */
 #define USE_VTX_RTC6705
