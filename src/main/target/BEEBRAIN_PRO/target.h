@@ -165,7 +165,7 @@
 #define BRUSHED_REVERSE_PIN             PA8
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)
+#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
