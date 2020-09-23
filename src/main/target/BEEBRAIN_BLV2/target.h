@@ -144,4 +144,4 @@
 #define TARGET_IO_PORTD                 (BIT(2))
 
 #define USABLE_TIMER_CHANNEL_COUNT      5
-#define USED_TIMERS                     ( TIM_N(4) | TIM(5) )
+#define USED_TIMERS                     ( TIM_N(4) | TIM_N(5) )
