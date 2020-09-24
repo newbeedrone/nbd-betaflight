@@ -113,6 +113,8 @@
 #define GYRO_2_ALIGN                    ALIGN_CUSTOM
 #define GYRO_2_CUSTOM_ALIGN             SENSOR_ALIGNMENT(  0,   0,  45)
 
+#define GYRO_CONFIG_USE_GYRO_DEFAULT    GYRO_CONFIG_USE_GYRO_BOTH
+
 /* ======== OSD ======== */
 #define USE_MAX7456
 
