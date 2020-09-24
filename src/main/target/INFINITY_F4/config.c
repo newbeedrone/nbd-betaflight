@@ -37,6 +37,8 @@
 #include "flight/mixer.h"
 
 #include "pg/motor.h"
+#include "pg/pinio.h"
+#include "pg/piniobox.h"
 
 #include "drivers/motor.h"
 
@@ -45,12 +47,16 @@
 #include "osd/osd.h"
 
 static targetSerialPortFunction_t targetSerialPortFunction[] = {
+    { SERIAL_PORT_USART3, FUNCTION_MSP },
     { SERIAL_PORT_USART6, FUNCTION_MSP },
 };
 
 void targetConfiguration(void)
 {
     strcpy(pilotConfigMutable()->name, "Infinity F4");
+
+    pinioConfigMutable()->config[0] = PINIO_CONFIG_MODE_OUT_PP;
+    pinioBoxConfigMutable()->permanentId[0] = 40;
 
     mixerConfigMutable()->yaw_motors_reversed = true;
 
@@ -60,6 +66,11 @@ void targetConfiguration(void)
     modeActivationConditionsMutable(0)->auxChannelIndex = AUX1 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(0)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
     modeActivationConditionsMutable(0)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
+
+    modeActivationConditionsMutable(1)->modeId          = BOXUSER1;
+    modeActivationConditionsMutable(1)->auxChannelIndex = AUX1 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(1)->range.startStep = CHANNEL_VALUE_TO_STEP(900);
+    modeActivationConditionsMutable(1)->range.endStep   = CHANNEL_VALUE_TO_STEP(1700);
 
     osdConfigMutable()->item_pos[OSD_ITEM_TIMER_2]      = OSD_POS( 1, 10) | OSD_PROFILE_1_FLAG;
     osdConfigMutable()->item_pos[OSD_RSSI_VALUE]        = OSD_POS( 1, 11) | OSD_PROFILE_1_FLAG;
