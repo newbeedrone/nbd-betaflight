@@ -45,6 +45,10 @@
 #define UART2_RX_PIN                    PA3
 #define UART2_TX_PIN                    PA2
 
+#define USE_UART3
+#define UART3_RX_PIN                    PB11
+#define UART3_TX_PIN                    PB10
+
 #define USE_UART4
 #define UART4_RX_PIN                    PA1
 #define UART4_TX_PIN                    PA0
@@ -75,11 +79,12 @@
 #define SPI2_NSS_PIN                    PB12
 
 /* ======== I2C ======== */
-#define USE_I2C
-#define USE_I2C_DEVICE_2
-#define I2C_DEVICE                      (I2CDEV_2)
-#define I2C2_SCL                        PB10
-#define I2C2_SDA                        PB11
+/*!< UART3 pin (for speedybee module) on [FC305 Rev_F] conflicts with I2C2 >!*/
+// #define USE_I2C
+// #define USE_I2C_DEVICE_2
+// #define I2C_DEVICE                      (I2CDEV_2)
+// #define I2C2_SCL                        PB10
+// #define I2C2_SDA                        PB11
 
 /* ======== GYRO ======== */
 #define USE_GYRO
@@ -124,6 +129,9 @@
 
 /* ======== ESC ======== */
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+
+/* ======== PINIO ======== */
+#define PINIO1_PIN                      PC1
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)
