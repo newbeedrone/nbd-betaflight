@@ -109,6 +109,7 @@
 #define CURRENT_METER_ADC_PIN           PC1
 
 #define VBAT_SCALE_DEFAULT              110
+#define CURRENT_METER_SCALE_DEFAULT     510
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -117,7 +118,7 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                ( FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)
+#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_ESC_SENSOR)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
