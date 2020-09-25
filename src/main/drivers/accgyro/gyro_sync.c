@@ -56,6 +56,7 @@ uint32_t gyroSetSampleRate(gyroDev_t *gyro, uint8_t lpf, uint8_t gyroSyncDenomin
             case BMI_160_SPI:
                 gyro->gyroRateKHz = GYRO_RATE_3200_Hz;
                 gyroSamplePeriod = 312.0f;
+                gyroSyncDenominator = 1;
                 break;
             case ICM_20649_SPI:
                 gyro->gyroRateKHz = GYRO_RATE_9_kHz;

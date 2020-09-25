@@ -148,6 +148,8 @@ static void gyroInitLowpassFilterLpf(int slot, int type, uint16_t lpfHz);
 #elif defined(USE_GYRO_SPI_MPU6000) || defined(USE_GYRO_SPI_MPU6500) || defined(USE_GYRO_SPI_ICM20601) || defined(USE_GYRO_SPI_ICM20649) \
    || defined(USE_GYRO_SPI_ICM20689)
 #define GYRO_SYNC_DENOM_DEFAULT 1
+#elif defined(USE_ACCGYRO_BMI160)
+#define GYRO_SYNC_DENOM_DEFAULT 2
 #else
 #define GYRO_SYNC_DENOM_DEFAULT 3
 #endif
