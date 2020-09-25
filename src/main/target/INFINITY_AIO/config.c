@@ -45,7 +45,8 @@
 #include "io/ledstrip.h"
 
 static targetSerialPortFunction_t targetSerialPortFunction[] = {
-    { SERIAL_PORT_USART2, FUNCTION_MSP },
+    { SERIAL_PORT_USART2,   FUNCTION_MSP },
+    { SERIAL_PORT_UART5,    FUNCTION_ESC_SENSOR },
 };
 
 void targetConfiguration(void)

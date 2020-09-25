@@ -45,7 +45,7 @@
 #include "osd/osd.h"
 
 static targetSerialPortFunction_t targetSerialPortFunction[] = {
-    { SERIAL_PORT_USART6, FUNCTION_MSP },
+    { SERIAL_PORT_USART6,   FUNCTION_MSP },
 };
 
 void targetConfiguration(void)
