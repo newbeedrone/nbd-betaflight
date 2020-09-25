@@ -313,7 +313,9 @@ rx_spi_received_e sfhssSpiDataReceived(uint8_t *packet)
             break;
         case STATE_BIND:
             if (rxSpiCheckBindRequested(true)) {
+#ifndef CC2500_BLINK_BIND
                 rxSpiLedOn();
+#endif
                 initTuneRx();
                 SET_STATE(STATE_BIND_TUNING1);
             } else {
@@ -419,6 +421,21 @@ rx_spi_received_e sfhssSpiDataReceived(uint8_t *packet)
             }
             break;
     }
+
+#ifdef CC2500_BLINK_BIND
+    switch (protocolState) {
+    case STATE_BIND:
+    case STATE_BIND_TUNING1:
+    case STATE_BIND_TUNING2:
+    case STATE_BIND_TUNING3:
+        rxSpiLedBlinkBind();
+
+        break;
+
+    default:
+        break;
+    }
+#endif
 
     return ret;
 }
