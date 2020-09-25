@@ -327,7 +327,9 @@ rx_spi_received_e frSkySpiDataReceived(uint8_t *packet)
         break;
     case STATE_BIND:
         if (rxSpiCheckBindRequested(true) || rxCc2500SpiConfig()->autoBind) {
+#ifndef CC2500_BLINK_BIND
             rxSpiLedOn();
+#endif
             initTuneRx();
 
             protocolState = STATE_BIND_TUNING;
@@ -379,6 +381,21 @@ rx_spi_received_e frSkySpiDataReceived(uint8_t *packet)
 
         break;
     }
+
+#ifdef CC2500_BLINK_BIND
+    switch (protocolState) {
+    case STATE_BIND:
+    case STATE_BIND_TUNING:
+    case STATE_BIND_BINDING1:
+    case STATE_BIND_BINDING2:
+        rxSpiLedBlinkBind();
+
+        break;
+    default:
+
+        break;
+    }
+#endif
 
     return ret;
 }
