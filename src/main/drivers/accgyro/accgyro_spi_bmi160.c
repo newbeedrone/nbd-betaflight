@@ -91,9 +91,11 @@ static int32_t BMI160_do_foc(const busDevice_t *bus);
 
 uint8_t bmi160Detect(const busDevice_t *bus)
 {
+#ifndef USE_MULTI_GYRO
     if (BMI160Detected) {
         return BMI_160_SPI;
     }
+#endif
 
 
     spiSetDivisor(bus->busdev_u.spi.instance, BMI160_SPI_DIVISOR);
@@ -118,9 +120,11 @@ uint8_t bmi160Detect(const busDevice_t *bus)
  */
 static void BMI160_Init(const busDevice_t *bus)
 {
+#ifndef USE_MULTI_GYRO
     if (BMI160InitDone || !BMI160Detected) {
         return;
     }
+#endif
 
     /* Configure the BMI160 Sensor */
     if (BMI160_Config(bus) != 0) {
