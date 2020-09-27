@@ -112,7 +112,7 @@ void rxSpiLedBlinkRxLoss(rx_spi_received_e result)
 
 void rxSpiLedBlinkBind(void)
 {
-#ifdef CC2500_BLINK_BIND
+#if defined(USE_RX_CC2500) && defined(CC2500_BLINK_BIND)
     #define INTERVAL_RX_BIND_MS 100
 #endif
     rxSpiLedBlink(INTERVAL_RX_BIND_MS);
