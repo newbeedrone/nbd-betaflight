@@ -64,7 +64,6 @@
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_MISO_PIN                   PB4
 #define SPI3_MOSI_PIN                   PB5
-#define SPI3_NSS_PIN                    PA4
 
 /* ======== GYRO ======== */
 #define USE_GYRO
@@ -75,7 +74,7 @@
 #define GYRO_1_EXTI_PIN                 PB0
 #define USE_MPU_DATA_READY_SIGNAL
 
-#define GYRO_1_CS_PIN                   SPI3_NSS_PIN
+#define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
 #define GYRO_1_ALIGN                    CW90_DEG
