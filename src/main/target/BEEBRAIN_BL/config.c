@@ -87,9 +87,9 @@ void targetConfiguration(void)
     controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 15;
 
 #ifdef USE_VTX_TABLE
-    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
-    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"MIN", "MAX"};
-    vtxTableConfigMutable()->powerLevels = 2;
+    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1, 2};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"MIN", "MAX", "MID"};
+    vtxTableConfigMutable()->powerLevels = 3;
 
     #if defined(USE_VTX_US_TABLE)
         const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
@@ -179,7 +179,7 @@ void targetConfiguration(void)
 
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
-    vtxSettingsConfigMutable()->power = 1;
+    vtxSettingsConfigMutable()->power = 2;
 
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
     motorConfigMutable()->motorPoleCount = 12;
