@@ -82,9 +82,9 @@ void targetConfiguration(void)
     controlRateProfilesMutable(0)->dynThrPID        = 55;
 
 #ifdef USE_VTX_TABLE
-    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
-    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"MIN", "MAX"};
-    vtxTableConfigMutable()->powerLevels = 2;
+    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1, 2};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"OFF", "MIN", "MAX"};
+    vtxTableConfigMutable()->powerLevels = 3;
 
     #if defined(USE_VTX_US_TABLE)
         const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
