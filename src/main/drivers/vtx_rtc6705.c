@@ -102,7 +102,11 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
     if (vtxPowerPin) {
         IOInit(vtxPowerPin, OWNER_VTX_POWER, 0);
 
+#ifdef VTX_POWER_PIN_INVERTED
+        IOLo(vtxPowerPin);
+#else
         IOHi(vtxPowerPin);
+#endif
 
         IOConfigGPIO(vtxPowerPin, IOCFG_OUT_PP);
     }
@@ -210,14 +214,22 @@ void rtc6705SetRFPower(uint8_t rf_power)
 void rtc6705Disable(void)
 {
     if (vtxPowerPin) {
+#ifdef VTX_POWER_PIN_INVERTED
+        IOLo(vtxPowerPin);
+#else
         IOHi(vtxPowerPin);
+#endif
     }
 }
 
 void rtc6705Enable(void)
 {
     if (vtxPowerPin) {
+#ifdef VTX_POWER_PIN_INVERTED
+        IOHi(vtxPowerPin);
+#else
         IOLo(vtxPowerPin);
+#endif
     }
 }
 #endif
