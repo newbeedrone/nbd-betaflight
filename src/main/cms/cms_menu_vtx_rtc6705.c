@@ -124,17 +124,19 @@ static long cmsx_Vtx_onChanChange(displayPort_t *pDisp, const void *self)
     }
 #ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
     for (uint8_t channel = 0; channel < VTX_TABLE_MAX_CHANNELS; channel++) {
-        if (vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel) == 0) {
-            if ((cmsx_vtxChannel == 0) || (cmsx_vtxChannel == (VTX_TABLE_MAX_CHANNELS + 1))) {
-                cmsx_vtxChannel = lastVtxChannel;
-                break;
-            } else if ((lastVtxChannel - cmsx_vtxChannel) > 0) {
-                cmsx_vtxChannel--;
+        if ((cmsx_vtxChannel > 0) && (cmsx_vtxChannel < (VTX_TABLE_MAX_CHANNELS + 1))) {
+            if (vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel) == 0) {
+                if ((lastVtxChannel - cmsx_vtxChannel) > 0) {
+                    cmsx_vtxChannel--;
+                } else {
+                    cmsx_vtxChannel++;
+                }
             } else {
-                cmsx_vtxChannel++;
+                lastVtxChannel = cmsx_vtxChannel;
+                break;
             }
         } else {
-            lastVtxChannel = cmsx_vtxChannel;
+            cmsx_vtxChannel = lastVtxChannel;
             break;
         }
     }
