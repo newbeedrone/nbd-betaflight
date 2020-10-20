@@ -44,6 +44,11 @@ static uint8_t cmsx_vtxBand;
 static uint8_t cmsx_vtxChannel;
 static uint8_t cmsx_vtxPower;
 
+#ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+static uint8_t lastVtxBand;
+static uint8_t lastVtxChannel;
+#endif
+
 static OSD_TAB_t entryVtxBand;
 static OSD_TAB_t entryVtxChannel;
 static OSD_TAB_t entryVtxPower;
@@ -52,6 +57,11 @@ static void cmsx_Vtx_ConfigRead(void)
 {
     vtxCommonGetBandAndChannel(vtxCommonDevice(), &cmsx_vtxBand, &cmsx_vtxChannel);
     vtxCommonGetPowerIndex(vtxCommonDevice(), &cmsx_vtxPower);
+
+#ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+    lastVtxBand = cmsx_vtxBand;
+    lastVtxChannel = cmsx_vtxChannel;
+#endif
 }
 
 static void cmsx_Vtx_ConfigWriteback(void)
@@ -100,6 +110,33 @@ static long cmsx_Vtx_onBandChange(displayPort_t *pDisp, const void *self)
     if (cmsx_vtxBand == 0) {
         cmsx_vtxBand = 1;
     }
+#ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+    for (uint8_t band = 0; band < VTX_TABLE_MAX_BANDS; band++) {
+        if (cmsx_vtxBand < (VTX_TABLE_MAX_BANDS + 1)) {
+            if (vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel) == 0) {
+                for (uint8_t channel = 1; channel < (VTX_TABLE_MAX_CHANNELS + 1); channel++) {
+                    if (vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, channel) != 0) {
+                        lastVtxChannel = cmsx_vtxChannel = channel;
+                        lastVtxBand = cmsx_vtxBand;
+                        return 0;
+                    }
+                }
+
+                if ((lastVtxBand - cmsx_vtxBand) > 0) {
+                    cmsx_vtxBand--;
+                } else {
+                    cmsx_vtxBand++;
+                }
+            } else {
+                lastVtxBand = cmsx_vtxBand;
+                break;
+            }
+        } else {
+            cmsx_vtxBand = lastVtxBand;
+            break;
+        }
+    }
+#endif
     return 0;
 }
 
@@ -110,6 +147,25 @@ static long cmsx_Vtx_onChanChange(displayPort_t *pDisp, const void *self)
     if (cmsx_vtxChannel == 0) {
         cmsx_vtxChannel = 1;
     }
+#ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+    for (uint8_t channel = 0; channel < VTX_TABLE_MAX_CHANNELS; channel++) {
+        if (cmsx_vtxChannel < (VTX_TABLE_MAX_CHANNELS + 1)) {
+            if (vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel) == 0) {
+                if ((lastVtxChannel - cmsx_vtxChannel) > 0) {
+                    cmsx_vtxChannel--;
+                } else {
+                    cmsx_vtxChannel++;
+                }
+            } else {
+                lastVtxChannel = cmsx_vtxChannel;
+                break;
+            }
+        } else {
+            cmsx_vtxChannel = lastVtxChannel;
+            break;
+        }
+    }
+#endif
     return 0;
 }
 
@@ -126,7 +182,11 @@ static long cmsx_Vtx_onPowerChange(displayPort_t *pDisp, const void *self)
 static const OSD_Entry cmsx_menuVtxEntries[] = {
     {"--- VTX ---", OME_Label, NULL, NULL, 0},
     {"BAND", OME_TAB, cmsx_Vtx_onBandChange, &entryVtxBand, 0},
+#ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+    {"CHANNEL", OME_TAB, cmsx_Vtx_onChanChange, &entryVtxChannel, DYNAMIC},
+#else 
     {"CHANNEL", OME_TAB, cmsx_Vtx_onChanChange, &entryVtxChannel, 0},
+#endif
     {"POWER", OME_TAB, cmsx_Vtx_onPowerChange, &entryVtxPower, 0},
     {"BACK", OME_Back, NULL, NULL, 0},
     {NULL, OME_END, NULL, NULL, 0}
