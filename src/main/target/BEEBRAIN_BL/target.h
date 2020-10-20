@@ -100,6 +100,7 @@
 #define RTC6705_POWER_PIN               PA8
 
 #define VTX_POWER_PIN_INVERTED
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2

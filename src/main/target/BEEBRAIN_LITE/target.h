@@ -108,6 +108,7 @@
 #define RTC6705_POWER_PIN               PA6
 
 #define VTX_POWER_PIN_INVERTED
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 
 /* ======== RX ======== */
 #ifdef BEEBRAIN_LITE_DSM

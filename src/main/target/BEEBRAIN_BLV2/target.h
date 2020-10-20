@@ -98,6 +98,8 @@
 #define RTC6705_CS_PIN                  PA14
 #define RTC6705_SPI_INSTANCE            SPI3
 
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+
 /* ======== RX ======== */
 #define USE_RX_SPI
 
