@@ -121,7 +121,6 @@ static long cmsx_Vtx_onBandChange(displayPort_t *pDisp, const void *self)
                         return 0;
                     }
                 }
-
                 if ((lastVtxBand - cmsx_vtxBand) > 0) {
                     cmsx_vtxBand--;
                 } else {
@@ -184,7 +183,7 @@ static const OSD_Entry cmsx_menuVtxEntries[] = {
     {"BAND", OME_TAB, cmsx_Vtx_onBandChange, &entryVtxBand, 0},
 #ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
     {"CHANNEL", OME_TAB, cmsx_Vtx_onChanChange, &entryVtxChannel, DYNAMIC},
-#else 
+#else
     {"CHANNEL", OME_TAB, cmsx_Vtx_onChanChange, &entryVtxChannel, 0},
 #endif
     {"POWER", OME_TAB, cmsx_Vtx_onPowerChange, &entryVtxPower, 0},
