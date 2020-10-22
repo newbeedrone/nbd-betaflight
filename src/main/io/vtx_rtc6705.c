@@ -188,7 +188,7 @@ static void vtxRTC6705SetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
 static void vtxRTC6705SetFrequency(vtxDevice_t *vtxDevice, uint16_t frequency)
 {
     UNUSED(vtxDevice);
-    if (frequency >= VTX_RTC6705_FREQ_MIN &&  frequency <= VTX_RTC6705_FREQ_MAX) {
+    if (frequency >= VTX_RTC6705_FREQ_MIN && frequency <= VTX_RTC6705_FREQ_MAX && frequency != rtc6705Frequency) {
         frequency = constrain(frequency, VTX_RTC6705_FREQ_MIN, VTX_RTC6705_FREQ_MAX);
         rtc6705Frequency = frequency;
         rtc6705SetFrequency(frequency);
