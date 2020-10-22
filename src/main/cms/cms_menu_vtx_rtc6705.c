@@ -55,7 +55,8 @@ static OSD_TAB_t entryVtxPower;
 
 static void cmsx_Vtx_ConfigRead(void)
 {
-    vtxCommonGetBandAndChannel(vtxCommonDevice(), &cmsx_vtxBand, &cmsx_vtxChannel);
+    cmsx_vtxBand = vtxSettingsConfigMutable()->band;
+    cmsx_vtxChannel = vtxSettingsConfigMutable()->channel;
     vtxCommonGetPowerIndex(vtxCommonDevice(), &cmsx_vtxPower);
 
 #ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
