@@ -53,7 +53,7 @@ void targetConfiguration(void)
 {
 #ifdef USE_VTX_TABLE
     const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {1, 2};
-    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"5", "10"};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"10", "15"};
     vtxTableConfigMutable()->powerLevels = 2;
 
     #if defined(USE_VTX_US_TABLE)
@@ -125,7 +125,7 @@ void targetConfiguration(void)
 
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
-    vtxSettingsConfigMutable()->power = 3;
+    vtxSettingsConfigMutable()->power = 1;
 
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
 
