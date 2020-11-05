@@ -126,12 +126,12 @@
     #define RX_CC2500_SPI_TX_EN_PIN     PB10
     #define RX_CC2500_SPI_ANT_SEL_PIN   PA7
 
-    #define USE_RX_FRSKY_SPI_D
-    #define USE_RX_FRSKY_SPI_X
-    #define USE_RX_SFHSS_SPI
     #define USE_RX_FRSKY_SPI_TELEMETRY
     #define USE_RX_CC2500_SPI_PA_LNA
     #define USE_RX_CC2500_SPI_DIVERSITY
+    #define USE_RX_FRSKY_SPI_D
+    #define USE_RX_FRSKY_SPI_X
+    #define USE_RX_SFHSS_SPI
 
     #define CC2500_BLINK_BIND
     #define DEFAULT_RX_FEATURE          FEATURE_RX_SPI
