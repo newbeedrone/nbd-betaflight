@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "BeeBrain BLV2 Rev_A"
-#define USBD_PRODUCT_STRING             "BeeBrain BLV2"
+#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V2 Rev_A"
+#define USBD_PRODUCT_STRING             "BeeBrain BL V2"
 
 #define USE_TARGET_CONFIG
 

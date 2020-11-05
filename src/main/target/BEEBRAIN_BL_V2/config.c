@@ -119,7 +119,7 @@ void targetConfiguration(void)
 
 #endif /* USE_VTX_TABLE */
 
-    strcpy(pilotConfigMutable()->name, "BeeBrain BLV2");
+    strcpy(pilotConfigMutable()->name, "BeeBrain BL");
 
     imuConfigMutable()->small_angle = 180;
 
