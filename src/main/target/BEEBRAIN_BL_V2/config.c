@@ -52,9 +52,9 @@
 void targetConfiguration(void)
 {
 #ifdef USE_VTX_TABLE
-    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1, 2};
-    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"OFF", "MIN", "MAX"};
-    vtxTableConfigMutable()->powerLevels = 3;
+    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {1, 2};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"5", "10"};
+    vtxTableConfigMutable()->powerLevels = 2;
 
     #if defined(USE_VTX_US_TABLE)
         const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
