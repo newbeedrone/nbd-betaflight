@@ -30,52 +30,27 @@
 #include "drivers/vtx_table.h"
 #endif
 
-#include "pg/rx.h"
-#include "pg/motor.h"
+#include "fc/config.h"
+#include "fc/rc_modes.h"
+#include "fc/rc_controls.h"
+
+#include "flight/imu.h"
 
 #include "io/vtx.h"
 #include "io/ledstrip.h"
 
-#include "rx/rx.h"
-
-#include "fc/config.h"
-#include "fc/rc_modes.h"
-#include "fc/rc_controls.h"
-#include "fc/controlrate_profile.h"
-
-#include "osd/osd.h"
-
-#include "flight/pid.h"
-#include "flight/imu.h"
+#include "pg/motor.h"
 
 #include "drivers/motor.h"
 
-#include "sensors/gyro.h"
 #include "sensors/battery.h"
+
+#include "rx/rx.h"
+
+#include "osd/osd.h"
 
 void targetConfiguration(void)
 {
-    pidProfilesMutable(0)->pid[PID_ROLL].P  = 66;
-    pidProfilesMutable(0)->pid[PID_ROLL].I  = 40;
-    pidProfilesMutable(0)->pid[PID_ROLL].D  = 44;
-    pidProfilesMutable(0)->pid[PID_ROLL].F  = 20;
-    pidProfilesMutable(0)->pid[PID_PITCH].P = 72;
-    pidProfilesMutable(0)->pid[PID_PITCH].I = 45;
-    pidProfilesMutable(0)->pid[PID_PITCH].D = 43;
-    pidProfilesMutable(0)->pid[PID_PITCH].F = 25;
-    pidProfilesMutable(0)->pid[PID_YAW].P   = 95;
-    pidProfilesMutable(0)->pid[PID_YAW].I   = 45;
-    pidProfilesMutable(0)->pid[PID_YAW].D   = 43;
-    pidProfilesMutable(0)->pid[PID_YAW].F   = 0;
-
-    controlRateProfilesMutable(0)->rates[FD_ROLL]   = 73;
-    controlRateProfilesMutable(0)->rates[FD_PITCH]  = 73;
-    controlRateProfilesMutable(0)->rates[FD_YAW]    = 73;
-    controlRateProfilesMutable(0)->rcExpo[FD_ROLL]  = 15;
-    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 15;
-    controlRateProfilesMutable(0)->rcExpo[FD_YAW]   = 15;
-    controlRateProfilesMutable(0)->dynThrPID        = 55;
-
 #ifdef USE_VTX_TABLE
     const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1, 2};
     const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"OFF", "MIN", "MAX"};
@@ -146,8 +121,6 @@ void targetConfiguration(void)
 
     strcpy(pilotConfigMutable()->name, "BeeBrain Lite");
 
-    pidConfigMutable()->pid_process_denom = 1;
-
     imuConfigMutable()->small_angle = 180;
 
     vtxSettingsConfigMutable()->band = 5;
@@ -155,8 +128,6 @@ void targetConfiguration(void)
     vtxSettingsConfigMutable()->power = 1;
 
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_BRUSHED;
-    motorConfigMutable()->dev.motorPwmRate = 25000;
-    motorConfigMutable()->minthrottle = 1030;
 
     batteryConfigMutable()->vbatmincellvoltage = 290;
     batteryConfigMutable()->vbatmaxcellvoltage = 440;

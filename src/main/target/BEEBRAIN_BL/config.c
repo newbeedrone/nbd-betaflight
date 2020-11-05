@@ -30,62 +30,27 @@
 #include "drivers/vtx_table.h"
 #endif
 
-#include "pg/rx.h"
-#include "pg/motor.h"
+#include "fc/config.h"
+#include "fc/rc_modes.h"
+#include "fc/rc_controls.h"
+
+#include "flight/imu.h"
 
 #include "io/vtx.h"
 #include "io/ledstrip.h"
 
-#include "rx/rx.h"
-
-#include "fc/config.h"
-#include "fc/rc_modes.h"
-#include "fc/rc_controls.h"
-#include "fc/controlrate_profile.h"
-
-#include "osd/osd.h"
-
-#include "flight/pid.h"
-#include "flight/imu.h"
+#include "pg/motor.h"
 
 #include "drivers/motor.h"
 
-#include "sensors/gyro.h"
 #include "sensors/battery.h"
+
+#include "rx/rx.h"
+
+#include "osd/osd.h"
 
 void targetConfiguration(void)
 {
-    pidProfilesMutable(0)->pid[PID_ROLL].P  = 58;
-    pidProfilesMutable(0)->pid[PID_ROLL].I  = 57;
-    pidProfilesMutable(0)->pid[PID_ROLL].F  = 20;
-    pidProfilesMutable(0)->pid[PID_PITCH].P = 55;
-    pidProfilesMutable(0)->pid[PID_PITCH].I = 62;
-    pidProfilesMutable(0)->pid[PID_PITCH].F = 20;
-    pidProfilesMutable(0)->pid[PID_YAW].P   = 48;
-    pidProfilesMutable(0)->pid[PID_YAW].I   = 55;
-    pidProfilesMutable(0)->pid[PID_YAW].F   = 0;
-    pidProfilesMutable(0)->pid[PID_LEVEL].P = 70;
-    pidProfilesMutable(0)->pid[PID_LEVEL].I = 70;
-    pidProfilesMutable(0)->pid[PID_LEVEL].D = 100;
-    pidProfilesMutable(0)->vbatPidCompensation = true;
-    pidProfilesMutable(0)->dterm_lowpass2_hz = 120;
-    pidProfilesMutable(0)->iterm_rotation = true;
-    pidProfilesMutable(0)->iterm_relax = ITERM_RELAX_RPY;
-    pidProfilesMutable(0)->iterm_relax_type = ITERM_RELAX_GYRO;
-    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 56;
-    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 136;
-    pidProfilesMutable(0)->d_min[FD_PITCH] = 18;
-    pidProfilesMutable(0)->d_min_gain = 25;
-    pidProfilesMutable(0)->d_min_advance = 1;
-    pidProfilesMutable(0)->levelAngleLimit = 85;
-
-    controlRateProfilesMutable(0)->rates[FD_ROLL] = 73;
-    controlRateProfilesMutable(0)->rates[FD_PITCH] = 73;
-    controlRateProfilesMutable(0)->rates[FD_YAW] = 73;
-    controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 15;
-    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 15;
-    controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 15;
-
 #ifdef USE_VTX_TABLE
     const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1, 2};
     const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"MIN", "MAX", "MID"};
@@ -156,34 +121,13 @@ void targetConfiguration(void)
 
     strcpy(pilotConfigMutable()->name, "BeeBrain BL");
 
-    pidConfigMutable()->pid_process_denom = 1;
-
     imuConfigMutable()->small_angle = 180;
-
-    gyroConfigMutable()->gyro_lowpass2_hz = 200;
-    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 160;
-    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 400;
-
-    rxConfigMutable()->mincheck = 1075;
-    rxConfigMutable()->rssi_channel = AUX5 + 1;
-    for (uint8_t rxRangeIndex = 0; rxRangeIndex < NON_AUX_CHANNEL_COUNT; rxRangeIndex++) {
-
-        rxChannelRangeConfig_t *channelRangeConfig = rxChannelRangeConfigsMutable(rxRangeIndex);
-
-        channelRangeConfig->min = 1070;
-        channelRangeConfig->max = 1928;
-    }
-
-    rxFailsafeChannelConfigsMutable(AUX5)->mode = RX_FAILSAFE_MODE_SET;
-    rxFailsafeChannelConfigsMutable(AUX5)->step = 10;
 
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
     vtxSettingsConfigMutable()->power = 2;
 
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
-    motorConfigMutable()->motorPoleCount = 12;
-    motorConfigMutable()->digitalIdleOffsetValue = 1000;
 
     batteryConfigMutable()->vbatmincellvoltage = 290;
     batteryConfigMutable()->vbatmaxcellvoltage = 440;
