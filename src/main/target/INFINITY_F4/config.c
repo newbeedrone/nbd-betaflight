@@ -19,12 +19,11 @@
  */
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "platform.h"
 
 #ifdef USE_TARGET_CONFIG
-
-#include <string.h>
 
 #include "common/maths.h"
 

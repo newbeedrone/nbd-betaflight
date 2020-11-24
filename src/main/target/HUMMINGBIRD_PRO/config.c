@@ -19,16 +19,11 @@
  */
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "platform.h"
 
 #ifdef USE_TARGET_CONFIG
-
-#ifdef USE_VTX_TABLE
-#include <string.h>
-#include "pg/vtx_table.h"
-#include "drivers/vtx_table.h"
-#endif
 
 #include "fc/config.h"
 #include "fc/rc_modes.h"
