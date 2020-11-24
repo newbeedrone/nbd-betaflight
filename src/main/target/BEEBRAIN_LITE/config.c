@@ -43,6 +43,7 @@
 
 #include "drivers/motor.h"
 
+#include "sensors/barometer.h"
 #include "sensors/battery.h"
 
 #include "rx/rx.h"
@@ -128,6 +129,8 @@ void targetConfiguration(void)
     vtxSettingsConfigMutable()->power = 2;
 
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_BRUSHED;
+
+    barometerConfigMutable()->baro_hardware = BARO_NONE;
 
     batteryConfigMutable()->vbatmincellvoltage = 290;
     batteryConfigMutable()->vbatmaxcellvoltage = 440;
