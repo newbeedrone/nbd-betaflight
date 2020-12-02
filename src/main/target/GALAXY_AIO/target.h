@@ -32,6 +32,7 @@
 /* ======== BUZZER ======== */
 #define USE_BEEPER
 #define BEEPER_PIN                      PB10
+#define BEEPER_PWM_HZ                   5400
 #define BEEPER_INVERTED
 
 /* ======== UART ======== */
@@ -114,5 +115,5 @@
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 (BIT(2))
 
-#define USABLE_TIMER_CHANNEL_COUNT      5
-#define USED_TIMERS                     ( TIM_N(4) | TIM_N(5) )
+#define USABLE_TIMER_CHANNEL_COUNT      6
+#define USED_TIMERS                     ( TIM_N(2) | TIM_N(4) | TIM_N(5) )
