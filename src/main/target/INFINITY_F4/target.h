@@ -23,8 +23,6 @@
 #define TARGET_BOARD_IDENTIFIER         "Infinity F4 Rev_E"
 #define USBD_PRODUCT_STRING             "Infinity F4"
 
-#define USE_TARGET_CONFIG
-
 /* ======== LED ======== */
 #define LED0_PIN                        PC0
 

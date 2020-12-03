@@ -29,7 +29,6 @@
 #endif
 
 #define TARGET_PREINIT
-#define USE_TARGET_CONFIG
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC13

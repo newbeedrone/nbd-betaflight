@@ -23,8 +23,6 @@
 #define TARGET_BOARD_IDENTIFIER         "Infinity AIO Rev_A"
 #define USBD_PRODUCT_STRING             "Infinity AIO"
 
-#define USE_TARGET_CONFIG
-
 /* ======== LED ======== */
 #define LED0_PIN                        PA15
 

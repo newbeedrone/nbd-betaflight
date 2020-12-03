@@ -28,8 +28,6 @@
     #define USBD_PRODUCT_STRING         "BeeBrain Pro"
 #endif
 
-#define USE_TARGET_CONFIG
-
 /* ======== LED ======== */
 #define LED0_PIN                        PC13
 #define LED1_PIN                        PC14

@@ -23,8 +23,6 @@
 #define TARGET_BOARD_IDENTIFIER         "Infinity PDB Rev_A"
 #define USBD_PRODUCT_STRING             "Infinity PDB"
 
-#define USE_TARGET_CONFIG
-
 /* ======== LED ======== */
 #define LED0_PIN                        PA15
 

@@ -23,8 +23,6 @@
 #define TARGET_BOARD_IDENTIFIER         "Galaxy AIO Rev_A"
 #define USBD_PRODUCT_STRING             "Galaxy AIO"
 
-#define USE_TARGET_CONFIG
-
 /* ======== LED ======== */
 #define LED0_PIN                        PC13
 #define LED1_PIN                        PC14

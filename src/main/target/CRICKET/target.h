@@ -23,8 +23,6 @@
 #define TARGET_BOARD_IDENTIFIER         "Cricket Rev_A"
 #define USBD_PRODUCT_STRING             "Cricket"
 
-#define USE_TARGET_CONFIG
-
 /* ======== LED ======== */
 #define LED0_PIN                        PA15
 
