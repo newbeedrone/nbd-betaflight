@@ -54,6 +54,12 @@
 /* ======== SPI ======== */
 #define USE_SPI
 
+#define USE_SPI_DEVICE_2
+#define SPI2_SCK_PIN                    PB13
+#define SPI2_MISO_PIN                   PB14
+#define SPI2_MOSI_PIN                   PB15
+#define SPI2_NSS_PIN                    PB12
+
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_MISO_PIN                   PB4
@@ -87,6 +93,15 @@
 #define SERIALRX_UART                   SERIAL_PORT_USART2
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_SBUS
+
+/* ======== FLASH ======== */
+#define ENABLE_BLACKBOX_LOGGING_ON_SPIFLASH_BY_DEFAULT
+#define USE_FLASHFS
+#define USE_FLASH_M25P16
+#define USE_FLASH_W25M
+#define USE_FLASH_W25N01G
+#define FLASH_CS_PIN                    SPI2_NSS_PIN
+#define FLASH_SPI_INSTANCE              SPI2
 
 /* ======== ADC ======== */
 #define USE_ADC
