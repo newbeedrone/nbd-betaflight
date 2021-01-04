@@ -59,6 +59,7 @@ bool cliMode = false;
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/adc.h"
+#include "drivers/beesign.h"
 #include "drivers/buf_writer.h"
 #include "drivers/bus_spi.h"
 #include "drivers/dma.h"
@@ -118,6 +119,7 @@ bool cliMode = false;
 #include "io/serial.h"
 #include "io/transponder_ir.h"
 #include "io/usb_msc.h"
+#include "io/vtx_beesign.h"
 #include "io/vtx_control.h"
 #include "io/vtx.h"
 
@@ -1444,7 +1446,7 @@ static void cliSerialPassthrough(char *cmdline)
 
             *port = openSerialPort(ports[i].id, FUNCTION_NONE, NULL, NULL,
                                             ports[i].baud, ports[i].mode,
-                                            SERIAL_NOT_INVERTED);
+                                            SERIAL_NOT_INVERTED|SERIAL_BIDIR);
             if (!*port) {
                 cliPrintLinef("Port%d could not be opened.", portIndex);
                 return;
@@ -5972,6 +5974,19 @@ static void cliDshotTelemetryInfo(char *cmdline)
 }
 #endif
 
+#ifdef USE_VTX_BEESIGN
+static void beesignSetVTxLock(char *cmdline) {
+    UNUSED(cmdline);
+    bsSetVTxLock();
+    cliPrintLine("beesign vtx lock success");
+}
+static void beesignSetVTxUnlock(char *cmdline) {
+    UNUSED(cmdline);
+    bsSetVTxUnlock();
+    cliPrintLine("beesign vtx unlock success");
+}
+#endif // USE_VTX_BEESIGN
+
 static void printConfig(char *cmdline, bool doDiff)
 {
     dumpFlags_t dumpMask = DUMP_MASTER;
@@ -6401,6 +6416,10 @@ const clicmd_t cmdTable[] = {
 #endif
 #ifdef USE_VTX_TABLE
     CLI_COMMAND_DEF("vtxtable", "vtx frequency table", "<band> <bandname> <bandletter> [FACTORY|CUSTOM] <freq> ... <freq>\r\n", cliVtxTable),
+#endif
+#ifdef USE_VTX_BEESIGN
+    CLI_COMMAND_DEF("beesign_vtx_lock", "beesign", NULL, beesignSetVTxLock),
+    CLI_COMMAND_DEF("beesign_vtx_unlock", "beesign", NULL, beesignSetVTxUnlock),
 #endif
 };
 

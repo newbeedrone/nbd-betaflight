@@ -23,6 +23,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "drivers/beesign.h"
 #include "platform.h"
 
 #include "blackbox/blackbox.h"
@@ -43,6 +44,7 @@
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/adc.h"
+#include "drivers/beesign.h"
 #include "drivers/bus.h"
 #include "drivers/bus_i2c.h"
 #include "drivers/bus_quadspi.h"
@@ -101,6 +103,7 @@
 #include "io/asyncfatfs/asyncfatfs.h"
 #include "io/beeper.h"
 #include "io/dashboard.h"
+#include "io/displayport_beesign.h"
 #include "io/displayport_max7456.h"
 #include "io/displayport_msp.h"
 #include "io/displayport_srxl.h"
@@ -116,6 +119,7 @@
 #include "io/servos.h"
 #include "io/transponder_ir.h"
 #include "io/vtx.h"
+#include "io/vtx_beesign.h"
 #include "io/vtx_control.h"
 #include "io/vtx_rtc6705.h"
 #include "io/vtx_smartaudio.h"
@@ -211,6 +215,7 @@ static IO_t busSwitchResetPin        = IO_NONE;
 
 static void configureSPIAndQuadSPI(void)
 {
+    beesignUpdate(1);
 #ifdef USE_SPI
     spiPinConfigure(spiPinConfig(0));
 #endif
@@ -758,6 +763,15 @@ void init(void)
         osdDisplayPort = max7456DisplayPortInit(vcdProfile());
 #elif defined(USE_CMS) && defined(USE_MSP_DISPLAYPORT) && defined(USE_OSD_OVER_MSP_DISPLAYPORT) // OSD over MSP; not supported (yet)
         osdDisplayPort = displayPortMspInit();
+#elif defined(USE_OSD_BEESIGN)
+        if (use_beesign_flg) {
+            osdDisplayPort = beesignDisplayPortInit(vcdProfile());
+            if (osdDisplayPort || device == OSD_DISPLAYPORT_DEVICE_BEESIGN)
+            {
+                osdDisplayPortDevice = OSD_DISPLAYPORT_DEVICE_BEESIGN;
+                break;
+            }
+        }
 #endif
         // osdInit  will register with CMS by itself.
         osdInit(osdDisplayPort);
@@ -780,6 +794,10 @@ void init(void)
 #if defined(USE_CMS) && defined(USE_SPEKTRUM_CMS_TELEMETRY) && defined(USE_TELEMETRY_SRXL)
     // Register the srxl Textgen telemetry sensor as a displayport device
     cmsDisplayPortRegister(displayPortSrxlInit());
+#endif
+
+#ifdef USE_VTX_BEESIGN
+    bool use_beesign_flg = beesignInit();
 #endif
 
 #ifdef USE_GPS
@@ -869,6 +887,10 @@ void init(void)
 
 #ifdef USE_VTX_SMARTAUDIO
     vtxSmartAudioInit();
+#endif
+
+#ifdef USE_VTX_BEESIGN
+    beesignVtxInit();
 #endif
 
 #ifdef USE_VTX_TRAMP

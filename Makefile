@@ -220,7 +220,9 @@ endif
 
 # Tool names
 CROSS_CC    := $(CCACHE) $(ARM_SDK_PREFIX)gcc
+# CROSS_CC    := clang
 CROSS_CXX   := $(CCACHE) $(ARM_SDK_PREFIX)g++
+# CROSS_CXX   := clang++
 CROSS_GDB   := $(ARM_SDK_PREFIX)gdb
 OBJCOPY     := $(ARM_SDK_PREFIX)objcopy
 OBJDUMP     := $(ARM_SDK_PREFIX)objdump

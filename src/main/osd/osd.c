@@ -52,6 +52,7 @@
 
 #include "config/feature.h"
 
+#include "drivers/beesign.h"
 #include "drivers/display.h"
 #include "drivers/flash.h"
 #include "drivers/max7456_symbols.h"
@@ -308,6 +309,30 @@ void pgResetFn_osdConfig(osdConfig_t *osdConfig)
 
 static void osdDrawLogo(int x, int y)
 {
+#ifdef USE_OSD_BEESIGN
+    if (checkBeesignSerialPort()) {
+        uint8_t column;
+        uint16_t fontOffset = 0xC4;
+        for (column = 0; column < 6; column++) {
+            displayWriteChar(osdDisplayPort, x + column, y, fontOffset++);
+        }
+        for (column = 7; column < 24; column++) {
+            displayWriteChar(osdDisplayPort, x + column, y, 0xC0);
+        }
+        for (column = 0; column < 24; column++) {
+            displayWriteChar(osdDisplayPort, x + column, y + 1, fontOffset++);
+        }
+        for (column = 0; column < 24; column++) {
+            displayWriteChar(osdDisplayPort, x + column, y + 2, fontOffset++);
+        }
+        for (column = 0; column < 6; column++) {
+            displayWriteChar(osdDisplayPort, x + column, y + 3, fontOffset++);
+        }
+        for (column = 7; column < 24; column++) {
+            displayWriteChar(osdDisplayPort, x + column, y + 3, 0xC0);
+        }
+    } else
+#endif
     // display logo and help
     int fontOffset = 160;
     for (int row = 0; row < 4; row++) {
@@ -337,15 +362,30 @@ void osdInit(displayPort_t *osdDisplayPortToUse)
 
     displayClearScreen(osdDisplayPort);
 
+#ifdef USE_OSD_BEESIGN
+    osdDrawLogo(1, 0);
+#else
     osdDrawLogo(3, 1);
+#endif
 
     char string_buffer[30];
     tfp_sprintf(string_buffer, "V%s", FC_VERSION_STRING);
+#ifdef USE_OSD_BEESIGN
+    displayWrite(osdDisplayPort, 18, 5, string_buffer);
+#else
     displayWrite(osdDisplayPort, 20, 6, string_buffer);
+#endif
+
 #ifdef USE_CMS
+#ifdef USE_OSD_BEESIGN
+    displayWrite(osdDisplayPort, 7, 7, CMS_STARTUP_HELP_TEXT1);
+    displayWrite(osdDisplayPort, 11, 8, CMS_STARTUP_HELP_TEXT2);
+    displayWrite(osdDisplayPort, 11, 9, CMS_STARTUP_HELP_TEXT3);
+#else
     displayWrite(osdDisplayPort, 7, 8,  CMS_STARTUP_HELP_TEXT1);
     displayWrite(osdDisplayPort, 11, 9, CMS_STARTUP_HELP_TEXT2);
     displayWrite(osdDisplayPort, 11, 10, CMS_STARTUP_HELP_TEXT3);
+#endif
 #endif
 
 #ifdef USE_RTC_TIME
@@ -508,9 +548,15 @@ static void osdGetBlackboxStatusString(char * buff)
 
 static void osdDisplayStatisticLabel(uint8_t y, const char * text, const char * value)
 {
+#ifdef USE_OSD_BEESIGN
+    displayWrite(osdDisplayPort, 0, y, text);
+    displayWrite(osdDisplayPort, 17, y, ":");
+    displayWrite(osdDisplayPort, 19, y, value);
+#else
     displayWrite(osdDisplayPort, 2, y, text);
     displayWrite(osdDisplayPort, 20, y, ":");
     displayWrite(osdDisplayPort, 22, y, value);
+#endif
 }
 
 /*
@@ -542,7 +588,11 @@ static bool osdDisplayStat(int statistic, uint8_t displayRow)
             tfp_sprintf(buff, "NO RTC");
         }
 
+#ifdef USE_OSD_BEESIGN
+        displayWrite(osdDisplayPort, 0, displayRow, buff);
+#else
         displayWrite(osdDisplayPort, 2, displayRow, buff);
+#endif
         return true;
     }
 
@@ -742,8 +792,13 @@ static uint8_t osdShowStats(int statsRowCount)
         top = (availableRows - displayRows) / 2;  // center the stats vertically
     }
 
-    if (displayLabel) {
+    if (displayLabel)
+    {
+#ifdef USE_OSD_BEESIGN
+        displayWrite(osdDisplayPort, 0, top++, "  --- STATS ---");
+#else
         displayWrite(osdDisplayPort, 2, top++, "  --- STATS ---");
+#endif
     }
 
     for (int i = 0; i < OSD_STAT_COUNT; i++) {
@@ -765,7 +820,11 @@ static void osdRefreshStats(void)
         osdStatsRowCount = osdShowStats(0);
         // Then clear the screen and commence with normal stats display which will
         // determine if the heading should be displayed and also center the content vertically.
+#ifdef USE_OSD_BEESIGN
+        displayCleanScreen(osdDisplayPort);
+#else
         displayClearScreen(osdDisplayPort);
+#endif
     }
     osdShowStats(osdStatsRowCount);
 }
@@ -773,7 +832,11 @@ static void osdRefreshStats(void)
 static void osdShowArmed(void)
 {
     displayClearScreen(osdDisplayPort);
+#ifdef USE_OSD_BEESIGN
+    displayWrite(osdDisplayPort, 9, 4, "ARMED");
+#else
     displayWrite(osdDisplayPort, 12, 7, "ARMED");
+#endif
 }
 
 STATIC_UNIT_TESTED void osdRefresh(timeUs_t currentTimeUs)
@@ -904,10 +967,11 @@ void osdUpdate(timeUs_t currentTimeUs)
     }
 #endif
 
+
     // redraw values in buffer
 #ifdef USE_MAX7456
 #define DRAW_FREQ_DENOM 5
-#else
+#else //MWOSD and BEESIGN
 #define DRAW_FREQ_DENOM 10 // MWOSD @ 115200 baud (
 #endif
 #define STATS_FREQ_DENOM    50
