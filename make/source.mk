@@ -163,7 +163,6 @@ COMMON_SRC = \
             io/gps.c \
             io/ledstrip.c \
             io/pidaudio.c \
-            io/vtx_beesign.c \
             osd/osd.c \
             osd/osd_elements.c \
             sensors/barometer.c \
@@ -182,6 +181,7 @@ COMMON_SRC = \
             telemetry/ibus_shared.c \
             sensors/esc_sensor.c \
             io/vtx.c \
+            io/vtx_beesign.c \
             io/vtx_rtc6705.c \
             io/vtx_smartaudio.c \
             io/vtx_tramp.c \

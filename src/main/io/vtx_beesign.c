@@ -46,41 +46,34 @@
 #include "io/vtx_beesign.h"
 
 #if defined(USE_CMS) || defined(USE_VTX_COMMON)
-
 const uint16_t bsPowerTable[BEESIGN_POWER_COUNT - BEESIGN_DEFAULT_POWER] = {
     25, 100, 200, 400, 600
 };
 
-const char * const bsPowerNames[] = {
-    "OFF",  "25", "100", "200", "400", "600", "PIT MODE"
+const char *const bsPowerNames[] = {
+    "OFF", "25", "100", "200", "400", "600", "PIT MODE"
 };
 
-const char * const bsModeNames[] = {
+const char *const bsModeNames[] = {
     "RACE", "MANUAL", "POR"
 };
+
 #endif
 
 #ifdef USE_VTX_COMMON
-static const vtxVTable_t bsVTable;    // Forward
+static const vtxVTable_t bsVTable; // Forward
+
 static vtxDevice_t vtxBeesign = {
     .vTable = &bsVTable,
 };
-#endif
 
 void vtxBSProcess(vtxDevice_t *vtxDevice, timeUs_t currentTimeUs)
 {
     UNUSED(vtxDevice);
     UNUSED(currentTimeUs);
-
-    // while (serialRxBytesWaiting(beesignSerialPort) > 0) {
-    //     const uint8_t ch = serialRead(beesignSerialPort);
-    //     bsReceiveFramer(ch);
-    // }
 }
 
-#ifdef USE_VTX_COMMON
 // Interface to common VTX API
-
 vtxDevType_e vtxBSGetDeviceType(const vtxDevice_t *vtxDevice)
 {
     UNUSED(vtxDevice);
@@ -89,7 +82,7 @@ vtxDevType_e vtxBSGetDeviceType(const vtxDevice_t *vtxDevice)
 
 static bool vtxBSIsReady(const vtxDevice_t *vtxDevice)
 {
-    return vtxDevice!=NULL && !(bsDevice.version == 0);
+    return (bool)((vtxDevice != NULL) && (!(bsDevice.version == 0)));
 }
 
 static void vtxBSSetBandAndChannel(vtxDevice_t *vtxDevice, uint8_t band, uint8_t channel)
@@ -105,12 +98,11 @@ static void vtxBSSetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
     UNUSED(vtxDevice);
     if (onoff) {
         bsDevice.lastPower = bsDevice.power;
-        vtxSettingsConfigMutable()->power = VTX_PWR_PIT + BEESIGN_MIN_POWER;  // pit mode
+        vtxSettingsConfigMutable()->power = VTX_PWR_PIT + BEESIGN_MIN_POWER; // pit mode
     } else {
         vtxSettingsConfigMutable()->power = bsDevice.lastPower;
     }
 }
-
 
 static void vtxBSSetPowerIndex(vtxDevice_t *vtxDevice, uint8_t index)
 {
@@ -120,14 +112,12 @@ static void vtxBSSetPowerIndex(vtxDevice_t *vtxDevice, uint8_t index)
         return;
     }
     bsSetPower(index);
-
 }
 
 static void vtxBSSetFreq(vtxDevice_t *vtxDevice, uint16_t freq)
 {
     UNUSED(vtxDevice);
-    if (bsValidateFreq(freq) && freq != bsDevice.freq
-) {
+    if (bsValidateFreq(freq) && freq != bsDevice.freq) {
         bsSetFreq(freq);
     }
 }
@@ -139,9 +129,9 @@ static bool vtxBSGetBandAndChannel(const vtxDevice_t *vtxDevice, uint8_t *pBand,
     }
 
     // if in user-freq mode then report band as zero
-    *pBand = (bsDevice.mode == BEESIGN_VTX_MODE_RACE) ?
-        (BS_DEVICE_CHVAL_TO_BAND(bsDevice.channel) + 1) : 0;
+    *pBand = (bsDevice.mode == BEESIGN_VTX_MODE_RACE) ? (BS_DEVICE_CHVAL_TO_BAND(bsDevice.channel) + 1) : 0;
     *pChannel = BS_DEVICE_CHVAL_TO_CHANNEL(bsDevice.channel) + 1;
+
     return true;
 }
 
@@ -152,6 +142,7 @@ static bool vtxBSGetPowerIndex(const vtxDevice_t *vtxDevice, uint8_t *pIndex)
     }
 
     *pIndex = bsDevice.power;
+
     return true;
 }
 
@@ -160,11 +151,13 @@ static bool vtxBSGetPitMode(const vtxDevice_t *vtxDevice, unsigned *status)
     if (!vtxBSIsReady(vtxDevice)) {
         return false;
     }
+
     if (bsDevice.power == VTX_PWR_PIT + BEESIGN_MIN_POWER) {
         *status = 1;
     } else {
         *status = 0;
     }
+
     return true;
 }
 
@@ -174,17 +167,21 @@ static bool vtxBSGetFreq(const vtxDevice_t *vtxDevice, uint16_t *pFreq)
         return false;
     }
 
-    // // if not in user-freq mode then convert band/chan to frequency
+    // if not in user-freq mode then convert band/chan to frequency
     *pFreq = bsDevice.freq;
+
     return true;
 }
 
-bool beesignVtxInit(void) {
-    if(!checkBeesignSerialPort()) {
+bool beesignVtxInit(void)
+{
+    if (!checkBeesignSerialPort()) {
         return false;
     }
+
     vtxCommonSetDevice(&vtxBeesign);
     bsSetVTxUnlock();
+
     return true;
 }
 
@@ -201,6 +198,6 @@ static const vtxVTable_t bsVTable = {
     .getStatus = vtxBSGetPitMode,
     .getFrequency = vtxBSGetFreq,
 };
-#endif // VTX_COMMON
+#endif // USE_VTX_COMMON
 
 #endif // USE_VTX_BEESIGN

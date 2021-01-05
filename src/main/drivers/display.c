@@ -27,16 +27,10 @@
 #include "common/utils.h"
 
 #include "display.h"
+
 #include "drivers/beesign.h"
 
 void displayClearScreen(displayPort_t *instance)
-{
-    instance->vTable->clearScreen(instance);
-    instance->cleared = true;
-    instance->cursorRow = -1;
-}
-
-void displayCleanScreen(displayPort_t *instance)
 {
 #ifdef USE_OSD_BEESIGN
     if (checkBeesignSerialPort()) {

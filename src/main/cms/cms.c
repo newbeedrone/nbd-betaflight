@@ -803,8 +803,8 @@ long cmsMenuExit(displayPort_t *pDisplay, const void *ptr)
     currentCtx.menu = NULL;
 
 #ifdef USE_OSD_BEESIGN
-    displayCleanScreen(pDisplay);
-    #endif
+    displayClearScreen(pDisplay);
+#endif
 
     if ((exitType == CMS_EXIT_SAVEREBOOT) || (exitType == CMS_POPUP_SAVEREBOOT) || (exitType == CMS_POPUP_EXITREBOOT)) {
         displayClearScreen(pDisplay);
@@ -1239,7 +1239,7 @@ static void cmsUpdate(uint32_t currentTimeUs)
             }
         }
 
-        if (currentCtx.menu != NULL){
+        if (currentCtx.menu != NULL) {
             cmsDrawMenu(pCurrentDisplay, currentTimeUs);
         }
 

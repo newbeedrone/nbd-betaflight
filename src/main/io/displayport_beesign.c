@@ -44,6 +44,7 @@ static int grab(displayPort_t *displayPort)
 {
     // FIXME this should probably not have a dependency on the OSD or OSD slave code
     UNUSED(displayPort);
+
 #ifdef USE_OSD
     resumeRefreshAt = 0;
 #endif
@@ -54,7 +55,6 @@ static int grab(displayPort_t *displayPort)
 static int release(displayPort_t *displayPort)
 {
     UNUSED(displayPort);
-
     return 0;
 }
 
@@ -70,7 +70,9 @@ static int clearScreen(displayPort_t *displayPort)
 static int drawScreen(displayPort_t *displayPort)
 {
     UNUSED(displayPort);
+
     bsDisplay();
+    
     return 0;
 }
 
@@ -86,6 +88,7 @@ static int writeString(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t
     UNUSED(attr);
 
     bsWriteBuffRow(x, y, s);
+
     return 0;
 }
 
@@ -95,6 +98,7 @@ static int writeChar(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t a
     UNUSED(attr);
 
     bsWriteBuffChar(x, y, c);
+
     return 0;
 }
 
@@ -112,8 +116,10 @@ static bool isSynced(const displayPort_t *displayPort)
 
 static void resync(displayPort_t *displayPort)
 {
-    bsDisplay();
     UNUSED(displayPort);
+
+    bsDisplay();
+
     displayPort->rows = BEESIGN_LINES_PER_SCREEN;
     displayPort->cols = BEESIGN_CHARS_PER_LINE;
 }
@@ -151,13 +157,12 @@ displayPort_t *beesignDisplayPortInit(const vcdProfile_t *vcdProfile)
         return NULL;
     }
 
-    bsSetOsdHosOffset(vcdProfile -> h_offset);
-    bsSetOsdVosOffset(vcdProfile -> v_offset);
+    bsSetOsdHosOffset(vcdProfile->h_offset);
+    bsSetOsdVosOffset(vcdProfile->v_offset);
     bsSetOsdMode(BEESIGN_OSD_MODE_CUSTOM);
     delayMicroseconds(1000000);
     displayInit(&beesignDisplayPort, &beesignVTable);
 
-    // resync(&beesignDisplayPort);
     return &beesignDisplayPort;
 }
 #endif // USE_OSD_BEESIGN

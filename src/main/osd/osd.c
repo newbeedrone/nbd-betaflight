@@ -820,11 +820,7 @@ static void osdRefreshStats(void)
         osdStatsRowCount = osdShowStats(0);
         // Then clear the screen and commence with normal stats display which will
         // determine if the heading should be displayed and also center the content vertically.
-#ifdef USE_OSD_BEESIGN
-        displayCleanScreen(osdDisplayPort);
-#else
         displayClearScreen(osdDisplayPort);
-#endif
     }
     osdShowStats(osdStatsRowCount);
 }
@@ -967,11 +963,10 @@ void osdUpdate(timeUs_t currentTimeUs)
     }
 #endif
 
-
     // redraw values in buffer
 #ifdef USE_MAX7456
 #define DRAW_FREQ_DENOM 5
-#else //MWOSD and BEESIGN
+#else
 #define DRAW_FREQ_DENOM 10 // MWOSD @ 115200 baud (
 #endif
 #define STATS_FREQ_DENOM    50

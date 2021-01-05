@@ -182,7 +182,6 @@ typedef struct beeSignDevice_s {
 extern const char * const bsPowerNames[];
 extern const char * const bsModeNames[];
 extern const uint16_t bsPowerTable[];
-extern const uint16_t beesignTable[5][8];
 extern beeSignDevice_t bsDevice;
 
 bool beesignInit(void);

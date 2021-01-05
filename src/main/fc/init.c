@@ -43,7 +43,6 @@
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/adc.h"
-#include "drivers/beesign.h"
 #include "drivers/bus.h"
 #include "drivers/bus_i2c.h"
 #include "drivers/bus_quadspi.h"
@@ -76,6 +75,7 @@
 #include "drivers/timer.h"
 #include "drivers/transponder_ir.h"
 #include "drivers/usb_io.h"
+#include "drivers/beesign.h"
 #ifdef USE_USB_MSC
 #include "drivers/usb_msc.h"
 #endif
@@ -102,10 +102,10 @@
 #include "io/asyncfatfs/asyncfatfs.h"
 #include "io/beeper.h"
 #include "io/dashboard.h"
-#include "io/displayport_beesign.h"
 #include "io/displayport_max7456.h"
 #include "io/displayport_msp.h"
 #include "io/displayport_srxl.h"
+#include "io/displayport_beesign.h"
 #include "io/flashfs.h"
 #include "io/gimbal.h"
 #include "io/gps.h"
@@ -118,11 +118,11 @@
 #include "io/servos.h"
 #include "io/transponder_ir.h"
 #include "io/vtx.h"
-#include "io/vtx_beesign.h"
 #include "io/vtx_control.h"
 #include "io/vtx_rtc6705.h"
 #include "io/vtx_smartaudio.h"
 #include "io/vtx_tramp.h"
+#include "io/vtx_beesign.h"
 
 #ifdef USE_PERSISTENT_MSC_RTC
 #include "msc/usbd_storage.h"
@@ -753,7 +753,7 @@ void init(void)
 #endif
 
 #ifdef USE_BEESIGN
-    bool use_beesign_flg = beesignInit();
+    bool use_beesign_flag = beesignInit();
 #endif
 
 #if defined(USE_OSD)
@@ -766,7 +766,7 @@ void init(void)
 #elif defined(USE_CMS) && defined(USE_MSP_DISPLAYPORT) && defined(USE_OSD_OVER_MSP_DISPLAYPORT) // OSD over MSP; not supported (yet)
         osdDisplayPort = displayPortMspInit();
 #elif defined(USE_OSD_BEESIGN)
-        if (use_beesign_flg) {
+        if (use_beesign_flag) {
             osdDisplayPort = beesignDisplayPortInit(vcdProfile());
             if (osdDisplayPort || device == OSD_DISPLAYPORT_DEVICE_BEESIGN)
             {
@@ -888,7 +888,7 @@ void init(void)
 #endif
 
 #ifdef USE_VTX_BEESIGN
-    if (use_beesign_flg) {
+    if (use_beesign_flag) {
         beesignVtxInit();
     }
 #endif
