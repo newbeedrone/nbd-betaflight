@@ -23,7 +23,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "drivers/beesign.h"
 #include "platform.h"
 
 #include "blackbox/blackbox.h"
@@ -215,7 +214,6 @@ static IO_t busSwitchResetPin        = IO_NONE;
 
 static void configureSPIAndQuadSPI(void)
 {
-    beesignUpdate(1);
 #ifdef USE_SPI
     spiPinConfigure(spiPinConfig(0));
 #endif
@@ -754,6 +752,10 @@ void init(void)
     displayPort_t *osdDisplayPort = NULL;
 #endif
 
+#ifdef USE_BEESIGN
+    bool use_beesign_flg = beesignInit();
+#endif
+
 #if defined(USE_OSD)
     //The OSD need to be initialised after GYRO to avoid GYRO initialisation failure on some targets
 
@@ -794,10 +796,6 @@ void init(void)
 #if defined(USE_CMS) && defined(USE_SPEKTRUM_CMS_TELEMETRY) && defined(USE_TELEMETRY_SRXL)
     // Register the srxl Textgen telemetry sensor as a displayport device
     cmsDisplayPortRegister(displayPortSrxlInit());
-#endif
-
-#ifdef USE_VTX_BEESIGN
-    bool use_beesign_flg = beesignInit();
 #endif
 
 #ifdef USE_GPS
@@ -890,7 +888,9 @@ void init(void)
 #endif
 
 #ifdef USE_VTX_BEESIGN
-    beesignVtxInit();
+    if (use_beesign_flg) {
+        beesignVtxInit();
+    }
 #endif
 
 #ifdef USE_VTX_TRAMP

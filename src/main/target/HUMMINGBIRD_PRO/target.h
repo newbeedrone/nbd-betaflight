@@ -82,6 +82,11 @@
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3
 
+#undef USE_VTX_TRAMP
+#undef USE_VTX_SMARTAUDIO
+#define USE_BEESIGN
+#define USE_BEESIGN_UART                SERIAL_PORT_USART1
+
 /* ======== RX ======== */
 #define USE_RX_SPI
 
