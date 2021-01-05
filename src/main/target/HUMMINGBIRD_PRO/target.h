@@ -78,13 +78,14 @@
 /* ======== OSD ======== */
 #define USE_MAX7456
 #define USE_MAX7456_SIM // For NBD7456
+#define USE_BEESIGN
+
+#undef USE_VTX_SMARTAUDIO
+#undef USE_VTX_TRAMP
 
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3
 
-#undef USE_VTX_TRAMP
-#undef USE_VTX_SMARTAUDIO
-#define USE_BEESIGN
 #define USE_BEESIGN_UART                SERIAL_PORT_USART1
 
 /* ======== RX ======== */
