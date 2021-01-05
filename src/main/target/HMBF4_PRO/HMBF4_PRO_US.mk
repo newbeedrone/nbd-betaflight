@@ -1,1 +1,0 @@
-# HMBF4_PRO_FRSKY_US is used mou6000, beesign, frsky and vtx lock
