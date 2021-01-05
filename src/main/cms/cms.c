@@ -804,7 +804,7 @@ long cmsMenuExit(displayPort_t *pDisplay, const void *ptr)
 
 #ifdef USE_OSD_BEESIGN
     displayCleanScreen(pDisplay);
-    #endif
+#endif
 
     if ((exitType == CMS_EXIT_SAVEREBOOT) || (exitType == CMS_POPUP_SAVEREBOOT) || (exitType == CMS_POPUP_EXITREBOOT)) {
         displayClearScreen(pDisplay);

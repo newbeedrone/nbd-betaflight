@@ -76,16 +76,18 @@
 #define GYRO_1_ALIGN                    CW0_DEG
 
 /* ======== OSD ======== */
-#define USE_MAX7456
-#define USE_MAX7456_SIM // For NBD7456
+// #define USE_MAX7456
+// #define USE_MAX7456_SIM // For NBD7456
 
-#define MAX7456_SPI_CS_PIN              PA15
-#define MAX7456_SPI_INSTANCE            SPI3
+// #define MAX7456_SPI_CS_PIN              PA15
+// #define MAX7456_SPI_INSTANCE            SPI3
 
 #undef USE_VTX_TRAMP
 #undef USE_VTX_SMARTAUDIO
 #define USE_BEESIGN
 #define USE_BEESIGN_UART                SERIAL_PORT_USART1
+#undef USE_MAX7456
+#define USE_OSD_BEESIGN
 
 /* ======== RX ======== */
 #define USE_RX_SPI

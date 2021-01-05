@@ -31,7 +31,7 @@
 #include "drivers/time.h"
 #include "drivers/display.h"
 
-#include "config/config.h"
+#include "fc/config.h"
 
 #include "io/displayport_beesign.h"
 #include "osd/osd.h"
@@ -80,19 +80,21 @@ static int screenSize(const displayPort_t *displayPort)
     return BEESIGN_CHARS_PER_SCREEN;
 }
 
-static int writeString(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t attr, const char *s)
+// static int writeString(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t attr, const char *s)
+static int writeString(displayPort_t *displayPort, uint8_t x, uint8_t y, const char *s)
 {
     UNUSED(displayPort);
-    UNUSED(attr);
+    // UNUSED(attr);
 
     bsWriteBuffRow(x, y, s);
     return 0;
 }
 
-static int writeChar(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t attr, uint8_t c)
+// static int writeChar(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t attr, uint8_t c)
+static int writeChar(displayPort_t *displayPort, uint8_t x, uint8_t y, uint8_t c)
 {
     UNUSED(displayPort);
-    UNUSED(attr);
+    // UNUSED(attr);
 
     bsWriteBuffChar(x, y, c);
     return 0;
