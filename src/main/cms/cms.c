@@ -803,7 +803,7 @@ long cmsMenuExit(displayPort_t *pDisplay, const void *ptr)
     currentCtx.menu = NULL;
 
 #ifdef USE_OSD_BEESIGN
-    displayClearScreen(pDisplay);
+    displayCleanScreen(pDisplay);
 #endif
 
     if ((exitType == CMS_EXIT_SAVEREBOOT) || (exitType == CMS_POPUP_SAVEREBOOT) || (exitType == CMS_POPUP_EXITREBOOT)) {

@@ -106,12 +106,6 @@ static uint8_t beesignCRC(const beesign_frame_t *pPackage)
     return crc;
 }
 
-static uint8_t beesignChkID(uint8_t id)
-{
-    UNUSED(id);
-    return BEESIGN_OK;
-}
-
 uint8_t beesignReceive(uint8_t **pRcvFrame)
 {
     if (!receiveFrameValid) {

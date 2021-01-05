@@ -760,20 +760,15 @@ void init(void)
     //The OSD need to be initialised after GYRO to avoid GYRO initialisation failure on some targets
 
     if (featureIsEnabled(FEATURE_OSD)) {
-#if defined(USE_MAX7456)
-        // If there is a max7456 chip for the OSD then use it
+#if defined(USE_OSD_BEESIGN)
+        if (use_beesign_flag) {
+            osdDisplayPort = beesignDisplayPortInit(vcdProfile());
+        }
+#elif defined(USE_MAX7456)
+    // If there is a max7456 chip for the OSD then use it
         osdDisplayPort = max7456DisplayPortInit(vcdProfile());
 #elif defined(USE_CMS) && defined(USE_MSP_DISPLAYPORT) && defined(USE_OSD_OVER_MSP_DISPLAYPORT) // OSD over MSP; not supported (yet)
         osdDisplayPort = displayPortMspInit();
-#elif defined(USE_OSD_BEESIGN)
-        if (use_beesign_flag) {
-            osdDisplayPort = beesignDisplayPortInit(vcdProfile());
-            if (osdDisplayPort || device == OSD_DISPLAYPORT_DEVICE_BEESIGN)
-            {
-                osdDisplayPortDevice = OSD_DISPLAYPORT_DEVICE_BEESIGN;
-                break;
-            }
-        }
 #endif
         // osdInit  will register with CMS by itself.
         osdInit(osdDisplayPort);

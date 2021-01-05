@@ -108,7 +108,7 @@ const uint8_t vtxBsPi[SPEKTRUM_VTX_POWER_COUNT] = {
     VTX_BS_POWER_200,                   // 100 - 299mW
     VTX_BS_POWER_400,                   // 300 - 600mW
     VTX_BS_POWER_600,                   // 601 - max
-    VTX_BS_POWER_MAN                    // Manual
+    VTX_BS_POWER_200                    // Manual
 };
 #endif // USE_VTX_BEESIGN
 
@@ -135,6 +135,12 @@ uint8_t convertSpektrumVtxPowerIndex(uint8_t sPower)
         devicePower = vtxTrampPi[sPower];
         break;
 #endif // USE_VTX_TRAMP
+
+#ifdef USE_VTX_BEESIGN
+    case VTXDEV_BEESIGN:
+        devicePower = vtxBsPi[sPower];
+        break;
+#endif // USE_VTX_BEESIGN
 
     case VTXDEV_UNKNOWN:
     case VTXDEV_UNSUPPORTED:

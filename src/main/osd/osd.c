@@ -333,12 +333,15 @@ static void osdDrawLogo(int x, int y)
         }
     } else
 #endif
-    // display logo and help
-    int fontOffset = 160;
-    for (int row = 0; row < 4; row++) {
-        for (int column = 0; column < 24; column++) {
-            if (fontOffset <= SYM_END_OF_FONT)
-                displayWriteChar(osdDisplayPort, x + column, y + row, fontOffset++);
+    {
+        // display logo and help
+        int fontOffset = 160;
+        for (int row = 0; row < 4; row++) {
+            for (int column = 0; column < 24; column++) {
+                if (fontOffset <= SYM_END_OF_FONT) {
+                    displayWriteChar(osdDisplayPort, x + column, y + row, fontOffset++);
+                }
+            }
         }
     }
 }
@@ -360,11 +363,11 @@ void osdInit(displayPort_t *osdDisplayPortToUse)
 
     osdResetAlarms();
 
-    displayClearScreen(osdDisplayPort);
-
 #ifdef USE_OSD_BEESIGN
+    displayCleanScreen(osdDisplayPort);
     osdDrawLogo(1, 0);
 #else
+    displayClearScreen(osdDisplayPort);
     osdDrawLogo(3, 1);
 #endif
 
@@ -820,17 +823,22 @@ static void osdRefreshStats(void)
         osdStatsRowCount = osdShowStats(0);
         // Then clear the screen and commence with normal stats display which will
         // determine if the heading should be displayed and also center the content vertically.
+#ifdef USE_OSD_BEESIGN
+        displayCleanScreen(osdDisplayPort);
+#else
         displayClearScreen(osdDisplayPort);
+#endif
     }
     osdShowStats(osdStatsRowCount);
 }
 
 static void osdShowArmed(void)
 {
-    displayClearScreen(osdDisplayPort);
 #ifdef USE_OSD_BEESIGN
+    displayCleanScreen(osdDisplayPort);
     displayWrite(osdDisplayPort, 9, 4, "ARMED");
 #else
+    displayClearScreen(osdDisplayPort);
     displayWrite(osdDisplayPort, 12, 7, "ARMED");
 #endif
 }

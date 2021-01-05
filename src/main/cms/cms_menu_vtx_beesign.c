@@ -50,8 +50,8 @@ static uint16_t bs_showFreq;
 static uint8_t bs_vtxPower;
 static uint8_t bs_vtxmode;
 
-static uint8_t porModeStr[10] = {"  POR MODE"};
-static uint8_t porModeFREQStr[10] = {"      5584"};
+static uint8_t porModeStr[] = {"  POR MODE"};
+static uint8_t porModeFREQStr[] = {"      5584"};
 
 static OSD_TAB_t bsEntryVtxMode = {&bs_vtxmode, BEESIGN_VTX_MODE_COUNT - 1, &bsModeNames[0]};
 static OSD_TAB_t bsEntryVtxBand;
@@ -59,26 +59,6 @@ static OSD_TAB_t bsEntryVtxChannel;
 static OSD_UINT16_t bsEntryVtxFreq = {&bs_vtxFreq, BEESIGN_MIN_FREQUENCY_MHZ, BEESIGN_MAX_FREQUENCY_MHZ, 1};
 static OSD_UINT16_t bsShowVtxFreq = {&bs_showFreq, BEESIGN_MIN_FREQUENCY_MHZ, BEESIGN_MAX_FREQUENCY_MHZ, 0};
 static OSD_TAB_t bsEntryVtxPower;
-
-CMS_Menu cmsx_menuVtxBeesign = {
-#ifdef CMS_MENU_DEBUG
-    .GUARD_text = "VTXBS",
-    .GUARD_type = OME_MENU,
-#endif
-    .onEnter = bs_Vtx_onEnter,
-    .onExit = bs_Vtx_onExit,
-    .entries = bsCmsMenuRaceModeEntries
-};
-
-CMS_Menu cmsx_menuVtxBsMode = {
-#ifdef CMS_MENU_DEBUG
-    .GUARD_text = "VTXBS",
-    .GUARD_type = OME_MENU,
-#endif
-    .onEnter = bs_Vtx_onEnter,
-    .onExit = bsCmsConfigMode,
-    .entries = bsCmsMenuModeEntries
-};
 
 static long bsCmsConfigMode(const OSD_Entry *self);
 static long bs_Vtx_onEnter(void);
@@ -169,6 +149,26 @@ static long bsCmsConfigPorSave(displayPort_t *pDisp, const void *self)
     return 0;
 }
 
+static long bs_Vtx_onEnter(void)
+{
+    bs_vtxmode = bsDevice.mode;
+    bs_Vtx_ConfigRead();
+
+    bsEntryVtxBand.val = &bs_vtxBand;
+    bsEntryVtxBand.max = vtxTableBandCount;
+    bsEntryVtxBand.names = vtxTableBandNames;
+
+    bsEntryVtxChannel.val = &bs_vtxChannel;
+    bsEntryVtxChannel.max = vtxTableChannelCount;
+    bsEntryVtxChannel.names = vtxTableChannelNames;
+
+    bsEntryVtxPower.val = &bs_vtxPower;
+    bsEntryVtxPower.max = vtxTablePowerLevels;
+    bsEntryVtxPower.names = vtxTablePowerLabels;
+
+    return 0;
+}
+
 static long bs_Vtx_onExit(const OSD_Entry *self)
 {
     UNUSED(self);
@@ -176,45 +176,62 @@ static long bs_Vtx_onExit(const OSD_Entry *self)
     return 0;
 }
 
-static OSD_Entry bsCmsMenuModeEntries[] =
-    {
-        {"--- BEESIGN MODE ---",    OME_Label,  NULL,   NULL,   0},
-        {"MODE",        OME_TAB,        NULL,                   &bsEntryVtxMode,        0},
-        {"BACK",        OME_Back,       NULL,                   NULL,                   0},
-        {NULL,          OME_END,        NULL,                   NULL,                   0}};
-
-static OSD_Entry bsCmsMenuRaceModeEntries[] =
-    {
-        {"--- BEESIGN RACE---",     OME_Label,  NULL,   NULL,   0},
-        {"BAND",        OME_TAB,        bsCmsConfigBandByGvar,  &bsEntryVtxBand,        0},
-        {"CHANNEL",     OME_TAB,        bsCmsConfigBandByGvar,  &bsEntryVtxChannel,     0},
-        {"POWER",       OME_TAB,        NULL,                   &bsEntryVtxPower,       0},
-        {"(FREQ)",      OME_UINT16,     bsCmsConfigBandByGvar,  &bsShowVtxFreq,         DYNAMIC},
-        {"SAVE",        OME_Funcall,    bsCmsConfigRaceSave,    NULL,                   0},
-        {"BACK",        OME_Back,       NULL,                   NULL,                   0},
-        {NULL,          OME_END,        NULL,                   NULL,                   0}
+static OSD_Entry bsCmsMenuModeEntries[] = {
+    {"--- BEESIGN MODE ---",    OME_Label,  NULL,   NULL,   0},
+    {"MODE",        OME_TAB,        NULL,                   &bsEntryVtxMode,        0},
+    {"BACK",        OME_Back,       NULL,                   NULL,                   0},
+    {NULL,          OME_END,        NULL,                   NULL,                   0}
 };
 
-static OSD_Entry bsCmsMenuManualModeEntries[] =
-    {
-        {"--- BEESIGN MAMUAL---",   OME_Label,  NULL,   NULL,   0},
-        {"MODE",        OME_Submenu,    cmsMenuChange,          &cmsx_menuVtxBsMode,    0},
-        {"FREQ",        OME_UINT16,     NULL,                   &bsEntryVtxFreq,        0},
-        {"POWER",       OME_TAB,        NULL,                   &bsEntryVtxPower,       0},
-        {"SAVE",        OME_Funcall,    bsCmsConfigManualSave,  NULL,                   0},
-        {"BACK",        OME_Back,       NULL,                   NULL,                   0},
-        {NULL,          OME_END,        NULL,                   NULL,                   0}
+CMS_Menu cmsx_menuVtxBsMode = {
+#ifdef CMS_MENU_DEBUG
+    .GUARD_text = "VTXBS",
+    .GUARD_type = OME_MENU,
+#endif
+    .onEnter = bs_Vtx_onEnter,
+    .onExit = bsCmsConfigMode,
+    .entries = bsCmsMenuModeEntries
 };
 
-static OSD_Entry bsCmsMenuPorModeEntries[] =
-    {
-        {"--- BEESIGN POR---",      OME_Label,  NULL,   NULL,   0},
-        {"MODE",        OME_Submenu,    cmsMenuChange,          &cmsx_menuVtxBsMode,    0},
-        {"(FREQ)",      OME_String,     NULL,                   &porModeFREQStr,        0},
-        {"(POWER)",     OME_String,     NULL,                   &porModeStr,            0},
-        {"SAVE",        OME_Funcall,    bsCmsConfigPorSave,     NULL,                   0},
-        {"BACK",        OME_Back,       NULL,                   NULL,                   0},
-        {NULL,          OME_END,        NULL,                   NULL,                   0}
+static OSD_Entry bsCmsMenuRaceModeEntries[] = {
+    {"--- BEESIGN RACE---",     OME_Label,  NULL,   NULL,   0},
+    {"BAND",        OME_TAB,        bsCmsConfigBandByGvar,  &bsEntryVtxBand,        0},
+    {"CHANNEL",     OME_TAB,        bsCmsConfigBandByGvar,  &bsEntryVtxChannel,     0},
+    {"POWER",       OME_TAB,        NULL,                   &bsEntryVtxPower,       0},
+    {"(FREQ)",      OME_UINT16,     bsCmsConfigBandByGvar,  &bsShowVtxFreq,         DYNAMIC},
+    {"SAVE",        OME_Funcall,    bsCmsConfigRaceSave,    NULL,                   0},
+    {"BACK",        OME_Back,       NULL,                   NULL,                   0},
+    {NULL,          OME_END,        NULL,                   NULL,                   0}
+};
+
+static OSD_Entry bsCmsMenuManualModeEntries[] = {
+    {"--- BEESIGN MAMUAL---",   OME_Label,  NULL,   NULL,   0},
+    {"MODE",        OME_Submenu,    cmsMenuChange,          &cmsx_menuVtxBsMode,    0},
+    {"FREQ",        OME_UINT16,     NULL,                   &bsEntryVtxFreq,        0},
+    {"POWER",       OME_TAB,        NULL,                   &bsEntryVtxPower,       0},
+    {"SAVE",        OME_Funcall,    bsCmsConfigManualSave,  NULL,                   0},
+    {"BACK",        OME_Back,       NULL,                   NULL,                   0},
+    {NULL,          OME_END,        NULL,                   NULL,                   0}
+};
+
+static OSD_Entry bsCmsMenuPorModeEntries[] = {
+    {"--- BEESIGN POR---",      OME_Label,  NULL,   NULL,   0},
+    {"MODE",        OME_Submenu,    cmsMenuChange,          &cmsx_menuVtxBsMode,    0},
+    {"(FREQ)",      OME_String,     NULL,                   &porModeFREQStr,        0},
+    {"(POWER)",     OME_String,     NULL,                   &porModeStr,            0},
+    {"SAVE",        OME_Funcall,    bsCmsConfigPorSave,     NULL,                   0},
+    {"BACK",        OME_Back,       NULL,                   NULL,                   0},
+    {NULL,          OME_END,        NULL,                   NULL,                   0}
+};
+
+CMS_Menu cmsx_menuVtxBeesign = {
+#ifdef CMS_MENU_DEBUG
+    .GUARD_text = "VTXBS",
+    .GUARD_type = OME_MENU,
+#endif
+    .onEnter = bs_Vtx_onEnter,
+    .onExit = bs_Vtx_onExit,
+    .entries = bsCmsMenuRaceModeEntries
 };
 
 static long bsCmsConfigMode(const OSD_Entry *self)
@@ -235,26 +252,6 @@ static long bsCmsConfigMode(const OSD_Entry *self)
             cmsx_menuVtxBeesign.entries = bsCmsMenuRaceModeEntries;
             break;
     }
-    return 0;
-}
-
-static long bs_Vtx_onEnter(void)
-{
-    bs_vtxmode = bsDevice.mode;
-    bs_Vtx_ConfigRead();
-
-    bsEntryVtxBand.val = &bs_vtxBand;
-    bsEntryVtxBand.max = vtxTableBandCount;
-    bsEntryVtxBand.names = vtxTableBandNames;
-
-    bsEntryVtxChannel.val = &bs_vtxChannel;
-    bsEntryVtxChannel.max = vtxTableChannelCount;
-    bsEntryVtxChannel.names = vtxTableChannelNames;
-
-    bsEntryVtxPower.val = &bs_vtxPower;
-    bsEntryVtxPower.max = vtxTablePowerLevels;
-    bsEntryVtxPower.names = vtxTablePowerLabels;
-
     return 0;
 }
 
