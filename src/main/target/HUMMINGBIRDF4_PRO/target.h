@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird Pro Rev_C"
-#define USBD_PRODUCT_STRING             "HummingBird Pro"
+#define TARGET_BOARD_IDENTIFIER         "HummingBirdF4 Pro Rev_C"
+#define USBD_PRODUCT_STRING             "HummingBirdF4 Pro"
 
 #define USE_TARGET_CONFIG
 

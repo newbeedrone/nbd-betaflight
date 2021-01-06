@@ -51,7 +51,7 @@
 
 void targetConfiguration(void)
 {
-    strcpy(pilotConfigMutable()->name, "HMB Pro");
+    strcpy(pilotConfigMutable()->name, "HMBF4 Pro");
 
     imuConfigMutable()->small_angle = 180;
 
