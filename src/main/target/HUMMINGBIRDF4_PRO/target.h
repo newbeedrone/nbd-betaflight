@@ -79,6 +79,7 @@
 #define USE_MAX7456
 #define USE_MAX7456_SIM // For NBD7456
 #define USE_BEESIGN
+#define USE_VTX_BEESIGN
 
 #undef USE_VTX_SMARTAUDIO
 #undef USE_VTX_TRAMP
