@@ -51,13 +51,81 @@
 
 void targetConfiguration(void)
 {
+#ifdef USE_VTX_TABLE
+    const uint16_t vtxTablePowerValues[VTX_TABLE_MAX_POWER_LEVELS] = {0, 1};
+    const char *vtxTablePowerLabels[VTX_TABLE_MAX_POWER_LEVELS] = {"10", "25"};
+    vtxTableConfigMutable()->powerLevels = 2;
+
+    #if defined(USE_VTX_US_TABLE)
+        const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
+            {5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725}, // Boscam A
+            {5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866}, // Boscam B
+            {5705, 5685, 5665,    0, 5885, 5905,    0,    0}, // Boscam E
+            {5740, 5760, 5780, 5800, 5820, 5840, 5860, 5880}, // FatShark
+            {5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917}, // RaceBand
+            {5732, 5765, 5828, 5840, 5866, 5740,    0,    0}, // IMD6
+        };
+        const char *vtxTableBandNames[VTX_TABLE_MAX_BANDS] = {
+            "BOSCAM_A", "BOSCAM_B", "BOSCAM_E", "FATSHARK", "RACEBAND", "    IMD6",
+        };
+        const char vtxTableBandLetters[VTX_TABLE_MAX_BANDS] = "ABEFRI";
+        const char *vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS] = {
+            "1", "2", "3", "4", "5", "6", "7", "8",
+        };
+        vtxTableConfigMutable()->bands = 6;
+        vtxTableConfigMutable()->channels = 8;
+
+    #else
+        const uint16_t vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS] = {
+            {5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725}, // Boscam A
+            {5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866}, // Boscam B
+            {5705, 5685, 5665, 5645, 5885, 5905, 5925, 5945}, // Boscam E
+            {5740, 5760, 5780, 5800, 5820, 5840, 5860, 5880}, // FatShark
+            {5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917}, // RaceBand
+            {5732, 5765, 5828, 5840, 5866, 5740,    0,    0}, // IMD6
+        };
+        const char *vtxTableBandNames[VTX_TABLE_MAX_BANDS] = {
+            "BOSCAM_A", "BOSCAM_B", "BOSCAM_E", "FATSHARK", "RACEBAND", "    IMD6",
+        };
+        const char vtxTableBandLetters[VTX_TABLE_MAX_BANDS] = "ABEFRI";
+        const char *vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS] = {
+            "1", "2", "3", "4", "5", "6", "7", "8",
+        };
+        vtxTableConfigMutable()->bands = 6;
+        vtxTableConfigMutable()->channels = 8;
+
+    #endif
+
+    for (int band = 0; band < VTX_TABLE_MAX_BANDS; band++) {
+        for (int channel = 0; channel < VTX_TABLE_MAX_CHANNELS; channel++) {
+            vtxTableConfigMutable()->frequency[band][channel] = vtxTableFrequency[band][channel];
+        }
+        vtxTableStrncpyWithPad(vtxTableConfigMutable()->bandNames[band], vtxTableBandNames[band], VTX_TABLE_BAND_NAME_LENGTH);
+        vtxTableConfigMutable()->bandLetters[band] = vtxTableBandLetters[band];
+    }
+
+    for (int channel = 0; channel < VTX_TABLE_MAX_CHANNELS; channel++) {
+        vtxTableStrncpyWithPad(vtxTableConfigMutable()->channelNames[channel], vtxTableChannelNames[channel], VTX_TABLE_CHANNEL_NAME_LENGTH);
+    }
+
+    for (int level = 0; level < VTX_TABLE_MAX_POWER_LEVELS; level++) {
+        vtxTableConfigMutable()->powerValues[level] = vtxTablePowerValues[level];
+        vtxTableStrncpyWithPad(vtxTableConfigMutable()->powerLabels[level], vtxTablePowerLabels[level], VTX_TABLE_POWER_LABEL_LENGTH);
+    }
+
+    for (int band = 0; band < VTX_TABLE_MAX_BANDS; band++) {
+        vtxTableConfigMutable()->isFactoryBand[band] = false;
+    }
+
+#endif /* USE_VTX_TABLE */
+
     strcpy(pilotConfigMutable()->name, "HMBF4 Pro");
 
     imuConfigMutable()->small_angle = 180;
 
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
-    vtxSettingsConfigMutable()->power = 2;
+    vtxSettingsConfigMutable()->power = 1;
 
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
 
