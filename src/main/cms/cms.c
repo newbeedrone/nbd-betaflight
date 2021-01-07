@@ -1239,7 +1239,7 @@ static void cmsUpdate(uint32_t currentTimeUs)
             }
         }
 
-        if (currentCtx.menu != NULL){
+        if (currentCtx.menu != NULL) {
             cmsDrawMenu(pCurrentDisplay, currentTimeUs);
         }
 

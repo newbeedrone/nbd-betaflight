@@ -59,7 +59,6 @@ bool cliMode = false;
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/adc.h"
-#include "drivers/beesign.h"
 #include "drivers/buf_writer.h"
 #include "drivers/bus_spi.h"
 #include "drivers/dma.h"
@@ -93,6 +92,7 @@ bool cliMode = false;
 #include "drivers/usb_msc.h"
 #include "drivers/vtx_common.h"
 #include "drivers/vtx_table.h"
+#include "drivers/beesign.h"
 
 #include "fc/board_info.h"
 #include "fc/config.h"
@@ -119,9 +119,9 @@ bool cliMode = false;
 #include "io/serial.h"
 #include "io/transponder_ir.h"
 #include "io/usb_msc.h"
-#include "io/vtx_beesign.h"
 #include "io/vtx_control.h"
 #include "io/vtx.h"
+#include "io/vtx_beesign.h"
 
 #include "msp/msp.h"
 #include "msp/msp_box.h"
@@ -1446,7 +1446,7 @@ static void cliSerialPassthrough(char *cmdline)
 
             *port = openSerialPort(ports[i].id, FUNCTION_NONE, NULL, NULL,
                                             ports[i].baud, ports[i].mode,
-                                            SERIAL_NOT_INVERTED|SERIAL_BIDIR);
+                                            SERIAL_NOT_INVERTED);
             if (!*port) {
                 cliPrintLinef("Port%d could not be opened.", portIndex);
                 return;
@@ -5974,19 +5974,6 @@ static void cliDshotTelemetryInfo(char *cmdline)
 }
 #endif
 
-#ifdef USE_VTX_BEESIGN
-static void beesignSetVTxLock(char *cmdline) {
-    UNUSED(cmdline);
-    bsSetVTxLock();
-    cliPrintLine("beesign vtx lock success");
-}
-static void beesignSetVTxUnlock(char *cmdline) {
-    UNUSED(cmdline);
-    bsSetVTxUnlock();
-    cliPrintLine("beesign vtx unlock success");
-}
-#endif // USE_VTX_BEESIGN
-
 static void printConfig(char *cmdline, bool doDiff)
 {
     dumpFlags_t dumpMask = DUMP_MASTER;
@@ -6230,6 +6217,21 @@ static void cliMsc(char *cmdline)
     }
 }
 #endif
+
+#ifdef USE_VTX_BEESIGN
+static void beesignSetVTxLock(char *cmdline)
+{
+    UNUSED(cmdline);
+    bsSetVTxLock();
+    cliPrintLine("beesign vtx lock success");
+}
+static void beesignSetVTxUnlock(char *cmdline)
+{
+    UNUSED(cmdline);
+    bsSetVTxUnlock();
+    cliPrintLine("beesign vtx unlock success");
+}
+#endif // USE_VTX_BEESIGN
 
 
 typedef struct {

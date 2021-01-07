@@ -331,17 +331,16 @@ static void osdDrawLogo(int x, int y)
         for (column = 7; column < 24; column++) {
             displayWriteChar(osdDisplayPort, x + column, y + 3, 0xC0);
         }
-    } else 
+    } else
 #endif
     {
         // display logo and help
         int fontOffset = 160;
-        for (int row = 0; row < 4; row++)
-        {
-            for (int column = 0; column < 24; column++)
-            {
-                if (fontOffset <= SYM_END_OF_FONT)
+        for (int row = 0; row < 4; row++) {
+            for (int column = 0; column < 24; column++) {
+                if (fontOffset <= SYM_END_OF_FONT) {
                     displayWriteChar(osdDisplayPort, x + column, y + row, fontOffset++);
+                }
             }
         }
     }
@@ -364,11 +363,11 @@ void osdInit(displayPort_t *osdDisplayPortToUse)
 
     osdResetAlarms();
 
-    displayClearScreen(osdDisplayPort);
-
 #ifdef USE_OSD_BEESIGN
+    displayCleanScreen(osdDisplayPort);
     osdDrawLogo(1, 0);
 #else
+    displayClearScreen(osdDisplayPort);
     osdDrawLogo(3, 1);
 #endif
 
@@ -835,10 +834,11 @@ static void osdRefreshStats(void)
 
 static void osdShowArmed(void)
 {
-    displayClearScreen(osdDisplayPort);
 #ifdef USE_OSD_BEESIGN
+    displayCleanScreen(osdDisplayPort);
     displayWrite(osdDisplayPort, 9, 4, "ARMED");
 #else
+    displayClearScreen(osdDisplayPort);
     displayWrite(osdDisplayPort, 12, 7, "ARMED");
 #endif
 }
@@ -971,11 +971,10 @@ void osdUpdate(timeUs_t currentTimeUs)
     }
 #endif
 
-
     // redraw values in buffer
 #ifdef USE_MAX7456
 #define DRAW_FREQ_DENOM 5
-#else //MWOSD and BEESIGN
+#else
 #define DRAW_FREQ_DENOM 10 // MWOSD @ 115200 baud (
 #endif
 #define STATS_FREQ_DENOM    50

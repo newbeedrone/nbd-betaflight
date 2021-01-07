@@ -546,7 +546,7 @@ static bool mspCommonProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst, mspPostProce
 #else
         sbufWriteU16(dst, 0); // No other build targets currently have hardware revision detection.
 #endif
-#if defined(USE_MAX7456) || defined(USE_USE_BEESIGN)
+#if defined(USE_MAX7456) || defined(USE_BEESIGN)
         sbufWriteU8(dst, 2);  // 2 == FC with MAX7456
 #else
         sbufWriteU8(dst, 0);  // 0 == FC
@@ -823,10 +823,8 @@ static bool mspCommonProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst, mspPostProce
 
         sbufWriteU8(dst, osdFlags);
 
-#ifdef USE_MAX7456
+#if defined(USE_MAX7456) || defined(USE_OSD_BEESIGN)
         // send video system (AUTO/PAL/NTSC)
-        sbufWriteU8(dst, vcdProfile()->video_system);
-#elif defined(USE_OSD_BEESIGN)
         sbufWriteU8(dst, vcdProfile()->video_system);
 #else
         sbufWriteU8(dst, 0);
@@ -3197,9 +3195,7 @@ static mspResult_e mspCommonProcessInCommand(mspDescriptor_t srcDesc, uint8_t cm
 
             if ((int8_t)addr == -1) {
                 /* Set general OSD settings */
-#ifdef USE_MAX7456
-                vcdProfileMutable()->video_system = sbufReadU8(src);
-#elif defined(USE_OSD_BEESIGN)
+#if defined(USE_MAX7456) || defined(USE_OSD_BEESIGN)
                 vcdProfileMutable()->video_system = sbufReadU8(src);
 #else
                 sbufReadU8(src); // Skip video system
