@@ -142,7 +142,7 @@ static long bsCmsConfigPorSave(displayPort_t *pDisp, const void *self)
     bsSetVtxMode(BEESIGN_VTX_POR_MODE);
     vtxSettingsConfigMutable()->band = 0;
     vtxSettingsConfigMutable()->channel = bs_vtxChannel;
-    vtxSettingsConfigMutable()->power = VTX_PWR_PIT;
+    vtxSettingsConfigMutable()->power = (uint8_t)BEESIGN_VTX_PWR_PIT;
     vtxSettingsConfigMutable()->freq = BEESIGN_POR_FREQUENCY_MHZ;
     saveConfigAndNotify();
 

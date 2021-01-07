@@ -46,7 +46,7 @@
 #include "io/vtx_beesign.h"
 
 #if defined(USE_CMS) || defined(USE_VTX_COMMON)
-const uint16_t bsPowerTable[BEESIGN_POWER_COUNT - BEESIGN_DEFAULT_POWER] = {
+const uint16_t bsPowerTable[(uint8_t)BEESIGN_POWER_COUNT - BEESIGN_DEFAULT_POWER] = {
     25, 100, 200, 400, 600
 };
 
@@ -98,7 +98,7 @@ static void vtxBSSetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
     UNUSED(vtxDevice);
     if (onoff) {
         bsDevice.lastPower = bsDevice.power;
-        vtxSettingsConfigMutable()->power = VTX_PWR_PIT + BEESIGN_MIN_POWER; // pit mode
+        vtxSettingsConfigMutable()->power = ((uint8_t)BEESIGN_VTX_PWR_PIT + BEESIGN_MIN_POWER); // pit mode
     } else {
         vtxSettingsConfigMutable()->power = bsDevice.lastPower;
     }
@@ -152,7 +152,7 @@ static bool vtxBSGetPitMode(const vtxDevice_t *vtxDevice, unsigned *status)
         return false;
     }
 
-    if (bsDevice.power == VTX_PWR_PIT + BEESIGN_MIN_POWER) {
+    if (bsDevice.power == ((uint8_t)BEESIGN_VTX_PWR_PIT + BEESIGN_MIN_POWER)) {
         *status = 1;
     } else {
         *status = 0;

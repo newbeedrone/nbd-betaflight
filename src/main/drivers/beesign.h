@@ -23,132 +23,131 @@
 #include <stdint.h>
 #include "time.h"
 
-#define BEESIGN_MIN_BAND        1
-#define BEESIGN_MAX_BAND        5
-#define BEESIGN_MIN_CHANNEL     1
-#define BEESIGN_MAX_CHANNEL     8
+#define BEESIGN_BAUD_RATE               115200
+
+#define BEESIGN_MIN_BAND                1
+#define BEESIGN_MAX_BAND                5
+#define BEESIGN_MIN_CHANNEL             1
+#define BEESIGN_MAX_CHANNEL             8
 
 #define BEESIGN_VTX_RACE_MODE           0
 #define BEESIGN_VTX_MANUAL_MODE         1
 #define BEESIGN_VTX_POR_MODE            2
 #define BEESIGN_VTX_MODE_COUNT          1
 
-#define BEESIGN_BAND_COUNT          (BEESIGN_MAX_BAND - BEESIGN_MIN_BAND + 1)
-#define BEESIGN_CHANNEL_COUNT       (BEESIGN_MAX_CHANNEL - BEESIGN_MIN_CHANNEL + 1)
-#define BEESIGN_ERROR_CHANNEL       0xff
+#define BEESIGN_BAND_COUNT              (BEESIGN_MAX_BAND - BEESIGN_MIN_BAND + 1)
+#define BEESIGN_CHANNEL_COUNT           (BEESIGN_MAX_CHANNEL - BEESIGN_MIN_CHANNEL + 1)
+#define BEESIGN_ERROR_CHANNEL           0xff
 
 #define BEESIGN_CMD_ADD_BUFF            0
 #define BEESIGN_CMD_SEND                1
 
-#define VTX_PWR_25                  0
-#define VTX_PWR_100                 1
-#define VTX_PWR_200                 2
-#define VTX_PWR_400                 3
-#define VTX_PWR_600                 4
-#define VTX_PWR_PIT                 5
-#define BEESIGN_POWER_COUNT         6
+#define BEESIGN_DEFAULT_POWER           1
+#define BEESIGN_MIN_POWER               1
 
-#define BEESIGN_DEFAULT_POWER       1
-#define BEESIGN_MIN_POWER           1
+#define BEESIGN_POR_FREQUENCY_MHZ       5584
 
-#define BEESIGN_POR_FREQUENCY_MHZ 5584
+#define BEESIGN_MIN_FREQUENCY_MHZ       5000 //min freq in MHz
+#define BEESIGN_MAX_FREQUENCY_MHZ       5999 //max freq in MHz
 
-#define BEESIGN_MIN_FREQUENCY_MHZ 5000        //min freq in MHz
-#define BEESIGN_MAX_FREQUENCY_MHZ 5999        //max freq in MHz
+#define BEESIGN_HDR                     0xAB
+#define BEESIGN_FM_MAX_LEN              64 // frame max length
+#define BEESIGN_PL_MAX_LEN              60 // payload max length
 
-#define BEESIGN_HDR             0xAB
-#define BEESIGN_FM_MAX_LEN      64      // frame max length
-#define BEESIGN_PL_MAX_LEN      60      // payload max length
+#define BEESIGN_TYPE_MASK_FM            0x80  // Bit - 7
+#define BEESIGN_TYPE_MASK_CMD           0x7F // Bit - 1 ~ 6
 
-#define BEESIGN_BAUD_RATE       115200
+#define BEESIGN_FM_TYPE_CMD             0 // command frame
+#define BEESIGN_FM_TYPE_RSP             1 // response frame
 
-#define BEESIGN_OK              0
-#define BEESIGN_ERROR           1
+#define BEESIGN_PARA_DISP_OFF           0
+#define BEESIGN_PARA_DISP_ON            1
 
-#define BEESIGN_TYPE_MASK_FM    0x80    // Bit - 7
-#define BEESIGN_TYPE_MASK_CMD   0x7F    // Bit - 1 ~ 6
+#define BEESIGN_VOL_SRC_ADC             1
+#define BEESIGN_VOL_SRC_EXT             2
+#define BEESIGN_RSSI_SRC_ADC            1
+#define BEESIGN_RSSI_SRC_EXT            2
+#define BEESIGN_RSSI_SRC_RX             3
 
-#define BEESIGN_FM_TYPE_CMD     0       // command frame
-#define BEESIGN_FM_TYPE_RSP     1       // response frame
+#define BEESIGN_VTX_MODE_RACE           0
+#define BEESIGN_VTX_MODE_MANU           1
+#define BEESIGN_VTX_MODE_POR            2
 
-#define BEESIGN_PARA_DISP_OFF   0
-#define BEESIGN_PARA_DISP_ON    1
+#define BEESIGN_VTX_MAX_CHAN            40
+#define BEESIGN_VTX_POR_FREQ            5584
+#define BEESIGN_VTX_UNLOCK              0x403C
+#define BEESIGN_VTX_LOCK                0x403D
 
-#define BEESIGN_VOL_SRC_ADC     1
-#define BEESIGN_VOL_SRC_EXT     2
-#define BEESIGN_RSSI_SRC_ADC    1
-#define BEESIGN_RSSI_SRC_EXT    2
-#define BEESIGN_RSSI_SRC_RX     3
+#define BEESIGN_OSD_MODE_OFF            0
+#define BEESIGN_OSD_MODE_MINI           1
+#define BEESIGN_OSD_MODE_CUSTOM         2
 
-#define BEESIGN_VTX_MODE_RACE   0
-#define BEESIGN_VTX_MODE_MANU   1
-#define BEESIGN_VTX_MODE_POR    2
+#define BEESIGN_OSD_HOS_MAX             63
+#define BEESIGN_OSD_VOS_MAX             31
 
-#define BEESIGN_VTX_UNLOCK      0x403C
-#define BEESIGN_VTX_LOCK        0x403D
-#define BEESIGN_VTX_MAX_CHAN    40
-#define BEESIGN_VTX_POR_FREQ    5584
+#define BEESIGN_CHARS_PER_SCREEN        250
 
-#define BEESIGN_OSD_MODE_OFF        0
-#define BEESIGN_OSD_MODE_MINI       1
-#define BEESIGN_OSD_MODE_CUSTOM     2
-
-#define BEESIGN_OSD_HOS_MAX         63
-#define BEESIGN_OSD_VOS_MAX         31
-
-#define BEESIGN_CHARS_PER_SCREEN         250
-
-#define BEESIGN_CHARS_MAX                   0xBF
-#define BEESIGN_CHARS_UNLOCK_ADDR_MIN       0xA0
-#define BEESIGN_CHARS_UNLOCK                0xABBA
-#define BEESIGN_CHARS_FONT_LEN              36
-#define BEESIGN_CHARS_PER_LINE              25
-#define BEESIGN_LINES_PER_SCREEN            10
-
+#define BEESIGN_CHARS_MAX               0xBF
+#define BEESIGN_CHARS_UNLOCK_ADDR_MIN   0xA0
+#define BEESIGN_CHARS_FONT_LEN          36
+#define BEESIGN_CHARS_PER_LINE          25
+#define BEESIGN_LINES_PER_SCREEN        10
+#define BEESIGN_CHARS_UNLOCK            0xABBA
 
 // VTX commands
-#define BEESIGN_V_GET_STATUS    0x10
-#define BEESIGN_V_SET_CHAN      0x11
-#define BEESIGN_V_SET_FREQ      0x12
-#define BEESIGN_V_SET_PWR       0x13
-#define BEESIGN_V_SET_MODE      0x14
-#define BEESIGN_V_UNLOCK        0x15
-#define BEESIGN_V_LOCK          0x16
+#define BEESIGN_V_GET_STATUS            0x10
+#define BEESIGN_V_SET_CHAN              0x11
+#define BEESIGN_V_SET_FREQ              0x12
+#define BEESIGN_V_SET_PWR               0x13
+#define BEESIGN_V_SET_MODE              0x14
+#define BEESIGN_V_UNLOCK                0x15
+#define BEESIGN_V_LOCK                  0x16
 
 // OSD commands
-#define BEESIGN_O_GET_STATUS    0x20
-#define BEESIGN_O_SET_MODE      0x21
-#define BEESIGN_O_SET_LAYOUT    0x22
-#define BEESIGN_O_SET_HOS       0x23
-#define BEESIGN_O_SET_VOS       0x24
-#define BEESIGN_O_SET_DISPLAY   0x25
-#define BEESIGN_O_CLR_DISPLAY   0x26
-#define BEESIGN_O_UDT_FONT      0x27
-#define BEESIGN_O_FONT_UNLOCK   0x29
+#define BEESIGN_O_GET_STATUS            0x20
+#define BEESIGN_O_SET_MODE              0x21
+#define BEESIGN_O_SET_LAYOUT            0x22
+#define BEESIGN_O_SET_HOS               0x23
+#define BEESIGN_O_SET_VOS               0x24
+#define BEESIGN_O_SET_DISPLAY           0x25
+#define BEESIGN_O_CLR_DISPLAY           0x26
+#define BEESIGN_O_UDT_FONT              0x27
+#define BEESIGN_O_FONT_UNLOCK           0x29
 
 // Audio commands
-#define BEESIGN_A_GET_STATUS    0x30
-#define BEESIGN_A_SET_VOL       0x31
-#define BEESIGN_A_SET_RSSI      0x32
+#define BEESIGN_A_GET_STATUS            0x30
+#define BEESIGN_A_SET_VOL               0x31
+#define BEESIGN_A_SET_RSSI              0x32
 
 // Other commands
-#define BEESIGN_S_GET_STATUS    0x70
-#define BEESIGN_S_SET_VOL       0x71
-#define BEESIGN_S_SET_RSSI      0x72
-#define BEESIGN_M_SET_NAME      0x73
-#define BEESIGN_M_SET_VOL       0x74
-#define BEESIGN_M_SET_CUR       0x75
-#define BEESIGN_M_SET_RSSI      0x76
-#define BEESIGN_M_SAVE_SETTING  0x77
+#define BEESIGN_S_GET_STATUS            0x70
+#define BEESIGN_S_SET_VOL               0x71
+#define BEESIGN_S_SET_RSSI              0x72
+#define BEESIGN_M_SET_NAME              0x73
+#define BEESIGN_M_SET_VOL               0x74
+#define BEESIGN_M_SET_CUR               0x75
+#define BEESIGN_M_SET_RSSI              0x76
+#define BEESIGN_M_SAVE_SETTING          0x77
 
+#define BEESIGN_PKT_TYPE(x)             (x)[1]
+#define BEESIGN_PKT_LEN(x)              (x)[2]
+#define BEESIGN_PKT_DATA(x, i)          (x)[3 + (i)]
 
-#define BEESIGN_PKT_TYPE(x)     (x)[1]
-#define BEESIGN_PKT_LEN(x)      (x)[2]
-#define BEESIGN_PKT_DATA(x, i)  (x)[3 + (i)]
-
-#define BS_DEVICE_CHVAL_TO_BAND(val) ((val) / (uint8_t)8)
+#define BS_DEVICE_CHVAL_TO_BAND(val)    ((val) / (uint8_t)8)
 #define BS_DEVICE_CHVAL_TO_CHANNEL(val) ((val) % (uint8_t)8)
 #define BS_BANDCHAN_TO_DEVICE_CHVAL(band, channel) ((band) * (uint8_t)8 + (channel))
+
+typedef enum { BEESIGN_OK = 0, BEESIGN_ERROR = !BEESIGN_OK } beesignFail_e;
+
+typedef enum {
+    BEESIGN_VTX_PWR_25 = 0,
+    BEESIGN_VTX_PWR_100,
+    BEESIGN_VTX_PWR_200,
+    BEESIGN_VTX_PWR_400,
+    BEESIGN_VTX_PWR_600,
+    BEESIGN_VTX_PWR_PIT,
+    BEESIGN_POWER_COUNT
+} beesignVtxPower_e;
 
 /***********************************************
  * The data frame have five parts: header, type, length, payload and CRC, and the maxium length is 64 bytes.
@@ -161,7 +160,8 @@
  * |------------------------------------------------------------------------------------------|
  *
 ************************************************/
-typedef struct BEESIGN_FRAME_T {
+typedef struct BEESIGN_FRAME_T
+{
     uint8_t hdr;
     uint8_t type;
     uint8_t len;
@@ -169,7 +169,8 @@ typedef struct BEESIGN_FRAME_T {
     uint8_t crc;
 } beesign_frame_t;
 
-typedef struct beeSignDevice_s {
+typedef struct beeSignDevice_s
+{
     uint8_t version;
     uint8_t channel;
     uint8_t power;
@@ -179,8 +180,8 @@ typedef struct beeSignDevice_s {
     uint16_t porfreq;
 } beeSignDevice_t;
 
-extern const char * const bsPowerNames[];
-extern const char * const bsModeNames[];
+extern const char *const bsPowerNames[];
+extern const char *const bsModeNames[];
 extern const uint16_t bsPowerTable[];
 extern beeSignDevice_t bsDevice;
 
