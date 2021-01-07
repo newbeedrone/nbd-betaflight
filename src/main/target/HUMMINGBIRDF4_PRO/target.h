@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird Pro Rev_C"
-#define USBD_PRODUCT_STRING             "HummingBird Pro"
+#define TARGET_BOARD_IDENTIFIER         "HummingBirdF4 Pro Rev_C"
+#define USBD_PRODUCT_STRING             "HummingBirdF4 Pro"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC13
@@ -76,9 +76,16 @@
 /* ======== OSD ======== */
 #define USE_MAX7456
 #define USE_MAX7456_SIM // For NBD7456
+#define USE_BEESIGN
+#define USE_VTX_BEESIGN
+
+#undef USE_VTX_SMARTAUDIO
+#undef USE_VTX_TRAMP
 
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3
+
+#define USE_BEESIGN_UART                SERIAL_PORT_USART1
 
 /* ======== RX ======== */
 #define USE_RX_SPI

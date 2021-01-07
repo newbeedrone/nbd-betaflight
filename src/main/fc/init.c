@@ -75,6 +75,7 @@
 #include "drivers/timer.h"
 #include "drivers/transponder_ir.h"
 #include "drivers/usb_io.h"
+#include "drivers/beesign.h"
 #ifdef USE_USB_MSC
 #include "drivers/usb_msc.h"
 #endif
@@ -104,6 +105,7 @@
 #include "io/displayport_max7456.h"
 #include "io/displayport_msp.h"
 #include "io/displayport_srxl.h"
+#include "io/displayport_beesign.h"
 #include "io/flashfs.h"
 #include "io/gimbal.h"
 #include "io/gps.h"
@@ -120,6 +122,7 @@
 #include "io/vtx_rtc6705.h"
 #include "io/vtx_smartaudio.h"
 #include "io/vtx_tramp.h"
+#include "io/vtx_beesign.h"
 
 #ifdef USE_PERSISTENT_MSC_RTC
 #include "msc/usbd_storage.h"
@@ -749,12 +752,18 @@ void init(void)
     displayPort_t *osdDisplayPort = NULL;
 #endif
 
+#ifdef USE_BEESIGN
+    beesignInit();
+#endif
+
 #if defined(USE_OSD)
     //The OSD need to be initialised after GYRO to avoid GYRO initialisation failure on some targets
 
     if (featureIsEnabled(FEATURE_OSD)) {
-#if defined(USE_MAX7456)
-        // If there is a max7456 chip for the OSD then use it
+#if defined(USE_OSD_BEESIGN)
+        osdDisplayPort = beesignDisplayPortInit(vcdProfile());
+#elif defined(USE_MAX7456)
+    // If there is a max7456 chip for the OSD then use it
         osdDisplayPort = max7456DisplayPortInit(vcdProfile());
 #elif defined(USE_CMS) && defined(USE_MSP_DISPLAYPORT) && defined(USE_OSD_OVER_MSP_DISPLAYPORT) // OSD over MSP; not supported (yet)
         osdDisplayPort = displayPortMspInit();
@@ -869,6 +878,10 @@ void init(void)
 
 #ifdef USE_VTX_SMARTAUDIO
     vtxSmartAudioInit();
+#endif
+
+#ifdef USE_VTX_BEESIGN
+    beesignVtxInit();
 #endif
 
 #ifdef USE_VTX_TRAMP
