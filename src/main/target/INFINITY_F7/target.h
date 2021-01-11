@@ -51,8 +51,8 @@
 #define UART4_RX_PIN                    PA1
 #define UART4_TX_PIN                    PA0
 
-#define USE_SOFTSERIAL1
-#define SOFTSERIAL1_RX_PIN              PD2
+#define USE_UART5
+#define UART5_RX_PIN                    PD2
 
 #define USE_UART6
 #define UART6_RX_PIN                    PC7
@@ -152,7 +152,7 @@
 #define PINIO1_PIN                      PB2
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_SOFTSERIAL | FEATURE_LED_STRIP | FEATURE_OSD)
+#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
