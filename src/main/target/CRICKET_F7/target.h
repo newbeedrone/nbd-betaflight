@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Cricket Rev_A"
-#define USBD_PRODUCT_STRING             "Cricket"
+#define TARGET_BOARD_IDENTIFIER         "Cricket F7 Rev_A"
+#define USBD_PRODUCT_STRING             "Cricket F7"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PA15
