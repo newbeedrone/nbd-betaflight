@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Infinity PDB Rev_A"
-#define USBD_PRODUCT_STRING             "Infinity PDB"
+#define TARGET_BOARD_IDENTIFIER         "Infinity PDB F7 Rev_A"
+#define USBD_PRODUCT_STRING             "Infinity PDB F7"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PA15
