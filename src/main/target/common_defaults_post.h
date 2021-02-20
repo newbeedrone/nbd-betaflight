@@ -232,6 +232,18 @@
 #define SPI4_MOSI_PIN   NONE
 #endif
 
+#ifdef USE_SPI_DEVICE_5
+#define SPI5_SCK_PIN    NONE
+#define SPI5_MISO_PIN   NONE
+#define SPI5_MOSI_PIN   NONE
+#endif
+
+#ifdef USE_SPI_DEVICE_6
+#define SPI6_SCK_PIN    NONE
+#define SPI6_MISO_PIN   NONE
+#define SPI6_MOSI_PIN   NONE
+#endif
+
 #else
 
 // Pin defaults for backward compatibility
@@ -556,6 +568,22 @@
 #endif
 #ifndef SPI4_RX_DMA_OPT
 #define SPI4_RX_DMA_OPT (-1)
+#endif
+#endif
+#ifdef USE_SPI_DEVICE_5
+#ifndef SPI5_TX_DMA_OPT
+#define SPI5_TX_DMA_OPT (-1)
+#endif
+#ifndef SPI5_RX_DMA_OPT
+#define SPI5_RX_DMA_OPT (-1)
+#endif
+#endif
+#ifdef USE_SPI_DEVICE_6
+#ifndef SPI6_TX_DMA_OPT
+#define SPI6_TX_DMA_OPT (-1)
+#endif
+#ifndef SPI6_RX_DMA_OPT
+#define SPI6_RX_DMA_OPT (-1)
 #endif
 #endif
 #endif
