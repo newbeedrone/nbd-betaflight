@@ -105,7 +105,7 @@
 #define GYRO_1_CS_PIN                   SPI6_NSS_PIN
 #define GYRO_1_SPI_INSTANCE             SPI6
 
-#define GYRO_1_ALIGN                    CW0_DEG
+#define GYRO_1_ALIGN                    CW180_DEG
 
 /* ======== ACC ======== */
 #define USE_ACC
