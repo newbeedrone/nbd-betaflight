@@ -133,8 +133,12 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC_INSTANCE                    ADC1
-#define ADC1_DMA_OPT                    1
+#define ADC1_INSTANCE                   ADC1
+#define ADC2_INSTANCE                   ADC2
+#define ADC3_INSTANCE                   ADC3
+#define ADC1_DMA_OPT                    8
+#define ADC2_DMA_OPT                    9
+#define ADC3_DMA_OPT                    10
 
 #define VBAT_ADC_PIN                    PC0
 #define CURRENT_METER_ADC_PIN           PC1
