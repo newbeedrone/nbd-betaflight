@@ -150,6 +150,22 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
     uint16_t currentPowerValue = 0;
     vtxCommonLookupPowerValue(vtxDevice, rtc6705PowerIndex, &currentPowerValue);
 #ifdef RTC6705_POWER_PIN
+#ifdef RTC6705_EXPAND_POWER_CTRL
+    if (newPowerValue == 0) {
+        // on, power it off
+        rtc6705PowerIndex = index;
+        rtc6705Disable();
+        return;
+    } else if (newPowerValue == 1) {
+        rtc6705PowerIndex = index;
+        vtxRTC6705EnableAndConfigure(vtxDevice);
+        rtc6705SetRFPower(2);
+    } else if (newPowerValue == 2) {
+        rtc6705PowerIndex = index;
+        vtxRTC6705EnableAndConfigure(vtxDevice);
+        rtc6705SetRFPower(1);
+    }
+#else
     if (newPowerValue == 0) {
         // power device off
         if (currentPowerValue > 0) {
@@ -173,6 +189,7 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
             rtc6705SetRFPower(newPowerValue);
         }
     }
+#endif
 #else
     rtc6705PowerIndex = index;
     rtc6705SetRFPower(MAX(newPowerValue, VTX_RTC6705_MIN_POWER_VALUE);

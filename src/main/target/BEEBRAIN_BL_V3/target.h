@@ -93,6 +93,7 @@
 #define RTC6705_POWER_PIN               PA8
 
 #define VTX_POWER_PIN_INVERTED
+#define RTC6705_EXPAND_POWER_CTRL
 #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 
 /* ======== RX ======== */
