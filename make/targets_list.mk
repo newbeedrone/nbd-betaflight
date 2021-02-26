@@ -1,6 +1,7 @@
 OFFICIAL_TARGETS  = \
     BEEBRAIN_BL \
     BEEBRAIN_BL_V2 \
+    BEEBRAIN_BL_V3 \
     BEEBRAIN_LITE \
     BEEBRAIN_LITE_DSM \
     BEEBRAIN_PRO \
@@ -11,7 +12,8 @@ OFFICIAL_TARGETS  = \
     INFINITY_AIO \
     INFINITY_F4 \
     INFINITY_F7 \
-    INFINITY_PDB
+    INFINITY_PDB_F7 \
+    INFINITY_PDB_H7
 
 ALT_TARGET_PATHS  = $(filter-out %/target,$(basename $(wildcard $(ROOT)/src/main/target/*/*.mk)))
 ALT_TARGET_NAMES  = $(notdir $(ALT_TARGET_PATHS))
