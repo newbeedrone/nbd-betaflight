@@ -38,7 +38,7 @@
 
 #include "io/serial.h"
 
-#include "fc/config.h"
+#include "config/config.h"
 #include "fc/rc_modes.h"
 #include "fc/runtime_config.h"
 
@@ -228,6 +228,6 @@ void telemetryProcess(uint32_t currentTime)
 
 bool telemetryIsSensorEnabled(sensor_e sensor)
 {
-    return ~(telemetryConfigMutable()->disabledSensors) & sensor;
+    return ~(telemetryConfig()->disabledSensors) & sensor;
 }
 #endif

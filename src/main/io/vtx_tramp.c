@@ -593,6 +593,15 @@ static bool vtxTrampGetStatus(const vtxDevice_t *vtxDevice, unsigned *status)
     return true;
 }
 
+static uint8_t vtxTrampGetPowerLevels(const vtxDevice_t *vtxDevice, uint16_t *levels, uint16_t *powers)
+{
+    UNUSED(vtxDevice);
+    UNUSED(levels);
+    UNUSED(powers);
+
+    return 0;
+}
+
 static const vtxVTable_t trampVTable = {
     .process = vtxTrampProcess,
     .getDeviceType = vtxTrampGetDeviceType,
@@ -605,12 +614,13 @@ static const vtxVTable_t trampVTable = {
     .getPowerIndex = vtxTrampGetPowerIndex,
     .getFrequency = vtxTrampGetFreq,
     .getStatus = vtxTrampGetStatus,
+    .getPowerLevels = vtxTrampGetPowerLevels,
 };
 #endif
 
 bool vtxTrampInit(void)
 {
-    serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_VTX_TRAMP);
+    const serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_VTX_TRAMP);
 
     if (portConfig) {
         portOptions_e portOptions = 0;

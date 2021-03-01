@@ -142,7 +142,7 @@
 #undef USE_VTX_TABLE
 #endif
 
-#if defined(USE_RX_FRSKY_SPI_D) || defined(USE_RX_FRSKY_SPI_X)
+#if defined(USE_RX_FRSKY_SPI_D) || defined(USE_RX_FRSKY_SPI_X) || defined(USE_RX_REDPINE_SPI)
 #define USE_RX_CC2500
 #define USE_RX_FRSKY_SPI
 #endif
@@ -169,20 +169,6 @@
 #undef USE_ADC_INTERNAL
 #endif
 
-#if (!defined(USE_SDCARD) && !defined(USE_FLASHFS)) || !defined(USE_BLACKBOX)
-#undef USE_USB_MSC
-#endif
-
-#if !defined(USE_VCP)
-#undef USE_USB_CDC_HID
-#undef USE_USB_MSC
-#endif
-
-#if defined(USE_USB_CDC_HID) || defined(USE_USB_MSC)
-#define USE_USB_ADVANCED_PROFILES
-#endif
-
-
 #if defined(USE_FLASH_W25M512)
 #define USE_FLASH_W25M
 #define USE_FLASH_M25P16
@@ -196,6 +182,23 @@
 
 #if defined(USE_FLASH_M25P16) || defined(USE_FLASH_W25N01G)
 #define USE_FLASH_CHIP
+#endif
+
+#ifndef USE_FLASH_CHIP
+#undef USE_FLASHFS
+#endif
+
+#if (!defined(USE_SDCARD) && !defined(USE_FLASHFS)) || !defined(USE_BLACKBOX)
+#undef USE_USB_MSC
+#endif
+
+#if !defined(USE_VCP)
+#undef USE_USB_CDC_HID
+#undef USE_USB_MSC
+#endif
+
+#if defined(USE_USB_CDC_HID) || defined(USE_USB_MSC)
+#define USE_USB_ADVANCED_PROFILES
 #endif
 
 #if defined(USE_MAX7456)
@@ -373,4 +376,13 @@ extern uint8_t __config_end;
 
 #if defined(USE_CUSTOM_DEFAULTS)
 #define USE_CUSTOM_DEFAULTS_ADDRESS
+#endif
+
+#if !defined(USE_EXTI)
+#undef USE_RX_SPI
+#undef USE_RANGEFINDER_HCSR04
+#endif
+
+#if defined(USE_RX_SPI) || defined (USE_SERIALRX_SRXL2)
+#define USE_RX_BIND
 #endif

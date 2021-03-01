@@ -189,7 +189,7 @@ void adcInitDevice(adcDevice_t *adcdev, int channelCount)
     hadc->Init.NbrOfConversion          = channelCount;
     hadc->Init.DiscontinuousConvMode    = DISABLE;
     hadc->Init.NbrOfDiscConversion      = 1;                             // Don't care
-    hadc->Init.ExternalTrigConv         = ADC_SOFTWARE_START;   
+    hadc->Init.ExternalTrigConv         = ADC_SOFTWARE_START;
     hadc->Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE; // Don't care
     hadc->Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_CIRCULAR;
     hadc->Init.Overrun                  = ADC_OVR_DATA_OVERWRITTEN;
@@ -281,7 +281,7 @@ void adcInit(const adcConfig_t *config)
             // Find an ADC device that can handle this input pin
 
             for (dev = 0; dev < ADCDEV_COUNT; dev++) {
-                if (!adcDevice[dev].ADCx 
+                if (!adcDevice[dev].ADCx
 #ifndef USE_DMA_SPEC
                      || !adcDevice[dev].dmaResource
 #endif
@@ -366,9 +366,9 @@ void adcInit(const adcConfig_t *config)
             sConfig.Rank         = adcRegularRankMap[rank++];   /* Rank of sampled channel number ADCx_CHANNEL */
             sConfig.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;  /* Sampling time (number of clock cycles unit) */
             sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* Single-ended input channel */
-            sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* No offset subtraction */ 
+            sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* No offset subtraction */
             sConfig.Offset = 0;                                 /* Parameter discarded because offset correction is disabled */
-  
+
             if (HAL_ADC_ConfigChannel(&adc->ADCHandle, &sConfig) != HAL_OK) {
                 Error_Handler();
             }
@@ -402,11 +402,13 @@ void adcInit(const adcConfig_t *config)
 
         // Deinitialize  & Initialize the DMA for new transfer
 
+        // dmaInit must be called before calling HAL_DMA_Init,
+        // to enable clock for associated DMA if not already done so.
+        dmaInit(dmaIdentifier, OWNER_ADC, RESOURCE_INDEX(dev));
+
         HAL_DMA_DeInit(&adc->DmaHandle);
         HAL_DMA_Init(&adc->DmaHandle);
 
-        dmaInit(dmaIdentifier, OWNER_ADC, RESOURCE_INDEX(dev));
-  
         // Associate the DMA handle
 
         __HAL_LINKDMA(&adc->ADCHandle, DMA_Handle, adc->DmaHandle);
@@ -419,7 +421,7 @@ void adcInit(const adcConfig_t *config)
         // NVIC configuration for DMA Input data interrupt
 
         HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 1, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);  
+        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
 #endif
     }
 
@@ -453,7 +455,9 @@ void adcGetChannelValues(void)
     // Cache coherency should be maintained by MPU facility
 
     for (int i = 0; i < ADC_CHANNEL_INTERNAL; i++) {
-        adcValues[i] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
+        if (adcOperatingConfig[i].enabled) {
+            adcValues[adcOperatingConfig[i].dmaIndex] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
+        }
     }
 }
 
@@ -484,7 +488,7 @@ uint16_t adcInternalReadVrefint(void)
 
 uint16_t adcInternalReadTempsensor(void)
 {
-    uint16_t value = adcInternalRead(ADC_TEMPSENSOR); 
+    uint16_t value = adcInternalRead(ADC_TEMPSENSOR);
     return value;
 }
 #endif // USE_ADC_INTERNAL

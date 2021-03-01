@@ -111,4 +111,5 @@ const char * const ownerNames[OWNER_TOTAL_COUNT] = {
     "PULLUP",
     "PULLDOWN",
     "DSHOT_BITBANG",
+    "SWD",
 };

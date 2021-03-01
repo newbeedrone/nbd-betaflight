@@ -45,7 +45,7 @@ typedef void (*dmaCallbackHandlerFuncPtr)(struct dmaChannelDescriptor_s *channel
 typedef struct dmaChannelDescriptor_s {
     DMA_TypeDef*                dma;
     dmaResource_t               *ref;
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
     uint8_t                     stream;
 #endif
     dmaCallbackHandlerFuncPtr   irqHandlerCallback;
@@ -104,7 +104,7 @@ typedef enum {
     .userParam = 0, \
     .owner.owner = 0, \
     .owner.resourceIndex = 0 \
-    } 
+    }
 
 #define DEFINE_DMA_IRQ_HANDLER(d, s, i) void DMA ## d ## _Stream ## s ## _IRQHandler(void) {\
                                                                 const uint8_t index = DMA_IDENTIFIER_TO_INDEX(i); \
@@ -130,6 +130,34 @@ uint32_t dmaGetChannel(const uint8_t channel);
 
 #else
 
+#if defined(STM32G4)
+
+typedef enum {
+    DMA_NONE = 0,
+    DMA1_CH1_HANDLER = 1,
+    DMA1_CH2_HANDLER,
+    DMA1_CH3_HANDLER,
+    DMA1_CH4_HANDLER,
+    DMA1_CH5_HANDLER,
+    DMA1_CH6_HANDLER,
+    DMA1_CH7_HANDLER,
+    DMA1_CH8_HANDLER,
+    DMA2_CH1_HANDLER,
+    DMA2_CH2_HANDLER,
+    DMA2_CH3_HANDLER,
+    DMA2_CH4_HANDLER,
+    DMA2_CH5_HANDLER,
+    DMA2_CH6_HANDLER,
+    DMA2_CH7_HANDLER,
+    DMA2_CH8_HANDLER,
+    DMA_LAST_HANDLER = DMA2_CH8_HANDLER
+} dmaIdentifier_e;
+
+#define DMA_DEVICE_NO(x)    ((((x)-1) / 8) + 1)
+#define DMA_DEVICE_INDEX(x) ((((x)-1) % 8) + 1)
+
+#else // !STM32G4
+
 typedef enum {
     DMA_NONE = 0,
     DMA1_CH1_HANDLER = 1,
@@ -145,14 +173,17 @@ typedef enum {
     DMA2_CH3_HANDLER,
     DMA2_CH4_HANDLER,
     DMA2_CH5_HANDLER,
-    DMA_LAST_HANDLER = DMA2_CH5_HANDLER 
-#else 
+    DMA_LAST_HANDLER = DMA2_CH5_HANDLER
+#else
     DMA_LAST_HANDLER = DMA1_CH7_HANDLER
 #endif
 } dmaIdentifier_e;
 
 #define DMA_DEVICE_NO(x)    ((((x)-1) / 7) + 1)
 #define DMA_DEVICE_INDEX(x) ((((x)-1) % 7) + 1)
+
+#endif // STM32G4
+
 #define DMA_OUTPUT_INDEX    0
 #define DMA_OUTPUT_STRING   "DMA%d Channel %d:"
 #define DMA_INPUT_STRING    "DMA%d_CH%d"
@@ -168,7 +199,13 @@ typedef enum {
     .owner.resourceIndex = 0 \
     }
 
-#define DEFINE_DMA_IRQ_HANDLER(d, c, i) void DMA ## d ## _Channel ## c ## _IRQHandler(void) {\
+#if defined(USE_CCM_CODE) && defined(STM32F3)
+#define DMA_HANDLER_CODE CCM_CODE
+#else
+#define DMA_HANDLER_CODE
+#endif
+
+#define DEFINE_DMA_IRQ_HANDLER(d, c, i) DMA_HANDLER_CODE void DMA ## d ## _Channel ## c ## _IRQHandler(void) {\
                                                                         const uint8_t index = DMA_IDENTIFIER_TO_INDEX(i); \
                                                                         dmaCallbackHandlerFuncPtr handler = dmaDescriptors[index].irqHandlerCallback; \
                                                                         if (handler) \
@@ -203,6 +240,10 @@ dmaResource_t* dmaGetRefByIdentifier(const dmaIdentifier_e identifier);
     ((uint32_t)(reg) < D3_AHB1PERIPH_BASE) ? \
         (((DMA_Stream_TypeDef *)(reg))->CR & DMA_SxCR_EN) : \
         (((BDMA_Channel_TypeDef *)(reg))->CCR & BDMA_CCR_EN)
+#elif defined(STM32G4)
+#define IS_DMA_ENABLED(reg) (((DMA_ARCH_TYPE *)(reg))->CCR & DMA_CCR_EN)
+// Missing __HAL_DMA_SET_COUNTER in FW library V1.0.0
+#define __HAL_DMA_SET_COUNTER(__HANDLE__, __COUNTER__) ((__HANDLE__)->Instance->CNDTR = (uint16_t)(__COUNTER__))
 #else
 #if defined(STM32F1)
 #define DMA_CCR_EN 1 // Not defined anywhere ...

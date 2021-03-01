@@ -1,14 +1,16 @@
 COMMON_SRC = \
             build/build_config.c \
             build/debug.c \
+            build/debug_pin.c \
             build/version.c \
             $(TARGET_DIR_SRC) \
             main.c \
-            $(addprefix pg/,$(notdir $(wildcard $(SRC_DIR)/pg/*.c))) \
+            $(addprefix pg/, $(notdir $(wildcard $(SRC_DIR)/pg/*.c))) \
             $(addprefix common/,$(notdir $(wildcard $(SRC_DIR)/common/*.c))) \
             $(addprefix config/,$(notdir $(wildcard $(SRC_DIR)/config/*.c))) \
             cli/cli.c \
             cli/settings.c \
+            config/config.c \
             drivers/adc.c \
             drivers/dshot.c \
             drivers/dshot_dpwm.c \
@@ -24,6 +26,7 @@ COMMON_SRC = \
             drivers/bus_spi_pinconfig.c \
             drivers/buttons.c \
             drivers/display.c \
+            drivers/display_canvas.c \
             drivers/dma_reqmap.c \
             drivers/exti.c \
             drivers/io.c \
@@ -47,7 +50,6 @@ COMMON_SRC = \
             drivers/transponder_ir_ilap.c \
             drivers/transponder_ir_erlt.c \
             fc/board_info.c \
-            fc/config.c \
             fc/dispatch.c \
             fc/hardfaults.c \
             fc/tasks.c \
@@ -106,7 +108,9 @@ COMMON_SRC = \
             rx/jetiexbus.c \
             rx/msp.c \
             rx/pwm.c \
+            rx/frsky_crc.c \
             rx/rx.c \
+            rx/rx_bind.c \
             rx/rx_spi.c \
             rx/rx_spi_common.c \
             rx/crsf.c \
@@ -124,21 +128,24 @@ COMMON_SRC = \
             sensors/boardalignment.c \
             sensors/compass.c \
             sensors/gyro.c \
+            sensors/gyro_init.c \
             sensors/initialisation.c \
             blackbox/blackbox.c \
             blackbox/blackbox_encoding.c \
             blackbox/blackbox_io.c \
             cms/cms.c \
             cms/cms_menu_blackbox.c \
-            cms/cms_menu_builtin.c \
             cms/cms_menu_failsafe.c \
+            cms/cms_menu_firmware.c \
             cms/cms_menu_gps_rescue.c\
             cms/cms_menu_imu.c \
             cms/cms_menu_ledstrip.c \
+            cms/cms_menu_main.c \
             cms/cms_menu_misc.c \
             cms/cms_menu_osd.c \
             cms/cms_menu_power.c \
             cms/cms_menu_saveexit.c \
+            cms/cms_menu_vtx_common.c \
             cms/cms_menu_vtx_beesign.c \
             cms/cms_menu_vtx_rtc6705.c \
             cms/cms_menu_vtx_smartaudio.c \
@@ -151,6 +158,7 @@ COMMON_SRC = \
             drivers/vtx_common.c \
             drivers/vtx_table.c \
             io/dashboard.c \
+            io/displayport_frsky_osd.c \
             io/displayport_beesign.c \
             io/displayport_max7456.c \
             io/displayport_msp.c \
@@ -158,6 +166,7 @@ COMMON_SRC = \
             io/displayport_srxl.c \
             io/displayport_crsf.c \
             io/displayport_hott.c \
+            io/frsky_osd.c \
             io/rcdevice_cam.c \
             io/rcdevice.c \
             io/gps.c \
@@ -185,7 +194,7 @@ COMMON_SRC = \
             io/vtx_rtc6705.c \
             io/vtx_smartaudio.c \
             io/vtx_tramp.c \
-            io/vtx_control.c
+            io/vtx_control.c \
 
 COMMON_DEVICE_SRC = \
             $(CMSIS_SRC) \
@@ -214,16 +223,10 @@ SPEED_OPTIMISED_SRC := $(SPEED_OPTIMISED_SRC) \
             common/filter.c \
             common/maths.c \
             common/typeconversion.c \
-            drivers/accgyro/accgyro_fake.c \
             drivers/accgyro/accgyro_mpu.c \
             drivers/accgyro/accgyro_mpu3050.c \
-            drivers/accgyro/accgyro_mpu6050.c \
-            drivers/accgyro/accgyro_mpu6500.c \
             drivers/accgyro/accgyro_spi_bmi160.c \
-            drivers/accgyro/accgyro_spi_icm20689.c \
-            drivers/accgyro/accgyro_spi_mpu6000.c \
-            drivers/accgyro/accgyro_spi_mpu6500.c \
-            drivers/accgyro/accgyro_spi_mpu9250.c \
+            drivers/accgyro/accgyro_spi_bmi270.c \
             drivers/accgyro_legacy/accgyro_adxl345.c \
             drivers/accgyro_legacy/accgyro_bma280.c \
             drivers/accgyro_legacy/accgyro_l3g4200d.c \
@@ -258,6 +261,7 @@ SPEED_OPTIMISED_SRC := $(SPEED_OPTIMISED_SRC) \
             rx/rx.c \
             rx/rx_spi.c \
             rx/crsf.c \
+            rx/frsky_crc.c \
             rx/sbus.c \
             rx/sbus_channels.c \
             rx/spektrum.c \
@@ -276,6 +280,7 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             bus_bst_stm32f30x.c \
             cli/cli.c \
             cli/settings.c \
+            drivers/accgyro/accgyro_fake.c \
             drivers/barometer/barometer_bmp085.c \
             drivers/barometer/barometer_bmp280.c \
             drivers/barometer/barometer_fake.c \
@@ -323,15 +328,17 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             msp/msp_serial.c \
             cms/cms.c \
             cms/cms_menu_blackbox.c \
-            cms/cms_menu_builtin.c \
             cms/cms_menu_failsafe.c \
+            cms/cms_menu_firmware.c \
             cms/cms_menu_gps_rescue.c\
             cms/cms_menu_imu.c \
             cms/cms_menu_ledstrip.c \
+            cms/cms_menu_main.c \
             cms/cms_menu_misc.c \
             cms/cms_menu_osd.c \
             cms/cms_menu_power.c \
             cms/cms_menu_saveexit.c \
+            cms/cms_menu_vtx_common.c \
             cms/cms_menu_vtx_beesign.c \
             cms/cms_menu_vtx_rtc6705.c \
             cms/cms_menu_vtx_smartaudio.c \
@@ -344,17 +351,32 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             io/spektrum_vtx_control.c \
             osd/osd.c \
             osd/osd_elements.c \
-            pg/pg.h
+            rx/rx_bind.c \
+            sensors/gyro_init.c
+
+# Gyro driver files that only contain initialization and configuration code - not runtime code
+SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
+            drivers/accgyro/accgyro_mpu6050.c \
+            drivers/accgyro/accgyro_mpu6500.c \
+            drivers/accgyro/accgyro_spi_mpu6000.c \
+            drivers/accgyro/accgyro_spi_mpu6500.c \
+            drivers/accgyro/accgyro_spi_mpu9250.c \
+            drivers/accgyro/accgyro_spi_icm20689.c
+
 
 # F4 and F7 optimizations
 ifneq ($(TARGET),$(filter $(TARGET),$(F3_TARGETS)))
 SPEED_OPTIMISED_SRC := $(SPEED_OPTIMISED_SRC) \
             drivers/bus_i2c_hal.c \
             drivers/bus_spi_ll.c \
+            rx/frsky_crc.c \
             drivers/max7456.c \
             drivers/pwm_output_dshot.c \
             drivers/pwm_output_dshot_shared.c \
             drivers/pwm_output_dshot_hal.c
+
+SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
+            drivers/bus_i2c_hal_init.c
 endif #!F3
 endif #!F1
 
@@ -389,7 +411,6 @@ SRC += \
             drivers/flash_w25n01g.c \
             drivers/flash_w25m.c \
             io/flashfs.c \
-            pg/flash.c \
             $(MSC_SRC)
 endif
 
@@ -415,7 +436,6 @@ SRC += \
             drivers/sdcard_standard.c \
             io/asyncfatfs/asyncfatfs.c \
             io/asyncfatfs/fat_standard.c \
-            pg/sdio.c \
             $(MSC_SRC)
 endif
 
