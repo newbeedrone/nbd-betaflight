@@ -37,6 +37,7 @@
 #include "drivers/barometer/barometer_bmp085.h"
 #include "drivers/barometer/barometer_bmp280.h"
 #include "drivers/barometer/barometer_bmp388.h"
+#include "drivers/barometer/barometer_dps310.h"
 #include "drivers/barometer/barometer_qmp6988.h"
 #include "drivers/barometer/barometer_fake.h"
 #include "drivers/barometer/barometer_ms5611.h"
@@ -73,8 +74,14 @@ void pgResetFn_barometerConfig(barometerConfig_t *barometerConfig)
     //   a. Precedence is in the order of popularity; BMP388, BMP280, MS5611 then BMP085, then
     //   b. If SPI variant is specified, it is likely onboard, so take it.
 
-#if !(defined(DEFAULT_BARO_SPI_BMP388) || defined(DEFAULT_BARO_BMP388) || defined(DEFAULT_BARO_SPI_BMP280) || defined(DEFAULT_BARO_BMP280) || defined(DEFAULT_BARO_SPI_MS5611) || defined(DEFAULT_BARO_MS5611) || defined(DEFAULT_BARO_BMP085) || defined(DEFAULT_BARO_SPI_LPS) || defined(DEFAULT_BARO_SPI_QMP6988) || defined(DEFAULT_BARO_QMP6988))
-#if defined(USE_BARO_BMP388) || defined(USE_BARO_SPI_BMP388)
+#if !(defined(DEFAULT_BARO_SPI_BMP388) || defined(DEFAULT_BARO_BMP388) || defined(DEFAULT_BARO_SPI_BMP280) || defined(DEFAULT_BARO_BMP280) || defined(DEFAULT_BARO_SPI_MS5611) || defined(DEFAULT_BARO_MS5611) || defined(DEFAULT_BARO_BMP085) || defined(DEFAULT_BARO_SPI_LPS) || defined(DEFAULT_BARO_SPI_QMP6988) || defined(DEFAULT_BARO_QMP6988)) || defined(DEFAULT_BARO_DPS310) || defined(DEFAULT_BARO_SPI_DPS310)
+#if defined(USE_BARO_DPS310) || defined(USE_BARO_SPI_DPS310)
+#if defined(USE_BARO_SPI_DPS310)
+#define DEFAULT_BARO_SPI_DPS310
+#else
+#define DEFAULT_BARO_DPS310
+#endif
+#elif defined(USE_BARO_BMP388) || defined(USE_BARO_SPI_BMP388)
 #if defined(USE_BARO_SPI_BMP388)
 #define DEFAULT_BARO_SPI_BMP388
 #else
@@ -105,13 +112,13 @@ void pgResetFn_barometerConfig(barometerConfig_t *barometerConfig)
 #endif
 #endif
 
-#if defined(DEFAULT_BARO_SPI_BMP388) || defined(DEFAULT_BARO_SPI_BMP280) || defined(DEFAULT_BARO_SPI_MS5611) || defined(DEFAULT_BARO_SPI_QMP6988) || defined(DEFAULT_BARO_SPI_LPS)
+#if defined(DEFAULT_BARO_SPI_BMP388) || defined(DEFAULT_BARO_SPI_BMP280) || defined(DEFAULT_BARO_SPI_MS5611) || defined(DEFAULT_BARO_SPI_QMP6988) || defined(DEFAULT_BARO_SPI_LPS) || defined(DEFAULT_BARO_SPI_DPS310)
     barometerConfig->baro_bustype = BUSTYPE_SPI;
     barometerConfig->baro_spi_device = SPI_DEV_TO_CFG(spiDeviceByInstance(BARO_SPI_INSTANCE));
     barometerConfig->baro_spi_csn = IO_TAG(BARO_CS_PIN);
     barometerConfig->baro_i2c_device = I2C_DEV_TO_CFG(I2CINVALID);
     barometerConfig->baro_i2c_address = 0;
-#elif defined(DEFAULT_BARO_MS5611) || defined(DEFAULT_BARO_BMP388) || defined(DEFAULT_BARO_BMP280) || defined(DEFAULT_BARO_BMP085) ||defined(DEFAULT_BARO_QMP6988)
+#elif defined(DEFAULT_BARO_MS5611) || defined(DEFAULT_BARO_BMP388) || defined(DEFAULT_BARO_BMP280) || defined(DEFAULT_BARO_BMP085) ||defined(DEFAULT_BARO_QMP6988) || defined(DEFAULT_BARO_DPS310)
     // All I2C devices shares a default config with address = 0 (per device default)
     barometerConfig->baro_bustype = BUSTYPE_I2C;
     barometerConfig->baro_i2c_device = I2C_DEV_TO_CFG(BARO_I2C_INSTANCE);
@@ -154,7 +161,7 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse)
 
     baroSensor_e baroHardware = baroHardwareToUse;
 
-#if !defined(USE_BARO_BMP085) && !defined(USE_BARO_MS5611) && !defined(USE_BARO_SPI_MS5611) && !defined(USE_BARO_BMP388) && !defined(USE_BARO_BMP280) && !defined(USE_BARO_SPI_BMP280)&& !defined(USE_BARO_QMP6988) && !defined(USE_BARO_SPI_QMP6988)
+#if !defined(USE_BARO_BMP085) && !defined(USE_BARO_MS5611) && !defined(USE_BARO_SPI_MS5611) && !defined(USE_BARO_BMP388) && !defined(USE_BARO_BMP280) && !defined(USE_BARO_SPI_BMP280)&& !defined(USE_BARO_QMP6988) && !defined(USE_BARO_SPI_QMP6988) && !defined(USE_BARO_DPS310) && !defined(USE_BARO_SPI_DPS310)
     UNUSED(dev);
 #endif
 
@@ -221,6 +228,17 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse)
         if (lpsDetect(dev)) {
             baroHardware = BARO_LPS;
             break;
+        }
+#endif
+        FALLTHROUGH;
+
+    case BARO_DPS310:
+#if defined(USE_BARO_DPS310) || defined(USE_BARO_SPI_DPS310)
+        {
+            if (baroDPS310Detect(dev)) {
+                baroHardware = BARO_DPS310;
+                break;
+            }
         }
 #endif
         FALLTHROUGH;

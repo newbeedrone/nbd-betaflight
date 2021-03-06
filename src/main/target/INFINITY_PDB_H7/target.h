@@ -111,6 +111,12 @@
 #define USE_ACC
 #define USE_ACC_SPI_MPU6000
 
+/* ======== BARO ======== */
+#define USE_BARO
+#define USE_BARO_DPS310
+
+#define BARO_I2C_INSTANCE               (I2CDEV_1)
+
 /* ======== OSD ======== */
 #define USE_MAX7456
 
