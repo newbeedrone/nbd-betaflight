@@ -32,7 +32,7 @@ typedef enum {
     BARO_LPS = 5,
     BARO_QMP6988 = 6,
     BARO_BMP388 = 7,
-    BARO_DPS310 = 8,
+    BARO_DPS310 = 8
 } baroSensor_e;
 
 #define BARO_SAMPLE_COUNT_MAX   48
