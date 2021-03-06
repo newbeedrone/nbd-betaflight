@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Infinity AIO Rev_A"
+#define TARGET_BOARD_IDENTIFIER         "Infinity AIO Rev_B"
 #define USBD_PRODUCT_STRING             "Infinity AIO"
 
 /* ======== LED ======== */
@@ -67,13 +67,9 @@
 #define SPI2_MOSI_PIN                   PB15
 #define SPI2_NSS_PIN                    PB12
 
-/* ======== GYRO & ACC ======== */
-#define USE_ACC
+/* ======== GYRO ======== */
 #define USE_GYRO
-#define USE_SPI_GYRO
-#define USE_ACCGYRO_BMI160
-
-#define BMI160_SPI_DIVISOR              16
+#define USE_GYRO_SPI_MPU6000
 
 #define USE_EXTI
 #define USE_GYRO_EXTI
@@ -83,7 +79,11 @@
 #define GYRO_1_CS_PIN                   SPI2_NSS_PIN
 #define GYRO_1_SPI_INSTANCE             SPI2
 
-#define GYRO_1_ALIGN                    CW0_DEG
+#define GYRO_1_ALIGN                    CW180_DEG
+
+/* ======== ACC ======== */
+#define USE_ACC
+#define USE_ACC_SPI_MPU6000
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART1
