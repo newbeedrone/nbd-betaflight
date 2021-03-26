@@ -1394,7 +1394,11 @@ static bool mspProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst)
 
     case MSP_CF_SERIAL_CONFIG:
         for (int i = 0; i < SERIAL_PORT_COUNT; i++) {
-            if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)) {
+            if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)
+#ifdef USE_BEESIGN_UART
+                || serialConfig()->portConfigs[i].identifier == USE_BEESIGN_UART
+#endif
+            ) {
                 continue;
             };
             sbufWriteU8(dst, serialConfig()->portConfigs[i].identifier);
