@@ -151,17 +151,10 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
 #if defined(RTC6705_POWER_PIN) && defined(RTC6705_EXPAND_POWER_CTRL)
     if (newPowerValue == 0) {
         // on, power it off
-        rtc6705PowerIndex = index;
         rtc6705Disable();
-        return;
-    } else if (newPowerValue == 1) {
-        rtc6705PowerIndex = index;
+    } else {
         vtxRTC6705EnableAndConfigure(vtxDevice);
-        rtc6705SetRFPower(2);
-    } else if (newPowerValue == 2) {
-        rtc6705PowerIndex = index;
-        vtxRTC6705EnableAndConfigure(vtxDevice);
-        rtc6705SetRFPower(1);
+        newPowerValue = (newPowerValue == 1) ? (2) : (1);
     }
 #endif
     rtc6705PowerIndex = index;
