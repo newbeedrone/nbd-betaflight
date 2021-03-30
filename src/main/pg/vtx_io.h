@@ -35,6 +35,12 @@ typedef struct vtxIOConfig_s {
     ioTag_t dataTag;
     ioTag_t clockTag;
 
+    // setting for dynamic VTx power control
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+    ioTag_t exPower1Tag;
+    ioTag_t exPower2Tag;
+#endif
+
     // settings for hardware SPI only
     uint8_t spiDevice;
 } vtxIOConfig_t;
