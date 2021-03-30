@@ -31,7 +31,7 @@
 #include "drivers/time.h"
 #include "drivers/display.h"
 
-#include "fc/config.h"
+#include "config/config.h"
 
 #include "io/displayport_beesign.h"
 #include "osd/osd.h"
