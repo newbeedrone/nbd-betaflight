@@ -209,6 +209,25 @@ void rtc6705SetFrequency(uint16_t frequency)
     rtc6705Transfer(val_hex);
 }
 
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+void rtc6705DynamicPowerControl(uint8_t power)
+{
+    power &= 0x03; // mask lsb 2 bits
+
+    if (power & 0x01) {
+        IOLo(exPowerPin1);
+    } else {
+        IOHi(exPowerPin1);
+    }
+
+    if (power & 0x02) {
+        IOLo(exPowerPin2);
+    } else {
+        IOHi(exPowerPin2);
+    }
+}
+#endif
+
 void rtc6705SetRFPower(uint8_t rf_power)
 {
 #if defined(USE_VTX_RTC6705_SOFTSPI)
@@ -256,23 +275,4 @@ void rtc6705Enable(void)
 #endif
     }
 }
-
-#ifdef RTC6705_DYNAMIC_POWER_CTRL
-void rtc6705DynamicPowerControl(uint8_t power)
-{
-    power &= 0x03; // mask lsb 2 bits
-
-    if (power & 0x01) {
-        IOLo(exPowerPin1);
-    } else {
-        IOHi(exPowerPin1);
-    }
-
-    if (power & 0x02) {
-        IOLo(exPowerPin2);
-    } else {
-        IOHi(exPowerPin2);
-    }
-}
-#endif
 #endif
