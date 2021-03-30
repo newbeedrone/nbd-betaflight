@@ -54,8 +54,7 @@ static IO_t vtxPowerPin     = IO_NONE;
 #endif
 
 #ifdef RTC6705_DYNAMIC_POWER_CTRL
-static IO_t exPowerPin1     = IO_NONE;
-static IO_t exPowerPin2     = IO_NONE;
+static IO_t exPowerPin[VTX_DYANMIC_CTRL_PIN_COUNT]   = {IO_NONE, IO_NONE};
 #endif
 
 static busDevice_t *busdev = NULL;
@@ -117,17 +116,13 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
     }
 
 #ifdef RTC6705_DYNAMIC_POWER_CTRL
-    exPowerPin1 = IOGetByTag(vtxIOConfig->exPower1Tag);
-    exPowerPin2 = IOGetByTag(vtxIOConfig->exPower2Tag);
-    if (exPowerPin1 && exPowerPin2) {
-        IOInit(exPowerPin1, OWNER_VTX_POWER, 1);
-        IOInit(exPowerPin2, OWNER_VTX_POWER, 2);
-
-        IOLo(exPowerPin1);
-        IOLo(exPowerPin2);
-
-        IOConfigGPIO(exPowerPin1, IOCFG_OUT_PP);
-        IOConfigGPIO(exPowerPin2, IOCFG_OUT_PP);
+    for (uint8_t i = 0; i < VTX_DYANMIC_CTRL_PIN_COUNT; i++) {
+        exPowerPin[i] = IOGetByTag(vtxIOConfig->exPowerTag[i]);
+        if (exPowerPin[i]) {
+            IOInit(exPowerPin[i], OWNER_VTX_POWER, i + 1);
+            IOLo(exPowerPin[i]);
+            IOConfigGPIO(exPowerPin[i], IOCFG_OUT_PP);
+        }
     }
 #endif
 
@@ -214,16 +209,13 @@ void rtc6705DynamicPowerControl(uint8_t power)
 {
     power &= 0x03; // mask lsb 2 bits
 
-    if (power & 0x01) {
-        IOLo(exPowerPin1);
-    } else {
-        IOHi(exPowerPin1);
-    }
-
-    if (power & 0x02) {
-        IOLo(exPowerPin2);
-    } else {
-        IOHi(exPowerPin2);
+    for (uint8_t i = 0; i < VTX_DYANMIC_CTRL_PIN_COUNT; i++) {
+        if (power & 0x01) {
+            IOLo(exPowerPin[i]);
+        } else {
+            IOHi(exPowerPin[i]);
+        }
+        power >>= 1;
     }
 }
 #endif

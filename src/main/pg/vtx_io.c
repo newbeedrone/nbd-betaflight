@@ -47,8 +47,8 @@ void pgResetFn_vtxIOConfig(vtxIOConfig_t *vtxIOConfig)
 
     // external power controller
 #ifdef RTC6705_DYNAMIC_POWER_CTRL
-    vtxIOConfig->exPower1Tag = IO_TAG(RTC6705_EX_POWER_1_PIN);
-    vtxIOConfig->exPower2Tag = IO_TAG(RTC6705_EX_POWER_2_PIN);
+    vtxIOConfig->exPowerTag[0] = IO_TAG(RTC6705_EX_POWER_1_PIN);
+    vtxIOConfig->exPowerTag[1] = IO_TAG(RTC6705_EX_POWER_2_PIN);
 #endif
 
     // hardware spi
