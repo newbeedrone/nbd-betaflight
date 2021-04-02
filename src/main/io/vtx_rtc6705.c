@@ -151,7 +151,7 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
     if (!vtxCommonLookupPowerValue(vtxDevice, index, &newPowerValue)) {
         return;
     }
-#if defined(RTC6705_POWER_PIN) && defined(RTC6705_EXPAND_POWER_CTRL)
+#ifdef RTC6705_EXPAND_POWER_CTRL
     if (newPowerValue == 0) {
         // on, power it off
         rtc6705Disable();
@@ -167,7 +167,7 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
 static void vtxRTC6705SetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
 {
     UNUSED(vtxDevice);
-#ifdef RTC6705_POWER_PIN
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL)
     if (onoff) {
         // power device off
         if (!rtc6705PitModeActive) {
