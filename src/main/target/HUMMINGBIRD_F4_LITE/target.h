@@ -55,13 +55,9 @@
 #define SPI3_MISO_PIN                   PB4
 #define SPI3_MOSI_PIN                   PB5
 
-/* ======== GYRO & ACC ======== */
-#define USE_ACC
+/* ======== GYRO ======== */
 #define USE_GYRO
-#define USE_SPI_GYRO
-#define USE_ACCGYRO_BMI160
-
-#define BMI160_SPI_DIVISOR              16
+#define USE_GYRO_SPI_MPU6000
 
 #define USE_EXTI
 #define USE_GYRO_EXTI
@@ -72,6 +68,10 @@
 #define GYRO_1_SPI_INSTANCE             SPI3
 
 #define GYRO_1_ALIGN                    CW0_DEG
+
+/* ======== ACC ======== */
+#define USE_ACC
+#define USE_ACC_SPI_MPU6000
 
 /* ======== OSD ======== */
 #define USE_MAX7456
