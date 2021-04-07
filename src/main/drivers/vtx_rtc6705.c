@@ -53,6 +53,10 @@
 static IO_t vtxPowerPin     = IO_NONE;
 #endif
 
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+static IO_t exPowerPin[VTX_DYANMIC_CTRL_PIN_COUNT]   = {IO_NONE, IO_NONE};
+#endif
+
 static busDevice_t *busdev = NULL;
 
 #define DISABLE_RTC6705()   IOHi(busdev->busdev_u.spi.csnPin)
@@ -110,6 +114,17 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
 
         IOConfigGPIO(vtxPowerPin, IOCFG_OUT_PP);
     }
+
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+    for (uint8_t i = 0; i < VTX_DYANMIC_CTRL_PIN_COUNT; i++) {
+        exPowerPin[i] = IOGetByTag(vtxIOConfig->exPowerTag[i]);
+        if (exPowerPin[i]) {
+            IOInit(exPowerPin[i], OWNER_VTX_POWER, i + 1);
+            IOLo(exPowerPin[i]);
+            IOConfigGPIO(exPowerPin[i], IOCFG_OUT_PP);
+        }
+    }
+#endif
 
     SPI_TypeDef *vtxSpiInstance = spiInstanceByDevice(SPI_CFG_TO_DEV(vtxIOConfig->spiDevice));
     if (vtxSpiInstance) {
@@ -189,15 +204,39 @@ void rtc6705SetFrequency(uint16_t frequency)
     rtc6705Transfer(val_hex);
 }
 
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+static void rtc6705DynamicPowerControl(uint8_t power)
+{
+    power &= 0x03; // mask lsb 2 bits
+
+    for (uint8_t i = 0; i < VTX_DYANMIC_CTRL_PIN_COUNT; i++) {
+        if (power & 0x01) {
+            IOLo(exPowerPin[i]);
+        } else {
+            IOHi(exPowerPin[i]);
+        }
+        power >>= 1;
+    }
+}
+#endif
+
 void rtc6705SetRFPower(uint8_t rf_power)
 {
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+    rf_power = constrain(rf_power, 0, VTX_RTC6705_POWER_COUNT);
+#else
     rf_power = constrain(rf_power, 1, 2);
+#endif
 #if defined(USE_VTX_RTC6705_SOFTSPI)
     if (!busdev) {
         rtc6705SoftSpiSetRFPower(rf_power);
 
         return;
     }
+#endif
+
+#ifdef RTC6705_DYNAMIC_POWER_CTRL
+    rtc6705DynamicPowerControl(rf_power);
 #endif
 
     uint32_t val_hex = RTC6705_RW_CONTROL_BIT; // write
