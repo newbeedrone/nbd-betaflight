@@ -752,9 +752,9 @@ void init(void)
     displayPort_t *osdDisplayPort = NULL;
 #endif
 
-#ifdef USE_BEESIGN
-    beesignInit();
-#endif
+// #ifdef USE_BEESIGN
+//     beesignInit();
+// #endif
 
 #if defined(USE_OSD)
     //The OSD need to be initialised after GYRO to avoid GYRO initialisation failure on some targets
