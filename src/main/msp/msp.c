@@ -1397,6 +1397,11 @@ static bool mspProcessOutCommand(uint8_t cmdMSP, sbuf_t *dst)
             if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)) {
                 continue;
             };
+#ifdef USE_BEESIGN
+            if (serialConfig()->portConfigs[i].functionMask == FUNCTION_VTX_BEESIGN) {
+                continue;
+            }
+#endif
             sbufWriteU8(dst, serialConfig()->portConfigs[i].identifier);
             sbufWriteU16(dst, serialConfig()->portConfigs[i].functionMask);
             sbufWriteU8(dst, serialConfig()->portConfigs[i].msp_baudrateIndex);
