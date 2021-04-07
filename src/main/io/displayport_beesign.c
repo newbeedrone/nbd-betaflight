@@ -163,8 +163,8 @@ displayPort_t *beesignDisplayPortInit(const vcdProfile_t *vcdProfile)
     bsSetOsdHosOffset(vcdProfile->h_offset);
     bsSetOsdVosOffset(vcdProfile->v_offset);
     bsSetOsdMode(BEESIGN_OSD_MODE_CUSTOM);
-    delayMicroseconds(1000000); // TODO: Optimize this
     displayInit(&beesignDisplayPort, &beesignVTable);
+    resync(&beesignDisplayPort);
 
     return &beesignDisplayPort;
 }
