@@ -116,7 +116,7 @@ void telemetryInit(void)
 #if defined(USE_MSP_OVER_TELEMETRY)
     initSharedMsp();
 #endif
-#ifdef USE_BEESIGN_UART
+#ifdef USE_BEESIGN
     initBeesignPortConfig();
 #endif
 
@@ -193,7 +193,7 @@ void telemetryCheckState(void)
 #ifdef USE_TELEMETRY_IBUS
     checkIbusTelemetryState();
 #endif
-#ifdef USE_BEESIGN_UART
+#ifdef USE_BEESIGN
     checkBeesignState();
 #endif
 }

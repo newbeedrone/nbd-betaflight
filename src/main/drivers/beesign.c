@@ -647,8 +647,8 @@ static void freeBeesignPort(void)
 
 void initBeesignPortConfig(void)
 {
-    portConfig = findSerialPortConfig(FUNCTION_VTX_BEESIGN);
-    beesignPortSharing = determinePortSharing(portConfig, FUNCTION_VTX_BEESIGN);
+    portConfig = findSerialPortConfig(FUNCTION_TELEMETRY_BEESIGN);
+    beesignPortSharing = determinePortSharing(portConfig, FUNCTION_TELEMETRY_BEESIGN);
 }
 
 void checkBeesignState(void)
@@ -673,7 +673,7 @@ bool beesignInit(void)
     }
 
     if (portConfig) {
-        beesignSerialPort = openSerialPort(portConfig->identifier, FUNCTION_VTX_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
+        beesignSerialPort = openSerialPort(portConfig->identifier, FUNCTION_TELEMETRY_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
     }
 
     if (!beesignSerialPort) {
