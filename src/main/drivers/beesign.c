@@ -619,14 +619,14 @@ void bsUpdateCharacterFont(uint8_t id, uint8_t *data)
 
 bool beesignInit(void)
 {
-#if defined(USE_BEESIGN_UART)
-    beesignSerialPort = openSerialPort(USE_BEESIGN_UART, FUNCTION_VTX_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
-#else
-    serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_VTX_BEESIGN);
+    serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_TELEMETRY_BEESIGN);
+
     if (portConfig) {
-        beesignSerialPort = openSerialPort(portConfig->identifier, FUNCTION_VTX_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
+        beesignSerialPort = openSerialPort(portConfig->identifier, FUNCTION_TELEMETRY_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
+    } else {
+        return false;
     }
-#endif
+
     if (!beesignSerialPort) {
         return false;
     }
@@ -643,12 +643,18 @@ bool checkBeesignSerialPort(void)
     if (!beesignSerialPort) {
         return false;
     }
+
     return true;
 }
 
 void beesignUpdate(timeUs_t currentTimeUs)
 {
     UNUSED(currentTimeUs);
+
+    if (!beesignSerialPort) {
+        return;
+    }
+
     while (serialRxBytesWaiting(beesignSerialPort) > 0) {
         const uint8_t ch = serialRead(beesignSerialPort);
         bsReceiveFrame(ch);

@@ -22,5 +22,5 @@
 
 #include <stdint.h>
 
-bool beesignVtxInit(void);
+bool vtxBeesignInit(void);
 void beesignProcess(timeUs_t currentTimeUs);

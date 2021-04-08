@@ -87,7 +87,7 @@
 #undef USE_VTX_SMARTAUDIO
 #undef USE_VTX_TRAMP
 
-#define USE_BEESIGN_UART                SERIAL_PORT_USART1
+#define BEESIGN_UART                    SERIAL_PORT_USART1
 
 #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 
@@ -130,7 +130,7 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
+#define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff

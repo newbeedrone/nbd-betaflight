@@ -173,7 +173,7 @@ static bool vtxBSGetFreq(const vtxDevice_t *vtxDevice, uint16_t *pFreq)
     return true;
 }
 
-bool beesignVtxInit(void)
+bool vtxBeesignInit(void)
 {
     if (!checkBeesignSerialPort()) {
         return false;
