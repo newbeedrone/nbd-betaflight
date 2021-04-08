@@ -899,7 +899,7 @@ void init(void)
 #endif
 
 #ifdef USE_VTX_BEESIGN
-    beesignVtxInit();
+    vtxBeesignInit();
 #endif
 
 #ifdef USE_VTX_TRAMP

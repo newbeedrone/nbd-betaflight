@@ -152,6 +152,13 @@ void pgResetFn_serialConfig(serialConfig_t *serialConfig)
     }
 #endif
 
+#ifdef USE_BEESIGN
+    serialPortConfig_t *serialBeesignUartConfig = serialFindPortConfiguration(BEESIGN_UART);
+    if (serialBeesignUartConfig) {
+        serialBeesignUartConfig->functionMask = FUNCTION_BEESIGN;
+    }
+#endif
+
 #if defined(USE_VCP) && defined(USE_MSP_UART)
     if (serialConfig->portConfigs[0].identifier == SERIAL_PORT_USB_VCP) {
         serialPortConfig_t * uart1Config = serialFindPortConfigurationMutable(SERIAL_PORT_USART1);

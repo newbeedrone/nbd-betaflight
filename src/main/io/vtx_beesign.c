@@ -64,7 +64,7 @@ static vtxDevice_t vtxBeesign = {
 };
 #endif
 
-bool beesignVtxInit(void)
+bool vtxBeesignInit(void)
 {
     if (!checkBeesignSerialPort()) {
         return false;

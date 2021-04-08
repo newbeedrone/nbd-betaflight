@@ -43,7 +43,7 @@ typedef enum {
     FUNCTION_RX_SERIAL           = (1 << 6),  // 64
     FUNCTION_BLACKBOX            = (1 << 7),  // 128
 #ifdef USE_VTX_BEESIGN
-    FUNCTION_VTX_BEESIGN         = (1 << 8),  // 256
+    FUNCTION_BEESIGN             = (1 << 8),  // 256
 #endif
     FUNCTION_TELEMETRY_MAVLINK   = (1 << 9),  // 512
     FUNCTION_ESC_SENSOR          = (1 << 10), // 1024
