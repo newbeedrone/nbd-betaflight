@@ -35,7 +35,6 @@
 #include "drivers/timer.h"
 #include "drivers/serial.h"
 #include "drivers/serial_softserial.h"
-#include "drivers/beesign.h"
 
 #include "io/serial.h"
 
@@ -116,9 +115,6 @@ void telemetryInit(void)
 #if defined(USE_MSP_OVER_TELEMETRY)
     initSharedMsp();
 #endif
-#ifdef USE_BEESIGN
-    initBeesignPortConfig();
-#endif
 
     telemetryCheckState();
 }
@@ -192,9 +188,6 @@ void telemetryCheckState(void)
 #endif
 #ifdef USE_TELEMETRY_IBUS
     checkIbusTelemetryState();
-#endif
-#ifdef USE_BEESIGN
-    checkBeesignState();
 #endif
 }
 
