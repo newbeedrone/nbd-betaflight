@@ -185,6 +185,8 @@ extern const char *const bsModeNames[];
 extern const uint16_t bsPowerTable[];
 extern beeSignDevice_t bsDevice;
 
+void initBeesignPortConfig(void);
+void checkBeesignState(void);
 bool beesignInit(void);
 uint8_t beesignSendCmd(void);
 void beesignUpdate(timeUs_t currentTimeUs);

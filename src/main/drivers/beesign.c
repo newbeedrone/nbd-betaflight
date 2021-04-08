@@ -46,6 +46,8 @@
 #include "io/vtx.h"
 #include "io/vtx_beesign.h"
 
+#include "telemetry/telemetry.h"
+
 #define BEESIGN_CMD_BUFF_SIZE (8192 * 2)
 
 static uint8_t beesignCmdQueue[BEESIGN_CMD_BUFF_SIZE];
@@ -55,6 +57,10 @@ static uint16_t beesignCmdCount;
 static uint8_t receiveBuffer[BEESIGN_FM_MAX_LEN];
 static uint8_t receiveFrame[BEESIGN_FM_MAX_LEN];
 static uint8_t receiveFrameValid = 0;
+
+static portSharing_e beesignPortSharing;
+static bool beesignEnable = false;
+serialPortConfig_t *portConfig;
 static serialPort_t *beesignSerialPort = NULL;
 
 #define MAX_CHARS2UPDATE (100)
@@ -617,23 +623,68 @@ void bsUpdateCharacterFont(uint8_t id, uint8_t *data)
 
 #endif //defined(USE_OSD_BEESIGN)
 
+static bool beesignIsUsingHardwareUART(void)
+{
+    return !(portConfig->identifier == SERIAL_PORT_SOFTSERIAL1 || portConfig->identifier == SERIAL_PORT_SOFTSERIAL2);
+}
+
+static void beesignConfigurePortForTX(void)
+{
+    if (beesignIsUsingHardwareUART()) {
+        // workAroundForBeesignOnUsart(beesignSerialPort, MODE_TX);
+    } else {
+        serialSetMode(beesignSerialPort, MODE_TX);
+    }
+}
+
+static void freeBeesignPort(void)
+{
+    closeSerialPort(beesignSerialPort);
+
+    beesignSerialPort = NULL;
+    beesignEnable = false;
+}
+
+void initBeesignPortConfig(void)
+{
+    portConfig = findSerialPortConfig(FUNCTION_VTX_BEESIGN);
+    beesignPortSharing = determinePortSharing(portConfig, FUNCTION_VTX_BEESIGN);
+}
+
+void checkBeesignState(void)
+{
+    bool newEnabledValue = telemetryDetermineEnabledState(beesignPortSharing);
+
+    if (newEnabledValue == beesignEnable) {
+        return;
+    }
+
+    if (newEnabledValue) {
+        beesignInit();
+    } else {
+        freeBeesignPort();
+    }
+}
+
 bool beesignInit(void)
 {
-#if defined(USE_BEESIGN_UART)
-    beesignSerialPort = openSerialPort(USE_BEESIGN_UART, FUNCTION_VTX_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
-#else
-    serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_VTX_BEESIGN);
+    if (!portConfig) {
+        return false;
+    }
+
     if (portConfig) {
         beesignSerialPort = openSerialPort(portConfig->identifier, FUNCTION_VTX_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
     }
-#endif
+
     if (!beesignSerialPort) {
         return false;
     }
 
+    beesignConfigurePortForTX();
 #ifndef USE_OSD_BEESIGN
     bsCloseOsd();
 #endif
+    beesignEnable = true;
 
     return true;
 }
@@ -643,12 +694,18 @@ bool checkBeesignSerialPort(void)
     if (!beesignSerialPort) {
         return false;
     }
+
     return true;
 }
 
 void beesignUpdate(timeUs_t currentTimeUs)
 {
     UNUSED(currentTimeUs);
+
+    if (!beesignSerialPort) {
+        return;
+    }
+
     while (serialRxBytesWaiting(beesignSerialPort) > 0) {
         const uint8_t ch = serialRead(beesignSerialPort);
         bsReceiveFrame(ch);
