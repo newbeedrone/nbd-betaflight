@@ -153,7 +153,7 @@ void pgResetFn_serialConfig(serialConfig_t *serialConfig)
 #endif
 
 #ifdef USE_BEESIGN
-    serialPortConfig_t *serialBeesignUartConfig = serialFindPortConfiguration(BEESIGN_UART);
+    serialPortConfig_t *serialBeesignUartConfig = serialFindPortConfigurationMutable(BEESIGN_UART);
     if (serialBeesignUartConfig) {
         serialBeesignUartConfig->functionMask = FUNCTION_BEESIGN;
     }

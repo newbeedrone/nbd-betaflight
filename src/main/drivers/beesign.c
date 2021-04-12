@@ -619,7 +619,7 @@ void bsUpdateCharacterFont(uint8_t id, uint8_t *data)
 
 bool beesignInit(void)
 {
-    serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_BEESIGN);
+    const serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_BEESIGN);
 
     if (portConfig) {
         beesignSerialPort = openSerialPort(portConfig->identifier, FUNCTION_BEESIGN, NULL, NULL, 115200, MODE_RXTX, SERIAL_BIDIR | SERIAL_BIDIR_PP | SERIAL_BIDIR_NOPULL);
