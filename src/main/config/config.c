@@ -67,6 +67,7 @@
 #include "pg/adc.h"
 #include "pg/beeper.h"
 #include "pg/beeper_dev.h"
+#include "pg/displayport_profiles.h"
 #include "pg/gyrodev.h"
 #include "pg/motor.h"
 #include "pg/pg.h"
@@ -597,6 +598,25 @@ static void validateAndFixConfig(void)
             }
 
             break;
+        }
+    }
+
+    // validate that the minimum battery cell voltage is less than the maximum cell voltage
+    // reset to defaults if not
+    if (batteryConfig()->vbatmincellvoltage >=  batteryConfig()->vbatmaxcellvoltage) {
+        batteryConfigMutable()->vbatmincellvoltage = VBAT_CELL_VOLTAGE_DEFAULT_MIN;
+        batteryConfigMutable()->vbatmaxcellvoltage = VBAT_CELL_VOLTAGE_DEFAULT_MAX;
+    }
+
+    // validate that displayport_msp_serial is referencing a valid UART that actually has MSP enabled
+    if (displayPortProfileMsp()->displayPortSerial != SERIAL_PORT_NONE) {
+        const serialPortConfig_t *portConfig = serialFindPortConfiguration(displayPortProfileMsp()->displayPortSerial);
+        if (!portConfig || !(portConfig->functionMask & FUNCTION_MSP)
+#ifndef USE_MSP_PUSH_OVER_VCP
+            || (portConfig->identifier == SERIAL_PORT_USB_VCP)
+#endif
+            ) {
+            displayPortProfileMspMutable()->displayPortSerial = SERIAL_PORT_NONE;
         }
     }
 }
