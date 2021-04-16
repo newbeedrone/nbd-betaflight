@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL Rev_D"
+#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL Rev_G"
 #define USBD_PRODUCT_STRING             "BeeBrain BL"
 
 /* ======== LED ======== */
@@ -115,8 +115,8 @@
 #define CURRENT_METER_ADC_PIN           PA5
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     510
-#define CURRENT_METER_OFFSET_DEFAULT    0
+#define CURRENT_METER_SCALE_DEFAULT     380
+#define CURRENT_METER_OFFSET_DEFAULT    500
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
