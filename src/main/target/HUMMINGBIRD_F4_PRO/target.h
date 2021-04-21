@@ -87,7 +87,7 @@
 #undef USE_VTX_SMARTAUDIO
 #undef USE_VTX_TRAMP
 
-#define USE_BEESIGN_UART                SERIAL_PORT_USART1
+#define BEESIGN_UART                    SERIAL_PORT_USART1
 
 #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 

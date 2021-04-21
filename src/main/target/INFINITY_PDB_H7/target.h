@@ -161,6 +161,8 @@
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
+#define TARGET_IO_PORTF                 0xffff
+#define TARGET_IO_PORTG                 0xffff
 
-#define USABLE_TIMER_CHANNEL_COUNT      6
-#define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(16) )
+#define USABLE_TIMER_CHANNEL_COUNT      10
+#define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(4) | TIM_N(16) )

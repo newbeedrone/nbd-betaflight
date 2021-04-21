@@ -20,18 +20,12 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL Rev_G"
-#define USBD_PRODUCT_STRING             "BeeBrain BL"
+#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V3 HP Rev_A"
+#define USBD_PRODUCT_STRING             "BeeBrain BL V3 HP"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC13
 #define LED1_PIN                        PC14
-
-/* ======== BUZZER ======== */
-#define USE_BEEPER
-#define BEEPER_PIN                      PB10
-#define BEEPER_PWM_HZ                   5400
-#define BEEPER_INVERTED
 
 /* ======== UART ======== */
 #define USE_UART
@@ -75,7 +69,7 @@
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
-#define GYRO_1_ALIGN                    CW90_DEG
+#define GYRO_1_ALIGN                    CW180_DEG
 
 /* ======== ACC ======== */
 #define USE_ACC
@@ -96,16 +90,34 @@
 
 #define RTC6705_CS_PIN                  PA14
 #define RTC6705_SPI_INSTANCE            SPI3
-#define RTC6705_POWER_PIN               PA8
 
-#define VTX_POWER_PIN_INVERTED
-#define RTC6705_EXPAND_POWER_CTRL
+#define RTC6705_EX_POWER_1_PIN          PA1 // External VTx Power LSB
+#define RTC6705_EX_POWER_2_PIN          PA8 // External VTx Power MSB
+
+#define RTC6705_DYNAMIC_POWER_CTRL // For External VTx Power Controller
 #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 
 /* ======== RX ======== */
-#define SERIALRX_UART                   SERIAL_PORT_USART2
-#define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
-#define SERIALRX_PROVIDER               SERIALRX_SBUS
+#define USE_RX_SPI
+
+#define RX_SPI_INSTANCE                 SPI2
+#define RX_NSS_PIN                      SPI2_NSS_PIN
+#define RX_SPI_LED_PIN                  PA13
+#define RX_SPI_EXTI_PIN                 PB2
+#define RX_SPI_BIND_PIN                 PC15
+#define RX_CC2500_SPI_TX_EN_PIN         PA6
+#define RX_CC2500_SPI_ANT_SEL_PIN       PA7
+
+#define USE_RX_FRSKY_SPI_TELEMETRY
+#define USE_RX_CC2500_SPI_PA_LNA
+#define USE_RX_CC2500_SPI_DIVERSITY
+#define USE_RX_FRSKY_SPI_D
+#define USE_RX_FRSKY_SPI_X
+#define USE_RX_SFHSS_SPI
+
+#define CC2500_BLINK_BIND
+#define DEFAULT_RX_FEATURE              FEATURE_RX_SPI
+#define RX_SPI_DEFAULT_PROTOCOL         RX_SPI_FRSKY_D
 
 /* ======== ADC ======== */
 #define USE_ADC
@@ -115,8 +127,8 @@
 #define CURRENT_METER_ADC_PIN           PA5
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     380
-#define CURRENT_METER_OFFSET_DEFAULT    500
+#define CURRENT_METER_SCALE_DEFAULT     510
+#define CURRENT_METER_OFFSET_DEFAULT    249
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -132,5 +144,5 @@
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 (BIT(2))
 
-#define USABLE_TIMER_CHANNEL_COUNT      6
-#define USED_TIMERS                     ( TIM_N(2) | TIM_N(4) | TIM_N(5) )
+#define USABLE_TIMER_CHANNEL_COUNT      5
+#define USED_TIMERS                     ( TIM_N(4) | TIM_N(5) )
