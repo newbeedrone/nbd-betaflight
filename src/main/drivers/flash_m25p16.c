@@ -184,6 +184,7 @@ bool m25p16_detect(flashDevice_t *fdevice, uint32_t chipID)
     case JEDEC_ID_WINBOND_W25Q80:
         fdevice->geometry.sectors = 16;
         fdevice->geometry.pagesPerSector = 256;
+        break;
     case JEDEC_ID_WINBOND_W25Q16:
     case JEDEC_ID_MICRON_M25P16:
         fdevice->geometry.sectors = 32;
