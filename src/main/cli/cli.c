@@ -6536,13 +6536,13 @@ const clicmd_t cmdTable[] = {
     CLI_COMMAND_DEF("vtx", "vtx channels on switch", "<index> <aux_channel> <vtx_band> <vtx_channel> <vtx_power> <start_range> <end_range>", cliVtx),
 #endif
 #endif
+#ifdef USE_VTX_BEESIGN
+    CLI_COMMAND_DEF("beesign_vtx_lock", "beesign disable some vtx frequencies for certain regions", NULL, beesignSetVTxLock),
+    CLI_COMMAND_DEF("beesign_vtx_unlock", "beesign available all vtx frequencies", NULL, beesignSetVTxUnlock),
+#endif
 #ifdef USE_VTX_TABLE
     CLI_COMMAND_DEF("vtx_info", "vtx power config dump", NULL, cliVtxInfo),
     CLI_COMMAND_DEF("vtxtable", "vtx frequency table", "<band> <bandname> <bandletter> [FACTORY|CUSTOM] <freq> ... <freq>\r\n", cliVtxTable),
-#endif
-#ifdef USE_VTX_BEESIGN
-    CLI_COMMAND_DEF("beesign_vtx_lock", "beesign", NULL, beesignSetVTxLock),
-    CLI_COMMAND_DEF("beesign_vtx_unlock", "beesign", NULL, beesignSetVTxUnlock),
 #endif
 };
 
