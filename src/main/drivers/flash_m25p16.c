@@ -60,6 +60,7 @@
 #define JEDEC_ID_MICRON_M25P16         0x202015
 #define JEDEC_ID_MICRON_N25Q064        0x20BA17
 #define JEDEC_ID_MICRON_N25Q128        0x20ba18
+#define JEDEC_ID_WINBOND_W25Q80        0xEF4014
 #define JEDEC_ID_WINBOND_W25Q16        0xEF4015
 #define JEDEC_ID_WINBOND_W25Q32        0xEF4016
 #define JEDEC_ID_WINBOND_W25Q64        0xEF4017
@@ -180,6 +181,9 @@ static bool m25p16_waitForReady(flashDevice_t *fdevice)
 bool m25p16_detect(flashDevice_t *fdevice, uint32_t chipID)
 {
     switch (chipID) {
+    case JEDEC_ID_WINBOND_W25Q80:
+        fdevice->geometry.sectors = 16;
+        fdevice->geometry.pagesPerSector = 256;
     case JEDEC_ID_WINBOND_W25Q16:
     case JEDEC_ID_MICRON_M25P16:
         fdevice->geometry.sectors = 32;
