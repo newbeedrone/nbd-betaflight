@@ -93,6 +93,10 @@
 #define I2C1_SCL                        PB6
 #define I2C1_SDA                        PB7
 
+#define USE_I2C_DEVICE_2
+#define I2C2_SCL                        PB10
+#define I2C2_SDA                        PB11
+
 /* ======== GYRO ======== */
 #define USE_GYRO
 #define USE_GYRO_SPI_MPU6000
@@ -115,7 +119,7 @@
 #define USE_BARO
 #define USE_BARO_DPS310
 
-#define BARO_I2C_INSTANCE               (I2CDEV_1)
+#define BARO_I2C_INSTANCE               (I2CDEV_2)
 
 /* ======== OSD ======== */
 #define USE_MAX7456
