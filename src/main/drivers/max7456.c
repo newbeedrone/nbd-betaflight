@@ -245,7 +245,7 @@ static uint8_t *getActiveLayerBuffer(void)
 static uint8_t max7456Send(uint8_t add, uint8_t data)
 {
     spiTransferByte(busdev->busdev_u.spi.instance, add);
-#ifdef USE_MAX7456_SIM
+#ifdef USE_NBD7456
     delayMicroseconds(5);
 #endif
     return spiTransferByte(busdev->busdev_u.spi.instance, data);
@@ -486,7 +486,7 @@ bool max7456Init(const max7456Config_t *max7456Config, const vcdProfile_t *pVcdP
     // This register is not modified in this driver, therefore ensured to remain at its default value (0x1B).
 
     spiSetDivisor(busdev->busdev_u.spi.instance, MAX7456_SPI_CLK * 2);
-#ifndef USE_MAX7456_SIM
+#ifndef USE_NBD7456
     __spiBusTransactionBegin(busdev);
 
     uint8_t osdm = max7456Send(MAX7456ADD_OSDM|MAX7456ADD_READ, 0xff);
@@ -741,7 +741,8 @@ void max7456DrawScreen(void)
     if (!fontIsLoading) {
 
         // (Re)Initialize MAX7456 at startup or stall is detected.
-#ifndef USE_MAX7456_SIM
+
+#ifndef USE_NBD7456
         max7456ReInitIfRequired(false);
 #endif
         uint8_t *buffer = getActiveLayerBuffer();
@@ -769,7 +770,7 @@ void max7456DrawScreen(void)
             max7456SendDma(spiBuff, NULL, buff_len);
 #else
             __spiBusTransactionBegin(busdev);
-#ifdef USE_MAX7456_SIM
+#ifdef USE_NBD7456
             for (int len = 0; len < buff_len; len++) {
                 delayMicroseconds(3);
                 spiTransferByte(busdev->busdev_u.spi.instance, spiBuff[len]);
@@ -869,7 +870,7 @@ bool max7456WriteNvm(uint8_t char_address, const uint8_t *font_data)
     // Wait until bit 5 in the status register returns to 0 (22ms)
 
     while ((max7456Send(MAX7456ADD_STAT, 0x00) & STAT_NVR_BUSY) != 0x00) {
-#ifdef USE_MAX7456_SIM
+#ifdef USE_NBD7456
         delayMicroseconds(2200);
 #endif
     }
