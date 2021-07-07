@@ -75,7 +75,7 @@
 
 /* ======== OSD ======== */
 #define USE_MAX7456
-#define USE_MAX7456_SIM // For NBD7456
+#define USE_NBD7456 // For NBD7456
 
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3

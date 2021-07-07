@@ -224,7 +224,7 @@ static void max7456DrawScreenSlow(void);
 static uint8_t max7456Send(uint8_t add, uint8_t data)
 {
     spiTransferByte(busdev->busdev_u.spi.instance, add);
-#ifdef USE_MAX7456_SIM
+#ifdef USE_NBD7456
     delayMicroseconds(5);
 #endif
     return spiTransferByte(busdev->busdev_u.spi.instance, data);
@@ -653,7 +653,7 @@ void max7456DrawScreen(void)
 
         // (Re)Initialize MAX7456 at startup or stall is detected.
 
-#ifndef USE_MAX7456_SIM
+#ifndef USE_NBD7456
         max7456ReInitIfRequired();
 #endif
 
@@ -680,7 +680,7 @@ void max7456DrawScreen(void)
             max7456SendDma(spiBuff, NULL, buff_len);
 #else
             __spiBusTransactionBegin(busdev);
-#ifdef USE_MAX7456_SIM
+#ifdef USE_NBD7456
             for (int len = 0; len < buff_len; len++) {
                 delayMicroseconds(3);
                 spiTransferByte(busdev->busdev_u.spi.instance, spiBuff[len]);
@@ -776,7 +776,7 @@ void max7456WriteNvm(uint8_t char_address, const uint8_t *font_data)
     // Wait until bit 5 in the status register returns to 0 (22ms)
 
     while ((max7456Send(MAX7456ADD_STAT, 0x00) & STAT_NVR_BUSY) != 0x00) {
-#ifdef USE_MAX7456_SIM
+#ifdef USE_NBD7456
         delayMicroseconds(2200);
 #endif
     }
