@@ -13,7 +13,9 @@ OFFICIAL_TARGETS  = \
     INFINITY_F4 \
     INFINITY_F7 \
     INFINITY_PDB_F7 \
-    INFINITY_PDB_H7
+    INFINITY_PDB_H7 \
+    INFINITY_AIO_V2_F7 \
+    INFINITY_AIO_V2_H7
 
 ALT_TARGET_PATHS  = $(filter-out %/target,$(basename $(wildcard $(ROOT)/src/main/target/*/*.mk)))
 ALT_TARGET_NAMES  = $(notdir $(ALT_TARGET_PATHS))
