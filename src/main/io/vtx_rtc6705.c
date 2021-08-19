@@ -104,9 +104,9 @@ static void vtxRTC6705EnableAndConfigure(vtxDevice_t *vtxDevice)
     while (!vtxRTC6705CanUpdate());
 
     rtc6705Enable();
-
+#ifndef RTC6705_EXPAND_POWER_CTRL
     delay(VTX_RTC6705_BOOT_DELAY);
-
+#endif
     vtxRTC6705Configure(vtxDevice);
 }
 #endif
