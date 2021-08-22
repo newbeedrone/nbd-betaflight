@@ -484,6 +484,9 @@ beebrain_bl_v1: $(GROUP_BBBL_V1_TARGETS)
 ## beebrain_bl_v2    : build beebrain brushless v2 targets
 beebrain_bl_v2: $(GROUP_BBBL_V2_TARGETS)
 
+## beebrain_bl_v3    : build beebrain brushless v3 targets
+beebrain_bl_v3: $(GROUP_BBBL_V3_TARGETS)
+
 ## hummingbird_f4_pro : build hummingbird f4 pro targets
 hummingbird_f4_pro: $(GROUP_HUMMINGBIRD_F4_PRO_TARGETS)
 
