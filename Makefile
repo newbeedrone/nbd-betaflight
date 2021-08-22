@@ -473,6 +473,9 @@ beebrain_bl_v1: $(GROUP_BEEBRAIN_BL_V1_TARGETS)
 ## beebrain_bl_v2    : build beebrain bl v2 targets
 beebrain_bl_v2: $(GROUP_BEEBRAIN_BL_V2_TARGETS)
 
+## beebrain_bl_v3    : build beebrain bl v3 targets
+beebrain_bl_v3: $(GROUP_BEEBRAIN_BL_V3_TARGETS)
+
 ## hummingbird_f4_pro : build hummingbird_f4_pro targets
 hummingbird_f4_pro: $(GROUP_HUMMINGBIRD_F4_PRO_TARGETS)
 
