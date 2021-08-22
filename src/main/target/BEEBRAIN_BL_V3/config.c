@@ -140,8 +140,8 @@ void targetConfiguration(void)
     vtxTableConfigMutable()->powerValues[1] = 1;
     vtxTableConfigMutable()->powerValues[2] = 2;
     strcpy(vtxTableConfigMutable()->powerLabels[0], "5  ");
-    strcpy(vtxTableConfigMutable()->powerLabels[1], "25 ");
-    strcpy(vtxTableConfigMutable()->powerLabels[2], "100");
+    strcpy(vtxTableConfigMutable()->powerLabels[1], "50 ");
+    strcpy(vtxTableConfigMutable()->powerLabels[2], "120");
 
     // Switches / Modes
     modeActivationConditionsMutable(0)->modeId           = BOXARM;
