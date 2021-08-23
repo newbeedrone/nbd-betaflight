@@ -31,11 +31,10 @@
 
 #include "pg/vtx_io.h"
 
-#ifdef RTC6705_DYNAMIC_POWER_CTRL
-    #define VTX_RTC6705_POWER_COUNT       3
-    #define VTX_DYANMIC_CTRL_PIN_COUNT    2
+#ifdef RTC6705_EXPAND_POWER_CTRL
+    #define VTX_RTC6705_POWER_COUNT 3
 #else
-    #define VTX_RTC6705_POWER_COUNT       2
+    #define VTX_RTC6705_POWER_COUNT 2
 #endif
 
 #define VTX_RTC6705_FREQ_MIN    5600
