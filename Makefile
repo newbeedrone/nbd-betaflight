@@ -16,7 +16,7 @@
 #
 
 # The target to build, see VALID_TARGETS below
-TARGET    ?= BEEBRAIN_BL
+TARGET    ?= BEEBRAIN_BL_V1
 
 # Compile-time options
 OPTIONS   ?=
