@@ -490,6 +490,9 @@ beebrain_bl_v3: $(GROUP_BBBL_V3_TARGETS)
 ## hummingbird_f4_pro : build hummingbird f4 pro targets
 hummingbird_f4_pro: $(GROUP_HUMMINGBIRD_F4_PRO_TARGETS)
 
+## release            : build a release group
+release: $(GROUP_RELEASE)
+
 ## targets-group-rest: build the rest of the targets (not listed in the other groups)
 targets-group-rest: $(GROUP_OTHER_TARGETS)
 
