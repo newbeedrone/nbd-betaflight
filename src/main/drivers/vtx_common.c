@@ -210,7 +210,11 @@ const char *vtxCommonLookupPowerName(const vtxDevice_t *vtxDevice, int index)
     if (vtxDevice && index > 0 && index <= vtxTablePowerLevels) {
         return vtxTablePowerLabels[index];
     } else {
+#ifdef RTC6705_EXPAND_POWER_CTRL
+        return vtxTablePowerLabels[1];
+#else
         return "?";
+#endif
     }
 }
 

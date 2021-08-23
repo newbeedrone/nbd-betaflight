@@ -201,6 +201,15 @@ void rtc6705SetRFPower(uint8_t rf_power)
 
     rf_power = constrain(rf_power, VTX_RTC6705_MIN_POWER_VALUE, VTX_RTC6705_POWER_COUNT - 1);
 
+#ifdef RTC6705_EXPAND_POWER_CTRL
+    if (rf_power > 0) {
+        rtc6705Enable();
+        rf_power = (rf_power > 1) ? (1) : (2);
+    } else {
+        rtc6705Disable();
+    }
+#endif
+
     uint32_t val_hex = RTC6705_RW_CONTROL_BIT; // write
     val_hex |= RTC6705_ADDRESS; // address
     const uint32_t data = rf_power > 1 ? PA_CONTROL_DEFAULT : (PA_CONTROL_DEFAULT | PD_Q5G_MASK) & (~(PA5G_PW_MASK | PA5G_BS_MASK));

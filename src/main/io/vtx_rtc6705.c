@@ -95,9 +95,6 @@ static void vtxRTC6705Configure(vtxDevice_t *vtxDevice)
 {
     uint16_t newPowerValue = 0;
     vtxCommonLookupPowerValue(vtxDevice, rtc6705PowerIndex, &newPowerValue);
-#ifdef RTC6705_EXPAND_POWER_CTRL
-    newPowerValue = (newPowerValue == 1) ? (2) : (1);
-#endif
     rtc6705SetRFPower(newPowerValue);
     vtxRTC6705SetFrequency(vtxDevice, rtc6705Frequency);
 }
@@ -107,9 +104,9 @@ static void vtxRTC6705EnableAndConfigure(vtxDevice_t *vtxDevice)
     while (!vtxRTC6705CanUpdate());
 
     rtc6705Enable();
-
+#ifndef RTC6705_EXPAND_POWER_CTRL
     delay(VTX_RTC6705_BOOT_DELAY);
-
+#endif
     vtxRTC6705Configure(vtxDevice);
 }
 #endif
