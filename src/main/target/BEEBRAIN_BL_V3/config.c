@@ -210,6 +210,32 @@ void targetConfiguration(void)
 
 #if defined(BEEBRAIN_BL_V3_BASE)
     strcpy(pilotConfigMutable()->name, "BeeBrain BLV3");
+#elif defined (BEEBRAIN_BL_V3_65)
+    strcpy(pilotConfigMutable()->name, "BBBL V3 65");
+
+    gyroConfigMutable()->gyro_lowpass2_hz = 275;
+    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 220;
+    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 550;
+
+    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 77;
+    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 187;
+    pidProfilesMutable(0)->dterm_lowpass2_hz = 165;
+    pidProfilesMutable(0)->vbatPidCompensation = true;
+    pidProfilesMutable(0)->iterm_relax_cutoff = 10;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 74;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 20;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 98;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 259;
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 67;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 20;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 90;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 245;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 90;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 245;
+    pidProfilesMutable(0)->d_min[FD_ROLL] = 59;
+    pidProfilesMutable(0)->d_min[FD_PITCH] = 64;
+    pidProfilesMutable(0)->d_min_gain = 30;
+    pidProfilesMutable(0)->d_min_advance = 1;
 #endif
 }
 #endif
