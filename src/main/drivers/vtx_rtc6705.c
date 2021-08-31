@@ -54,7 +54,7 @@ static IO_t vtxPowerPin     = IO_NONE;
 #endif
 
 #ifdef RTC6705_DYNAMIC_POWER_CTRL
-static IO_t exPowerPin[VTX_DYANMIC_CTRL_PIN_COUNT]   = {IO_NONE, IO_NONE};
+static IO_t exPowerPin[VTX_DYNAMIC_CTRL_PIN_COUNT]   = {IO_NONE, IO_NONE};
 #endif
 
 static busDevice_t *busdev = NULL;
@@ -116,7 +116,7 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
     }
 
 #ifdef RTC6705_DYNAMIC_POWER_CTRL
-    for (uint8_t i = 0; i < VTX_DYANMIC_CTRL_PIN_COUNT; i++) {
+    for (uint8_t i = 0; i < VTX_DYNAMIC_CTRL_PIN_COUNT; i++) {
         exPowerPin[i] = IOGetByTag(vtxIOConfig->exPowerTag[i]);
         if (exPowerPin[i]) {
             IOInit(exPowerPin[i], OWNER_VTX_POWER, i + 1);
@@ -209,7 +209,7 @@ void rtc6705DynamicPowerControl(uint8_t power)
 {
     power &= 0x03; // mask lsb 2 bits
 
-    for (uint8_t i = 0; i < VTX_DYANMIC_CTRL_PIN_COUNT; i++) {
+    for (uint8_t i = 0; i < VTX_DYNAMIC_CTRL_PIN_COUNT; i++) {
         if (power & 0x01) {
             IOLo(exPowerPin[i]);
         } else {
