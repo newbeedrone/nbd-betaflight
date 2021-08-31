@@ -91,8 +91,8 @@
 #define RTC6705_CS_PIN                  PA14
 #define RTC6705_SPI_INSTANCE            SPI3
 
-#define RTC6705_EX_POWER_1_PIN          PA1 // External VTx Power LSB
-#define RTC6705_EX_POWER_2_PIN          PA8 // External VTx Power MSB
+#define RTC6705_EX_POWER_1_PIN          PA8 // External VTx Power LSB
+#define RTC6705_EX_POWER_2_PIN          PA1 // External VTx Power MSB
 
 #define RTC6705_DYNAMIC_POWER_CTRL // For External VTx Power Controller
 #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
