@@ -106,6 +106,12 @@
 #define USE_ACC
 #define USE_ACC_SPI_MPU6000
 
+/* ======== MAG ======== */
+#define USE_MAG
+#define USE_MAG_QMC5883
+
+#define MAG_I2C_INSTANCE                (I2CDEV_3)
+
 /* ======== OSD ======== */
 #define USE_MAX7456
 
