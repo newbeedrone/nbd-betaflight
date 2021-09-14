@@ -90,7 +90,7 @@ bool vtxRTC6705CanUpdate(void)
     return true;
 }
 
-#ifdef RTC6705_POWER_PIN
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_DYNAMIC_POWER_CTRL)
 static void vtxRTC6705Configure(vtxDevice_t *vtxDevice)
 {
     uint16_t newPowerValue = 0;
@@ -149,7 +149,7 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
     }
     uint16_t currentPowerValue = 0;
     vtxCommonLookupPowerValue(vtxDevice, rtc6705PowerIndex, &currentPowerValue);
-#ifdef RTC6705_POWER_PIN
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_DYNAMIC_POWER_CTRL)
     if (newPowerValue == 0) {
         // power device off
         if (currentPowerValue > 0) {
@@ -175,7 +175,7 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
     }
 #else
     rtc6705PowerIndex = index;
-    rtc6705SetRFPower(MAX(newPowerValue, VTX_RTC6705_MIN_POWER_VALUE);
+    rtc6705SetRFPower(MAX(newPowerValue, VTX_RTC6705_MIN_POWER_VALUE));
 #endif
 }
 
