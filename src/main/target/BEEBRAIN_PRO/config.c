@@ -137,13 +137,11 @@ void targetConfiguration(void)
     strcpy(vtxTableConfigMutable()->channelNames[5], "6");
     strcpy(vtxTableConfigMutable()->channelNames[6], "7");
     strcpy(vtxTableConfigMutable()->channelNames[7], "8");
-    vtxTableConfigMutable()->powerLevels = 3;
-    vtxTableConfigMutable()->powerValues[0] = 0;
-    vtxTableConfigMutable()->powerValues[1] = 1;
-    vtxTableConfigMutable()->powerValues[2] = 2;
-    strcpy(vtxTableConfigMutable()->powerLabels[0], "OFF");
-    strcpy(vtxTableConfigMutable()->powerLabels[1], "MIN");
-    strcpy(vtxTableConfigMutable()->powerLabels[2], "MAX");
+    vtxTableConfigMutable()->powerLevels = 2;
+    vtxTableConfigMutable()->powerValues[0] = 1;
+    vtxTableConfigMutable()->powerValues[1] = 2;
+    strcpy(vtxTableConfigMutable()->powerLabels[0], "MIN");
+    strcpy(vtxTableConfigMutable()->powerLabels[1], "MAX");
 
     // Switches / Modes
     modeActivationConditionsMutable(0)->modeId           = BOXARM;

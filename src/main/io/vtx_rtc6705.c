@@ -58,6 +58,8 @@ static uint16_t rtc6705Frequency;
 static int8_t rtc6705PowerIndex;
 static bool rtc6705PitModeActive;
 
+static bool rtc6705Reinitialized = false;
+
 static void vtxRTC6705SetBandAndChannel(vtxDevice_t *vtxDevice, uint8_t band, uint8_t channel);
 static void vtxRTC6705SetFrequency(vtxDevice_t *vtxDevice, uint16_t frequency);
 
@@ -91,10 +93,11 @@ bool vtxRTC6705CanUpdate(void)
     return true;
 }
 
-#ifdef RTC6705_POWER_PIN
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL)
 static void vtxRTC6705Configure(vtxDevice_t *vtxDevice)
 {
     uint16_t newPowerValue = 0;
+    rtc6705Reinitialized = true;
     vtxCommonLookupPowerValue(vtxDevice, rtc6705PowerIndex, &newPowerValue);
     rtc6705SetRFPower(newPowerValue);
     vtxRTC6705SetFrequency(vtxDevice, rtc6705Frequency);
@@ -105,9 +108,9 @@ static void vtxRTC6705EnableAndConfigure(vtxDevice_t *vtxDevice)
     while (!vtxRTC6705CanUpdate());
 
     rtc6705Enable();
-#ifndef RTC6705_EXPAND_POWER_CTRL
+
     delay(VTX_RTC6705_BOOT_DELAY);
-#endif
+
     vtxRTC6705Configure(vtxDevice);
 }
 #endif
@@ -155,8 +158,8 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
 static void vtxRTC6705SetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
 {
     UNUSED(vtxDevice);
-#ifdef RTC6705_POWER_PIN
-    if (onoff) {
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL)
+    if (onoff == 2) {
         // power device off
         if (!rtc6705PitModeActive) {
             // on, power it off
@@ -185,10 +188,11 @@ static void vtxRTC6705SetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
 static void vtxRTC6705SetFrequency(vtxDevice_t *vtxDevice, uint16_t frequency)
 {
     UNUSED(vtxDevice);
-    if (frequency >= VTX_RTC6705_FREQ_MIN && frequency <= VTX_RTC6705_FREQ_MAX && frequency != rtc6705Frequency) {
+    if (frequency >= VTX_RTC6705_FREQ_MIN && frequency <= VTX_RTC6705_FREQ_MAX && (frequency != rtc6705Frequency || rtc6705Reinitialized)) {
         frequency = constrain(frequency, VTX_RTC6705_FREQ_MIN, VTX_RTC6705_FREQ_MAX);
         rtc6705Frequency = frequency;
         rtc6705SetFrequency(frequency);
+        rtc6705Reinitialized = false;
     }
 }
 
