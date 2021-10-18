@@ -156,7 +156,7 @@ static void vtxRTC6705SetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
 {
     UNUSED(vtxDevice);
 #ifdef RTC6705_POWER_PIN
-    if (onoff) {
+    if (onoff == 2) {
         // power device off
         if (!rtc6705PitModeActive) {
             // on, power it off
