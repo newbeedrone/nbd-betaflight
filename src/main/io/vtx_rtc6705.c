@@ -97,10 +97,10 @@ bool vtxRTC6705CanUpdate(void)
 static void vtxRTC6705Configure(vtxDevice_t *vtxDevice)
 {
     uint16_t newPowerValue = 0;
-    rtc6705Reinitialized = true;
     vtxCommonLookupPowerValue(vtxDevice, rtc6705PowerIndex, &newPowerValue);
     rtc6705SetRFPower(newPowerValue);
     vtxRTC6705SetFrequency(vtxDevice, rtc6705Frequency);
+    rtc6705Reinitialized = true;
 }
 
 static void vtxRTC6705EnableAndConfigure(vtxDevice_t *vtxDevice)
