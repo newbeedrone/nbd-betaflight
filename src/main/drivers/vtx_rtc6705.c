@@ -191,6 +191,15 @@ void rtc6705SetFrequency(uint16_t frequency)
 
 void rtc6705SetRFPower(uint8_t rf_power)
 {
+#ifdef RTC6705_EXPAND_POWER_CTRL
+    if (rf_power > 0) {
+        rtc6705Enable();
+        rf_power = (rf_power > 1) ? (1) : (2); // Set output through PAOUT1
+    } else {
+        rtc6705Disable();
+    }
+#endif
+
 #if defined(USE_VTX_RTC6705_SOFTSPI)
     if (!busdev) {
         rtc6705SoftSpiSetRFPower(rf_power);
@@ -200,15 +209,6 @@ void rtc6705SetRFPower(uint8_t rf_power)
 #endif
 
     rf_power = constrain(rf_power, VTX_RTC6705_MIN_POWER_VALUE, VTX_RTC6705_POWER_COUNT - 1);
-
-#ifdef RTC6705_EXPAND_POWER_CTRL
-    if (rf_power > 0) {
-        rtc6705Enable();
-        rf_power = (rf_power > 1) ? (1) : (2);
-    } else {
-        rtc6705Disable();
-    }
-#endif
 
     uint32_t val_hex = RTC6705_RW_CONTROL_BIT; // write
     val_hex |= RTC6705_ADDRESS; // address
