@@ -182,6 +182,7 @@ static void bmi270UploadConfig(const busDevice_t *bus)
 static void bmi270Config(const gyroDev_t *gyro)
 {
     const busDevice_t *bus = &gyro->bus;
+    spiSetDivisor(bus->busdev_u.spi.instance, BMI270_SPI_DIVISOR);
 
     // If running in hardware_lpf experimental mode then switch to FIFO-based,
     // 6.4KHz sampling, unfiltered data vs. the default 3.2KHz with hardware filtering
@@ -283,6 +284,7 @@ static bool bmi270AccRead(accDev_t *acc)
         BUFFER_SIZE,
     };
 
+    spiSetDivisor(acc->bus.busdev_u.spi.instance, BMI270_SPI_DIVISOR);
     uint8_t bmi270_rx_buf[BUFFER_SIZE];
     static const uint8_t bmi270_tx_buf[BUFFER_SIZE] = {BMI270_REG_ACC_DATA_X_LSB | 0x80, 0, 0, 0, 0, 0, 0, 0};
 
@@ -392,6 +394,7 @@ static bool bmi270GyroReadFifo(gyroDev_t *gyro)
 
 static bool bmi270GyroRead(gyroDev_t *gyro)
 {
+    spiSetDivisor(gyro->bus.busdev_u.spi.instance, BMI270_SPI_DIVISOR);
 #ifdef USE_GYRO_DLPF_EXPERIMENTAL
     if (gyro->hardware_lpf == GYRO_HARDWARE_LPF_EXPERIMENTAL) {
         // running in 6.4KHz FIFO mode
