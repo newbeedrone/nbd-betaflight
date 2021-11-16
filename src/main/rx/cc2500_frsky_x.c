@@ -33,15 +33,16 @@
 #include "config/feature.h"
 
 #include "drivers/adc.h"
-#include "drivers/rx/rx_cc2500.h"
 #include "drivers/io.h"
 #include "drivers/io_def.h"
 #include "drivers/io_types.h"
 #include "drivers/resource.h"
+#include "drivers/rx/rx_cc2500.h"
+#include "drivers/rx/rx_spi.h"
 #include "drivers/system.h"
 #include "drivers/time.h"
 
-#include "fc/config.h"
+#include "config/config.h"
 
 #include "pg/rx.h"
 #include "pg/rx_spi.h"
@@ -179,7 +180,7 @@ static uint8_t appendSmartPortData(uint8_t *buf)
 
     uint8_t index;
     for (index = 0; index < TELEMETRY_DATA_SIZE; index++) { // max 5 bytes in a frame
-        if (telemetryOutReader == telemetryOutWriter){ // no new data
+        if (telemetryOutReader == telemetryOutWriter) { // no new data
             break;
         }
         buf[index] = telemetryOutBuffer[telemetryOutReader];
@@ -206,14 +207,15 @@ static void buildTelemetryFrame(uint8_t *packet)
     } else {
         uint8_t a1Value;
         switch (rxCc2500SpiConfig()->a1Source) {
-        case FRSKY_SPI_A1_SOURCE_VBAT:
-            a1Value = getLegacyBatteryVoltage() & 0x7f;
-            break;
         case FRSKY_SPI_A1_SOURCE_EXTADC:
             a1Value = (uint8_t)((adcGetChannel(ADC_EXTERNAL1) & 0xfe0) >> 5);
             break;
         case FRSKY_SPI_A1_SOURCE_CONST:
             a1Value = A1_CONST_X & 0x7f;
+            break;
+        case FRSKY_SPI_A1_SOURCE_VBAT:
+        default:
+            a1Value = getLegacyBatteryVoltage() & 0x7f;
             break;
         }
         frame[4] = a1Value;
@@ -254,7 +256,7 @@ static void buildTelemetryFrame(uint8_t *packet)
     frame[14]=lcrc;
 }
 
-static bool frSkyXCheckQueueEmpty(void)
+static bool frSkyXReadyToSend(void)
 {
     return true;
 }
@@ -368,7 +370,7 @@ rx_spi_received_e frSkyXHandlePacket(uint8_t * const packet, uint8_t * const pro
         FALLTHROUGH;
         // here FS code could be
     case STATE_DATA:
-        if (cc2500getGdo() && (frameReceived == false)){
+        if (rxSpiGetExtiState() && (!frameReceived)) {
             uint8_t ccLen = cc2500ReadReg(CC2500_3B_RXBYTES | CC2500_READ_BURST) & 0x7F;
             if (ccLen >= packetLength) {
                 cc2500ReadFifo(packet, packetLength);
@@ -468,6 +470,8 @@ rx_spi_received_e frSkyXHandlePacket(uint8_t * const packet, uint8_t * const pro
         }
         if (frameReceived) {
             ret |= RX_SPI_RECEIVED_DATA;
+
+            frameReceived = false;
         }
 
         break;
@@ -553,7 +557,7 @@ rx_spi_received_e frSkyXProcessFrame(uint8_t * const packet)
             }
 
             while (remoteToProcessIndex < telemetryRxBuffer[remoteToProcessId].data.dataLength && !payload) {
-                payload = smartPortDataReceive(telemetryRxBuffer[remoteToProcessId].data.data[remoteToProcessIndex], &clearToSend, frSkyXCheckQueueEmpty, false);
+                payload = smartPortDataReceive(telemetryRxBuffer[remoteToProcessId].data.data[remoteToProcessIndex], &clearToSend, frSkyXReadyToSend, false);
                 remoteToProcessIndex = remoteToProcessIndex + 1;
             }
         }

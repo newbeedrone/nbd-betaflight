@@ -86,7 +86,11 @@ const i2cHardware_t i2cHardware[I2CDEV_COUNT] = {
             I2CPINDEF(PF1,  GPIO_AF_I2C2),
         },
         .sdaPins = {
+#if defined(STM32F446xx)
+            I2CPINDEF(PC12, GPIO_AF_I2C2),
+#else
             I2CPINDEF(PB11, GPIO_AF_I2C2),
+#endif
             I2CPINDEF(PF0,  GPIO_AF_I2C2),
 
 #if defined(STM32F40_41xxx) || defined (STM32F411xE)
@@ -178,7 +182,7 @@ bool i2cWriteBuffer(I2CDevice device, uint8_t addr_, uint8_t reg_, uint8_t len_,
         return false;
     }
 
-    uint32_t timeout = I2C_DEFAULT_TIMEOUT;
+    timeUs_t timeoutStartUs = microsISR();
 
     state->addr = addr_ << 1;
     state->reg = reg_;
@@ -192,9 +196,11 @@ bool i2cWriteBuffer(I2CDevice device, uint8_t addr_, uint8_t reg_, uint8_t len_,
 
     if (!(I2Cx->CR2 & I2C_IT_EVT)) {                                    // if we are restarting the driver
         if (!(I2Cx->CR1 & I2C_CR1_START)) {                             // ensure sending a start
-            while (I2Cx->CR1 & I2C_CR1_STOP && --timeout > 0) {; }     // wait for any stop to finish sending
-            if (timeout == 0)
-                return i2cHandleHardwareFailure(device);
+            while (I2Cx->CR1 & I2C_CR1_STOP) {                          // wait for any stop to finish sending
+                if (cmpTimeUs(microsISR(), timeoutStartUs) >= I2C_TIMEOUT_US) {
+                    return i2cHandleHardwareFailure(device);
+                }
+            }
             I2C_GenerateSTART(I2Cx, ENABLE);                            // send the start for the new job
         }
         I2C_ITConfig(I2Cx, I2C_IT_EVT | I2C_IT_ERR, ENABLE);            // allow the interrupts to fire off again
@@ -216,11 +222,13 @@ bool i2cBusy(I2CDevice device, bool *error)
 bool i2cWait(I2CDevice device)
 {
     i2cState_t *state = &i2cDevice[device].state;
-    uint32_t timeout = I2C_DEFAULT_TIMEOUT;
+    timeUs_t timeoutStartUs = microsISR();
 
-    while (state->busy && --timeout > 0) {; }
-    if (timeout == 0)
-        return i2cHandleHardwareFailure(device) && i2cWait(device);
+    while (state->busy) {
+        if (cmpTimeUs(microsISR(), timeoutStartUs) >= I2C_TIMEOUT_US) {
+            return i2cHandleHardwareFailure(device) && i2cWait(device);
+        }
+    }
 
     return !(state->error);
 }
@@ -246,7 +254,7 @@ bool i2cReadBuffer(I2CDevice device, uint8_t addr_, uint8_t reg_, uint8_t len, u
         return false;
     }
 
-    uint32_t timeout = I2C_DEFAULT_TIMEOUT;
+    timeUs_t timeoutStartUs = microsISR();
 
     state->addr = addr_ << 1;
     state->reg = reg_;
@@ -260,9 +268,11 @@ bool i2cReadBuffer(I2CDevice device, uint8_t addr_, uint8_t reg_, uint8_t len, u
 
     if (!(I2Cx->CR2 & I2C_IT_EVT)) {                                    // if we are restarting the driver
         if (!(I2Cx->CR1 & I2C_CR1_START)) {                             // ensure sending a start
-            while (I2Cx->CR1 & I2C_CR1_STOP && --timeout > 0) {; }     // wait for any stop to finish sending
-            if (timeout == 0)
-                return i2cHandleHardwareFailure(device);
+            while (I2Cx->CR1 & I2C_CR1_STOP) {                          // wait for any stop to finish sending
+                if (cmpTimeUs(microsISR(), timeoutStartUs) >= I2C_TIMEOUT_US) {
+                    return i2cHandleHardwareFailure(device);
+                }
+            }
             I2C_GenerateSTART(I2Cx, ENABLE);                            // send the start for the new job
         }
         I2C_ITConfig(I2Cx, I2C_IT_EVT | I2C_IT_ERR, ENABLE);            // allow the interrupts to fire off again
@@ -431,8 +441,10 @@ void i2cInit(I2CDevice device)
 
     i2cDevice_t *pDev = &i2cDevice[device];
     const i2cHardware_t *hw = pDev->hardware;
+    const IO_t scl = pDev->scl;
+    const IO_t sda = pDev->sda;
 
-    if (!hw) {
+    if (!hw || IOGetOwner(scl) || IOGetOwner(sda)) {
         return;
     }
 
@@ -442,9 +454,6 @@ void i2cInit(I2CDevice device)
 
     NVIC_InitTypeDef nvic;
     I2C_InitTypeDef i2cInit;
-
-    IO_t scl = pDev->scl;
-    IO_t sda = pDev->sda;
 
     IOInit(scl, OWNER_I2C_SCL, RESOURCE_INDEX(device));
     IOInit(sda, OWNER_I2C_SDA, RESOURCE_INDEX(device));

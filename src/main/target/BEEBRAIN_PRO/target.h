@@ -97,7 +97,7 @@
 
 /* ======== OSD ======== */
 #define USE_MAX7456
-#define USE_MAX7456_SIM // For NBD7456
+#define USE_NBD7456 // For NBD7456
 
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3
@@ -136,6 +136,7 @@
     #define USE_RX_FRSKY_SPI_D
     #define USE_RX_FRSKY_SPI_X
     #define USE_RX_SFHSS_SPI
+    #define USE_RX_REDPINE_SPI
 
     #define CC2500_BLINK_BIND
     #define DEFAULT_RX_FEATURE          FEATURE_RX_SPI

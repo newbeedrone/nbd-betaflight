@@ -80,7 +80,7 @@ bool ws2811LedStripHardwareInit(ioTag_t ioTag)
     uint32_t dmaChannel = timerHardware->dmaChannel;
 #endif
 
-    if (dmaRef == NULL) {
+    if (dmaRef == NULL || !dmaAllocate(dmaGetIdentifier(dmaRef), OWNER_LED_STRIP, 0)) {
         return false;
     }
     TimHandle.Instance = timer;
@@ -111,7 +111,7 @@ bool ws2811LedStripHardwareInit(ioTag_t ioTag)
     __DMA2_CLK_ENABLE();
 
     /* Set the parameters to be configured */
-#ifdef STM32H7
+#if defined(STM32H7) || defined(STM32G4)
     hdma_tim.Init.Request = dmaChannel;
 #else
     hdma_tim.Init.Channel = dmaChannel;
@@ -123,10 +123,12 @@ bool ws2811LedStripHardwareInit(ioTag_t ioTag)
     hdma_tim.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
     hdma_tim.Init.Mode = DMA_NORMAL;
     hdma_tim.Init.Priority = DMA_PRIORITY_HIGH;
+#if !defined(STM32G4)
     hdma_tim.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     hdma_tim.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
     hdma_tim.Init.MemBurst = DMA_MBURST_SINGLE;
     hdma_tim.Init.PeriphBurst = DMA_PBURST_SINGLE;
+#endif
 
     /* Set hdma_tim instance */
     hdma_tim.Instance = (DMA_ARCH_TYPE *)dmaRef;
@@ -136,7 +138,7 @@ bool ws2811LedStripHardwareInit(ioTag_t ioTag)
     /* Link hdma_tim to hdma[x] (channelx) */
     __HAL_LINKDMA(&TimHandle, hdma[dmaIndex], hdma_tim);
 
-    dmaInit(dmaGetIdentifier(dmaRef), OWNER_LED_STRIP, 0);
+    dmaEnable(dmaGetIdentifier(dmaRef));
     dmaSetHandler(dmaGetIdentifier(dmaRef), WS2811_DMA_IRQHandler, NVIC_PRIO_WS2811_DMA, dmaIndex);
 
     /* Initialize TIMx DMA handle */

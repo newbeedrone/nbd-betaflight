@@ -149,7 +149,8 @@ endif
 #Flags
 ARCH_FLAGS      = -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -fsingle-precision-constant -Wdouble-promotion
 
-DEVICE_FLAGS    = -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -DUSE_DMA_RAM
+# Flags that are used in the STM32 libraries
+DEVICE_FLAGS    = -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER
 
 #
 # H743xI : 2M FLASH, 1M RAM (H753xI also)
@@ -160,14 +161,14 @@ ifeq ($(TARGET),$(filter $(TARGET),$(H743xI_TARGETS)))
 DEVICE_FLAGS       += -DSTM32H743xx
 DEFAULT_LD_SCRIPT   = $(LINKER_DIR)/stm32_flash_h743_2m.ld
 STARTUP_SRC         = startup_stm32h743xx.s
-TARGET_FLASH       := 2048
+MCU_FLASH_SIZE     := 2048
 DEVICE_FLAGS       += -DMAX_MPU_REGIONS=16
 
 ifeq ($(RAM_BASED),yes)
 FIRMWARE_SIZE      := 448
 # TARGET_FLASH now becomes the amount of RAM memory that is occupied by the firmware
 # and the maximum size of the data stored on the external storage device.
-TARGET_FLASH       := FIRMWARE_SIZE
+MCU_FLASH_SIZE     := FIRMWARE_SIZE
 DEFAULT_LD_SCRIPT   = $(LINKER_DIR)/stm32_flash_h743_ram_based.ld
 endif
 
@@ -178,14 +179,14 @@ STARTUP_SRC         = startup_stm32h743xx.s
 DEFAULT_TARGET_FLASH := 128
 
 ifeq ($(TARGET_FLASH),)
-TARGET_FLASH := $(DEFAULT_TARGET_FLASH) 
+MCU_FLASH_SIZE := $(DEFAULT_TARGET_FLASH) 
 endif
 
 ifeq ($(EXST),yes)
 FIRMWARE_SIZE      := 448
 # TARGET_FLASH now becomes the amount of RAM memory that is occupied by the firmware
 # and the maximum size of the data stored on the external storage device.
-TARGET_FLASH       := FIRMWARE_SIZE
+MCU_FLASH_SIZE     := FIRMWARE_SIZE
 DEFAULT_LD_SCRIPT   = $(LINKER_DIR)/stm32_flash_h750_exst.ld
 endif
 
@@ -241,6 +242,7 @@ MCU_COMMON_SRC = \
             drivers/light_ws2811strip_hal.c \
             drivers/adc_stm32h7xx.c \
             drivers/bus_i2c_hal.c \
+            drivers/bus_i2c_hal_init.c \
             drivers/pwm_output_dshot_hal.c \
             drivers/pwm_output_dshot_shared.c \
             drivers/persistent.c \
@@ -255,6 +257,7 @@ MCU_EXCLUDES = \
             drivers/timer.c
 
 #MSC_SRC = \
+#            drivers/usb_msc_common.c \
 #            drivers/usb_msc_h7xx.c \
 #            msc/usbd_storage.c
 

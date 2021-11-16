@@ -34,8 +34,9 @@
 
 #include "drivers/dshot.h"
 #include "drivers/dshot_dpwm.h"
-#include "drivers/dshot_command.h"
 #include "drivers/pwm_output.h"
+
+#include "dshot_command.h"
 
 #define DSHOT_PROTOCOL_DETECTION_DELAY_MS 3000
 #define DSHOT_INITIAL_DELAY_US 10000
@@ -77,40 +78,40 @@ void dshotSetPidLoopTime(uint32_t pidLoopTime)
 }
 
 static FAST_CODE bool dshotCommandQueueFull()
-{   
+{
     return (commandQueueHead + 1) % (DSHOT_MAX_COMMANDS + 1) == commandQueueTail;
-}   
-    
+}
+
 FAST_CODE bool dshotCommandQueueEmpty(void)
-{   
+{
     return commandQueueHead == commandQueueTail;
-}       
+}
 
 static FAST_CODE bool isLastDshotCommand(void)
-{   
+{
     return ((commandQueueTail + 1) % (DSHOT_MAX_COMMANDS + 1) == commandQueueHead);
-}   
-    
+}
+
 FAST_CODE bool dshotCommandIsProcessing(void)
-{       
+{
     if (dshotCommandQueueEmpty()) {
         return false;
     }
     dshotCommandControl_t* command = &commandQueue[commandQueueTail];
     const bool commandIsProcessing = command->state == DSHOT_COMMAND_STATE_STARTDELAY
-                                     || command->state == DSHOT_COMMAND_STATE_ACTIVE   
+                                     || command->state == DSHOT_COMMAND_STATE_ACTIVE
                                      || (command->state == DSHOT_COMMAND_STATE_POSTDELAY && !isLastDshotCommand());
     return commandIsProcessing;
 }
 
 static FAST_CODE bool dshotCommandQueueUpdate(void)
-{   
+{
     if (!dshotCommandQueueEmpty()) {
         commandQueueTail = (commandQueueTail + 1) % (DSHOT_MAX_COMMANDS + 1);
         if (!dshotCommandQueueEmpty()) {
-            // There is another command in the queue so update it so it's ready to output in   
-            // sequence. It can go directly to the DSHOT_COMMAND_STATE_ACTIVE state and bypass 
-            // the DSHOT_COMMAND_STATE_IDLEWAIT and DSHOT_COMMAND_STATE_STARTDELAY states.     
+            // There is another command in the queue so update it so it's ready to output in
+            // sequence. It can go directly to the DSHOT_COMMAND_STATE_ACTIVE state and bypass
+            // the DSHOT_COMMAND_STATE_IDLEWAIT and DSHOT_COMMAND_STATE_STARTDELAY states.
             dshotCommandControl_t* nextCommand = &commandQueue[commandQueueTail];
             nextCommand->state = DSHOT_COMMAND_STATE_ACTIVE;
             nextCommand->nextCommandCycleDelay = 0;
@@ -141,7 +142,7 @@ static dshotCommandControl_t* addCommand()
 
 static bool allMotorsAreIdle(void)
 {
-    for (unsigned i = 0; i < dshotPwmDevice.count; i++) {
+    for (unsigned i = 0; i < motorDeviceCount(); i++) {
         const motorDmaOutput_t *motor = getMotorDmaOutput(i);
         if (motor->protocolControl.value) {
             return false;
@@ -151,18 +152,23 @@ static bool allMotorsAreIdle(void)
     return true;
 }
 
-bool dshotCommandsAreEnabled(void)
+bool dshotCommandsAreEnabled(dshotCommandType_e commandType)
 {
-    if (motorIsEnabled() && motorGetMotorEnableTimeMs() && millis() > motorGetMotorEnableTimeMs() + DSHOT_PROTOCOL_DETECTION_DELAY_MS) {
-        return true;
-    } else {
-        return false;
+    bool ret = false;
+
+    if (commandType == DSHOT_CMD_TYPE_BLOCKING) {
+        ret = !motorIsEnabled();
+    } else if (commandType == DSHOT_CMD_TYPE_INLINE) {
+        if (motorIsEnabled() && motorGetMotorEnableTimeMs() && millis() > motorGetMotorEnableTimeMs() + DSHOT_PROTOCOL_DETECTION_DELAY_MS) {
+            ret = true;
+        }
     }
+    return ret;
 }
 
-void dshotCommandWrite(uint8_t index, uint8_t motorCount, uint8_t command, bool blocking)
+void dshotCommandWrite(uint8_t index, uint8_t motorCount, uint8_t command, dshotCommandType_e commandType)
 {
-    if (!isMotorProtocolDshot() || !dshotCommandsAreEnabled() || (command > DSHOT_MAX_COMMAND) || dshotCommandQueueFull()) {
+    if (!isMotorProtocolDshot() || !dshotCommandsAreEnabled(commandType) || (command > DSHOT_MAX_COMMAND) || dshotCommandQueueFull()) {
         return;
     }
 
@@ -192,28 +198,28 @@ void dshotCommandWrite(uint8_t index, uint8_t motorCount, uint8_t command, bool 
         break;
     }
 
-    if (blocking) {
+    if (commandType == DSHOT_CMD_TYPE_BLOCKING) {
         delayMicroseconds(DSHOT_INITIAL_DELAY_US - DSHOT_COMMAND_DELAY_US);
         for (; repeats; repeats--) {
             delayMicroseconds(DSHOT_COMMAND_DELAY_US);
 
 #ifdef USE_DSHOT_TELEMETRY
             timeUs_t timeoutUs = micros() + 1000;
-            while (!pwmStartDshotMotorUpdate() &&
+            while (!motorGetVTable().updateStart() &&
                    cmpTimeUs(timeoutUs, micros()) > 0);
 #endif
-            for (uint8_t i = 0; i < dshotPwmDevice.count; i++) {
+            for (uint8_t i = 0; i < motorDeviceCount(); i++) {
                 if ((i == index) || (index == ALL_MOTORS)) {
                     motorDmaOutput_t *const motor = getMotorDmaOutput(i);
                     motor->protocolControl.requestTelemetry = true;
-                    dshotPwmDevice.vTable.writeInt(i, command);
+                    motorGetVTable().writeInt(i, command);
                 }
             }
 
-            dshotPwmDevice.vTable.updateComplete();
+            motorGetVTable().updateComplete();
         }
         delayMicroseconds(delayAfterCommandUs);
-    } else {
+    } else if (commandType == DSHOT_CMD_TYPE_INLINE) {
         dshotCommandControl_t *commandControl = addCommand();
         if (commandControl) {
             commandControl->repeats = repeats;

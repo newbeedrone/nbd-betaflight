@@ -65,12 +65,21 @@ static bool flashQuadSpiInit(const flashConfig_t *flashConfig)
     // Manufacturer, memory type, and capacity
     uint32_t chipID = (readIdResponse[0] << 16) | (readIdResponse[1] << 8) | (readIdResponse[2]);
 
-#ifdef USE_FLASH_W25N01G
+#if defined(USE_FLASH_W25N01G) || defined(USE_FLASH_W25M02G)
     quadSpiSetDivisor(quadSpiInstance, QUADSPI_CLOCK_ULTRAFAST);
 
+#if defined(USE_FLASH_W25N01G)
     if (w25n01g_detect(&flashDevice, chipID)) {
         return true;
     }
+#endif
+
+#if defined(USE_FLASH_W25M02G)
+    if (w25m_detect(&flashDevice, chipID)) {
+        return true;
+    }
+#endif
+
 #endif
 
     return false;
@@ -130,7 +139,7 @@ static bool flashSpiInit(const flashConfig_t *flashConfig)
 
     delay(50); // short delay required after initialisation of SPI device instance.
 
-    /* 
+    /*
      * Some newer chips require one dummy byte to be read; we can read
      * 4 bytes for these chips while retaining backward compatibility.
      */

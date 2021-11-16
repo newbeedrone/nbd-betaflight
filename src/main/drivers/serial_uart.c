@@ -37,36 +37,96 @@
 #include "common/utils.h"
 
 #include "drivers/dma.h"
+#include "drivers/dma_reqmap.h"
 #include "drivers/rcc.h"
-
 #include "drivers/serial.h"
 #include "drivers/serial_uart.h"
 #include "drivers/serial_uart_impl.h"
 
-serialPort_t *uartOpen(UARTDevice_e device, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options)
-{   
-    uartPort_t *s = serialUART(device, baudRate, mode, options);
-    
-    if (!s)
-        return (serialPort_t *)s;
-    
-#ifdef USE_DMA
-    s->txDMAEmpty = true;
+#include "pg/serial_uart.h"
+
+#if defined(STM32H7)
+#define UART_TX_BUFFER_ATTRIBUTE DMA_RAM            // D2 SRAM
+#define UART_RX_BUFFER_ATTRIBUTE DMA_RAM            // D2 SRAM
+#elif defined(STM32G4)
+#define UART_TX_BUFFER_ATTRIBUTE DMA_RAM_W          // SRAM MPU NOT_BUFFERABLE
+#define UART_RX_BUFFER_ATTRIBUTE DMA_RAM_R          // SRAM MPU NOT CACHABLE
+#elif defined(STM32F7)
+#define UART_TX_BUFFER_ATTRIBUTE FAST_RAM_ZERO_INIT // DTCM RAM
+#define UART_RX_BUFFER_ATTRIBUTE FAST_RAM_ZERO_INIT // DTCM RAM
+#elif defined(STM32F4) || defined(STM32F3) || defined(STM32F1)
+#define UART_TX_BUFFER_ATTRIBUTE                    // NONE
+#define UART_RX_BUFFER_ATTRIBUTE                    // NONE
+#else
+#error Undefined UART_{TX,RX}_BUFFER_ATTRIBUTE for this MCU
 #endif
-    
+
+#define UART_BUFFERS(n) \
+    UART_BUFFER(UART_TX_BUFFER_ATTRIBUTE, n, T); \
+    UART_BUFFER(UART_RX_BUFFER_ATTRIBUTE, n, R); struct dummy_s
+
+#ifdef USE_UART1
+UART_BUFFERS(1);
+#endif
+
+#ifdef USE_UART2
+UART_BUFFERS(2);
+#endif
+
+#ifdef USE_UART3
+UART_BUFFERS(3);
+#endif
+
+#ifdef USE_UART4
+UART_BUFFERS(4);
+#endif
+
+#ifdef USE_UART5
+UART_BUFFERS(5);
+#endif
+
+#ifdef USE_UART6
+UART_BUFFERS(6);
+#endif
+
+#ifdef USE_UART7
+UART_BUFFERS(7);
+#endif
+
+#ifdef USE_UART8
+UART_BUFFERS(8);
+#endif
+
+#ifdef USE_UART9
+UART_BUFFERS(9);
+#endif
+
+#undef UART_BUFFERS
+
+serialPort_t *uartOpen(UARTDevice_e device, serialReceiveCallbackPtr rxCallback, void *rxCallbackData, uint32_t baudRate, portMode_e mode, portOptions_e options)
+{
+    uartPort_t *uartPort = serialUART(device, baudRate, mode, options);
+
+    if (!uartPort)
+        return (serialPort_t *)uartPort;
+
+#ifdef USE_DMA
+    uartPort->txDMAEmpty = true;
+#endif
+
     // common serial initialisation code should move to serialPort::init()
-    s->port.rxBufferHead = s->port.rxBufferTail = 0;
-    s->port.txBufferHead = s->port.txBufferTail = 0;
+    uartPort->port.rxBufferHead = uartPort->port.rxBufferTail = 0;
+    uartPort->port.txBufferHead = uartPort->port.txBufferTail = 0;
     // callback works for IRQ-based RX ONLY
-    s->port.rxCallback = rxCallback;
-    s->port.rxCallbackData = rxCallbackData;
-    s->port.mode = mode;
-    s->port.baudRate = baudRate;
-    s->port.options = options;
-    
-    uartReconfigure(s);
-    
-    return (serialPort_t *)s;
+    uartPort->port.rxCallback = rxCallback;
+    uartPort->port.rxCallbackData = rxCallbackData;
+    uartPort->port.mode = mode;
+    uartPort->port.baudRate = baudRate;
+    uartPort->port.options = options;
+
+    uartReconfigure(uartPort);
+
+    return (serialPort_t *)uartPort;
 }
 
 static void uartSetBaudRate(serialPort_t *instance, uint32_t baudRate)
@@ -85,54 +145,56 @@ static void uartSetMode(serialPort_t *instance, portMode_e mode)
 
 static uint32_t uartTotalRxBytesWaiting(const serialPort_t *instance)
 {
-    const uartPort_t *s = (const uartPort_t*)instance;
+    const uartPort_t *uartPort = (const uartPort_t*)instance;
 
 #ifdef USE_DMA
-    if (s->rxDMAResource) {
+    if (uartPort->rxDMAResource) {
         // XXX Could be consolidated
 #ifdef USE_HAL_DRIVER
-        uint32_t rxDMAHead = __HAL_DMA_GET_COUNTER(s->Handle.hdmarx);
+        uint32_t rxDMAHead = __HAL_DMA_GET_COUNTER(uartPort->Handle.hdmarx);
 #else
-        uint32_t rxDMAHead = xDMA_GetCurrDataCounter(s->rxDMAResource);
+        uint32_t rxDMAHead = xDMA_GetCurrDataCounter(uartPort->rxDMAResource);
 #endif
 
-        if (rxDMAHead >= s->rxDMAPos) {
-            return rxDMAHead - s->rxDMAPos;
+        // uartPort->rxDMAPos and rxDMAHead represent distances from the end
+        // of the buffer.  They count DOWN as they advance.
+        if (uartPort->rxDMAPos >= rxDMAHead) {
+            return uartPort->rxDMAPos - rxDMAHead;
         } else {
-            return s->port.rxBufferSize + rxDMAHead - s->rxDMAPos;
+            return uartPort->port.rxBufferSize + uartPort->rxDMAPos - rxDMAHead;
         }
     }
 #endif
 
-    if (s->port.rxBufferHead >= s->port.rxBufferTail) {
-        return s->port.rxBufferHead - s->port.rxBufferTail;
+    if (uartPort->port.rxBufferHead >= uartPort->port.rxBufferTail) {
+        return uartPort->port.rxBufferHead - uartPort->port.rxBufferTail;
     } else {
-        return s->port.rxBufferSize + s->port.rxBufferHead - s->port.rxBufferTail;
+        return uartPort->port.rxBufferSize + uartPort->port.rxBufferHead - uartPort->port.rxBufferTail;
     }
 }
 
 static uint32_t uartTotalTxBytesFree(const serialPort_t *instance)
 {
-    const uartPort_t *s = (const uartPort_t*)instance;
+    const uartPort_t *uartPort = (const uartPort_t*)instance;
 
     uint32_t bytesUsed;
 
-    if (s->port.txBufferHead >= s->port.txBufferTail) {
-        bytesUsed = s->port.txBufferHead - s->port.txBufferTail;
+    if (uartPort->port.txBufferHead >= uartPort->port.txBufferTail) {
+        bytesUsed = uartPort->port.txBufferHead - uartPort->port.txBufferTail;
     } else {
-        bytesUsed = s->port.txBufferSize + s->port.txBufferHead - s->port.txBufferTail;
+        bytesUsed = uartPort->port.txBufferSize + uartPort->port.txBufferHead - uartPort->port.txBufferTail;
     }
 
 #ifdef USE_DMA
-    if (s->txDMAResource) {
+    if (uartPort->txDMAResource) {
         /*
          * When we queue up a DMA request, we advance the Tx buffer tail before the transfer finishes, so we must add
          * the remaining size of that in-progress transfer here instead:
          */
 #ifdef USE_HAL_DRIVER
-        bytesUsed += __HAL_DMA_GET_COUNTER(s->Handle.hdmatx);
+        bytesUsed += __HAL_DMA_GET_COUNTER(uartPort->Handle.hdmatx);
 #else
-        bytesUsed += xDMA_GetCurrDataCounter(s->txDMAResource);
+        bytesUsed += xDMA_GetCurrDataCounter(uartPort->txDMAResource);
 #endif
 
         /*
@@ -143,46 +205,46 @@ static uint32_t uartTotalTxBytesFree(const serialPort_t *instance)
          *
          * Be kind to callers and pretend like our buffer can only ever be 100% full.
          */
-        if (bytesUsed >= s->port.txBufferSize - 1) {
+        if (bytesUsed >= uartPort->port.txBufferSize - 1) {
             return 0;
         }
     }
 #endif
 
-    return (s->port.txBufferSize - 1) - bytesUsed;
+    return (uartPort->port.txBufferSize - 1) - bytesUsed;
 }
 
 static bool isUartTransmitBufferEmpty(const serialPort_t *instance)
 {
-    const uartPort_t *s = (const uartPort_t *)instance;
+    const uartPort_t *uartPort = (const uartPort_t *)instance;
 #ifdef USE_DMA
-    if (s->txDMAResource) {
-        return s->txDMAEmpty;
+    if (uartPort->txDMAResource) {
+        return uartPort->txDMAEmpty;
     } else
 #endif
     {
-        return s->port.txBufferTail == s->port.txBufferHead;
+        return uartPort->port.txBufferTail == uartPort->port.txBufferHead;
     }
 }
 
 static uint8_t uartRead(serialPort_t *instance)
 {
     uint8_t ch;
-    uartPort_t *s = (uartPort_t *)instance;
+    uartPort_t *uartPort = (uartPort_t *)instance;
 
 #ifdef USE_DMA
-    if (s->rxDMAResource) {
-        ch = s->port.rxBuffer[s->port.rxBufferSize - s->rxDMAPos];
-        if (--s->rxDMAPos == 0)
-            s->rxDMAPos = s->port.rxBufferSize;
+    if (uartPort->rxDMAResource) {
+        ch = uartPort->port.rxBuffer[uartPort->port.rxBufferSize - uartPort->rxDMAPos];
+        if (--uartPort->rxDMAPos == 0)
+            uartPort->rxDMAPos = uartPort->port.rxBufferSize;
     } else
 #endif
     {
-        ch = s->port.rxBuffer[s->port.rxBufferTail];
-        if (s->port.rxBufferTail + 1 >= s->port.rxBufferSize) {
-            s->port.rxBufferTail = 0;
+        ch = uartPort->port.rxBuffer[uartPort->port.rxBufferTail];
+        if (uartPort->port.rxBufferTail + 1 >= uartPort->port.rxBufferSize) {
+            uartPort->port.rxBufferTail = 0;
         } else {
-            s->port.rxBufferTail++;
+            uartPort->port.rxBufferTail++;
         }
     }
 
@@ -191,26 +253,26 @@ static uint8_t uartRead(serialPort_t *instance)
 
 static void uartWrite(serialPort_t *instance, uint8_t ch)
 {
-    uartPort_t *s = (uartPort_t *)instance;
+    uartPort_t *uartPort = (uartPort_t *)instance;
 
-    s->port.txBuffer[s->port.txBufferHead] = ch;
+    uartPort->port.txBuffer[uartPort->port.txBufferHead] = ch;
 
-    if (s->port.txBufferHead + 1 >= s->port.txBufferSize) {
-        s->port.txBufferHead = 0;
+    if (uartPort->port.txBufferHead + 1 >= uartPort->port.txBufferSize) {
+        uartPort->port.txBufferHead = 0;
     } else {
-        s->port.txBufferHead++;
+        uartPort->port.txBufferHead++;
     }
 
 #ifdef USE_DMA
-    if (s->txDMAResource) {
-        uartTryStartTxDMA(s);
+    if (uartPort->txDMAResource) {
+        uartTryStartTxDMA(uartPort);
     } else
 #endif
     {
 #ifdef USE_HAL_DRIVER
-        __HAL_UART_ENABLE_IT(&s->Handle, UART_IT_TXE);
+        __HAL_UART_ENABLE_IT(&uartPort->Handle, UART_IT_TXE);
 #else
-        USART_ITConfig(s->USARTx, USART_IT_TXE, ENABLE);
+        USART_ITConfig(uartPort->USARTx, USART_IT_TXE, ENABLE);
 #endif
     }
 }
@@ -232,43 +294,105 @@ const struct serialPortVTable uartVTable[] = {
     }
 };
 
-#define UART_IRQHandler(type, dev)                            \
-    void type ## dev ## _IRQHandler(void)                     \
+#ifdef USE_DMA
+void uartConfigureDma(uartDevice_t *uartdev)
+{
+    uartPort_t *uartPort = &(uartdev->port);
+    const uartHardware_t *hardware = uartdev->hardware;
+
+#ifdef USE_DMA_SPEC
+    UARTDevice_e device = hardware->device;
+    const dmaChannelSpec_t *dmaChannelSpec;
+
+    if (serialUartConfig(device)->txDmaopt != DMA_OPT_UNUSED) {
+        dmaChannelSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_UART_TX, device, serialUartConfig(device)->txDmaopt);
+        if (dmaChannelSpec) {
+            uartPort->txDMAResource = dmaChannelSpec->ref;
+            uartPort->txDMAChannel = dmaChannelSpec->channel;
+        }
+    }
+
+    if (serialUartConfig(device)->rxDmaopt != DMA_OPT_UNUSED) {
+        dmaChannelSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_UART_RX, device, serialUartConfig(device)->txDmaopt);
+        if (dmaChannelSpec) {
+            uartPort->rxDMAResource = dmaChannelSpec->ref;
+            uartPort->rxDMAChannel = dmaChannelSpec->channel;
+        }
+    }
+#else
+    // Non USE_DMA_SPEC does not support configurable ON/OFF of UART DMA
+
+    if (hardware->rxDMAResource) {
+        uartPort->rxDMAResource = hardware->rxDMAResource;
+        uartPort->rxDMAChannel = hardware->rxDMAChannel;
+    }
+
+    if (hardware->txDMAResource) {
+        uartPort->txDMAResource = hardware->txDMAResource;
+        uartPort->txDMAChannel = hardware->txDMAChannel;
+    }
+#endif
+
+    if (uartPort->txDMAResource) {
+        dmaIdentifier_e identifier = dmaGetIdentifier(uartPort->txDMAResource);
+        if (dmaAllocate(identifier, OWNER_SERIAL_TX, RESOURCE_INDEX(hardware->device))) {
+            dmaEnable(identifier);
+            dmaSetHandler(identifier, uartDmaIrqHandler, hardware->txPriority, (uint32_t)uartdev);
+            uartPort->txDMAPeripheralBaseAddr = (uint32_t)&UART_REG_TXD(hardware->reg);
+        }
+    }
+
+    if (uartPort->rxDMAResource) {
+        dmaIdentifier_e identifier = dmaGetIdentifier(uartPort->rxDMAResource);
+        if (dmaAllocate(identifier, OWNER_SERIAL_RX, RESOURCE_INDEX(hardware->device))) {
+            dmaEnable(identifier);
+            uartPort->rxDMAPeripheralBaseAddr = (uint32_t)&UART_REG_RXD(hardware->reg);
+        }
+    }
+}
+#endif
+
+#define UART_IRQHandler(type, number, dev)                    \
+    void type ## number ## _IRQHandler(void)                  \
     {                                                         \
-        uartPort_t *s = &(uartDevmap[UARTDEV_ ## dev]->port); \
-        uartIrqHandler(s);                                    \
+        uartPort_t *uartPort = &(uartDevmap[UARTDEV_ ## dev]->port); \
+        uartIrqHandler(uartPort);                                    \
     }
 
 #ifdef USE_UART1
-UART_IRQHandler(USART, 1) // USART1 Rx/Tx IRQ Handler
+UART_IRQHandler(USART, 1, 1) // USART1 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART2
-UART_IRQHandler(USART, 2) // USART2 Rx/Tx IRQ Handler
+UART_IRQHandler(USART, 2, 2) // USART2 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART3
-UART_IRQHandler(USART, 3) // USART3 Rx/Tx IRQ Handler
+UART_IRQHandler(USART, 3, 3) // USART3 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART4
-UART_IRQHandler(UART, 4)  // UART4 Rx/Tx IRQ Handler
+UART_IRQHandler(UART, 4, 4)  // UART4 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART5
-UART_IRQHandler(UART, 5)  // UART5 Rx/Tx IRQ Handler
+UART_IRQHandler(UART, 5, 5)  // UART5 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART6
-UART_IRQHandler(USART, 6) // USART6 Rx/Tx IRQ Handler
+UART_IRQHandler(USART, 6, 6) // USART6 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART7
-UART_IRQHandler(UART, 7)  // UART7 Rx/Tx IRQ Handler
+UART_IRQHandler(UART, 7, 7)  // UART7 Rx/Tx IRQ Handler
 #endif
 
 #ifdef USE_UART8
-UART_IRQHandler(UART, 8)  // UART8 Rx/Tx IRQ Handler
+UART_IRQHandler(UART, 8, 8)  // UART8 Rx/Tx IRQ Handler
+#endif
+
+#ifdef USE_UART9
+UART_IRQHandler(LPUART, 1, 9) // UART9 (implemented with LPUART1) Rx/Tx IRQ Handler
 #endif
 
 #endif // USE_UART

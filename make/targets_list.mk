@@ -1,22 +1,3 @@
-OFFICIAL_TARGETS  = \
-    BEEBRAIN_BL \
-    BEEBRAIN_BL_V2 \
-    BEEBRAIN_BL_V3 \
-    BEEBRAIN_LITE \
-    BEEBRAIN_LITE_DSM \
-    BEEBRAIN_PRO \
-    BEEBRAIN_PRO_DSM \
-    CRICKET_F7 \
-    GALAXY_AIO \
-    HUMMINGBIRDF4_PRO \
-    INFINITY_AIO \
-    INFINITY_F4 \
-    INFINITY_F7 \
-    INFINITY_PDB_F7 \
-    INFINITY_PDB_H7 \
-    INFINITY_AIO_V2_F7 \
-    INFINITY_AIO_V2_H7
-
 ALT_TARGET_PATHS  = $(filter-out %/target,$(basename $(wildcard $(ROOT)/src/main/target/*/*.mk)))
 ALT_TARGET_NAMES  = $(notdir $(ALT_TARGET_PATHS))
 BASE_TARGET_NAMES = $(notdir $(patsubst %/,%,$(dir $(ALT_TARGET_PATHS))))
@@ -36,26 +17,27 @@ get_base_target   = $(if $(call find_target_pair,$(1)),$(patsubst %/,%,$(dir $(c
 
 UNSUPPORTED_TARGETS := \
 
-SUPPORTED_TARGETS := $(filter-out $(UNSUPPORTED_TARGETS), $(VALID_TARGETS))
+UNIFIED_TARGETS := STM32F405 \
+	STM32F411 \
+	STM32F7X2 \
+	STM32F745 \
+	STM32H743
 
-TARGETS_TOTAL := $(words $(SUPPORTED_TARGETS))
-TARGET_GROUPS := 5
+# Legacy targets are targets that have been replaced by Unified Target configurations
+LEGACY_TARGETS := \
+
+CI_TARGETS := $(filter-out $(LEGACY_TARGETS) $(UNSUPPORTED_TARGETS), $(VALID_TARGETS))
+
+TARGETS_TOTAL := $(words $(CI_TARGETS))
+TARGET_GROUPS := 3
 TARGETS_PER_GROUP := $(shell expr $(TARGETS_TOTAL) / $(TARGET_GROUPS) )
 
 ST := 1
 ET := $(shell expr $(ST) + $(TARGETS_PER_GROUP))
-GROUP_1_TARGETS := $(wordlist  $(ST), $(ET), $(SUPPORTED_TARGETS))
+GROUP_1_TARGETS := $(wordlist  $(ST), $(ET), $(CI_TARGETS))
 
 ST := $(shell expr $(ET) + 1)
 ET := $(shell expr $(ST) + $(TARGETS_PER_GROUP))
-GROUP_2_TARGETS := $(wordlist $(ST), $(ET), $(SUPPORTED_TARGETS))
+GROUP_2_TARGETS := $(wordlist $(ST), $(ET), $(CI_TARGETS))
 
-ST := $(shell expr $(ET) + 1)
-ET := $(shell expr $(ST) + $(TARGETS_PER_GROUP))
-GROUP_3_TARGETS := $(wordlist $(ST), $(ET), $(SUPPORTED_TARGETS))
-
-ST := $(shell expr $(ET) + 1)
-ET := $(shell expr $(ST) + $(TARGETS_PER_GROUP))
-GROUP_4_TARGETS := $(wordlist $(ST), $(ET), $(SUPPORTED_TARGETS))
-
-GROUP_OTHER_TARGETS := $(filter-out $(GROUP_1_TARGETS) $(GROUP_2_TARGETS) $(GROUP_3_TARGETS) $(GROUP_4_TARGETS), $(SUPPORTED_TARGETS))
+GROUP_OTHER_TARGETS := $(filter-out $(GROUP_1_TARGETS) $(GROUP_2_TARGETS), $(CI_TARGETS))

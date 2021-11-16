@@ -79,7 +79,9 @@ const adcDevice_t adcHardware[ADCDEV_COUNT] = {
         .channel = DMA_REQUEST_ADC2,
 #endif
     },
-    // ADC3 can be serviced by BDMA also, but we settle for DMA1 or 2 (for now).
+#if defined(ADC3)
+    // ADC3 is not available on all H7 MCUs, e.g. H7A3
+    // On H743 and H750, ADC3 can be serviced by BDMA also, but we settle for DMA1 or 2 (for now).
     {
         .ADCx = ADC3_INSTANCE,
         .rccADC = RCC_AHB4(ADC3),
@@ -88,6 +90,7 @@ const adcDevice_t adcHardware[ADCDEV_COUNT] = {
         .channel = DMA_REQUEST_ADC3,
 #endif
     }
+#endif // ADC3
 };
 
 adcDevice_t adcDevice[ADCDEV_COUNT];
@@ -102,11 +105,18 @@ const adcTagMap_t adcTagMap[] = {
     { DEFIO_TAG_E__NONE, ADC_DEVICES_3,   ADC_CHANNEL_VREFINT,    18 },
     { DEFIO_TAG_E__NONE, ADC_DEVICES_3,   ADC_CHANNEL_TEMPSENSOR, 19 },
 #endif
-    // Inputs available for all packages
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
+    // See DS13195 Rev 6 Page 51/52
+    { DEFIO_TAG_E__PC0,  ADC_DEVICES_12,  ADC_CHANNEL_10, 10 },
+    { DEFIO_TAG_E__PC1,  ADC_DEVICES_12,  ADC_CHANNEL_11, 11 },
+    { DEFIO_TAG_E__PC2,  ADC_DEVICES_12,  ADC_CHANNEL_12,  0 },
+    { DEFIO_TAG_E__PC3,  ADC_DEVICES_12,  ADC_CHANNEL_13,  1 },
+#else
     { DEFIO_TAG_E__PC0,  ADC_DEVICES_123, ADC_CHANNEL_10, 10 },
     { DEFIO_TAG_E__PC1,  ADC_DEVICES_123, ADC_CHANNEL_11, 11 },
     { DEFIO_TAG_E__PC2,  ADC_DEVICES_3,   ADC_CHANNEL_0,   0 },
     { DEFIO_TAG_E__PC3,  ADC_DEVICES_3,   ADC_CHANNEL_1,   1 },
+#endif
     { DEFIO_TAG_E__PC4,  ADC_DEVICES_12,  ADC_CHANNEL_4,   4 },
     { DEFIO_TAG_E__PC5,  ADC_DEVICES_12,  ADC_CHANNEL_8,   8 },
     { DEFIO_TAG_E__PB0,  ADC_DEVICES_12,  ADC_CHANNEL_9,   9 },
@@ -162,7 +172,7 @@ static uint32_t adcRegularRankMap[] = {
 
 #undef RANK
 
-static void Error_Handler(void) { while (1) { } }
+static void errorHandler(void) { while (1) { } }
 
 // Note on sampling time.
 // Temperature sensor has minimum sample time of 9us.
@@ -174,11 +184,7 @@ void adcInitDevice(adcDevice_t *adcdev, int channelCount)
 
     hadc->Instance = adcdev->ADCx;
 
-    if (HAL_ADC_DeInit(hadc) != HAL_OK)
-    {
-      // ADC de-initialization Error
-      Error_Handler();
-    }
+    // DeInit is done in adcInit().
 
     hadc->Init.ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV4;
     hadc->Init.Resolution               = ADC_RESOLUTION_12B;
@@ -189,7 +195,7 @@ void adcInitDevice(adcDevice_t *adcdev, int channelCount)
     hadc->Init.NbrOfConversion          = channelCount;
     hadc->Init.DiscontinuousConvMode    = DISABLE;
     hadc->Init.NbrOfDiscConversion      = 1;                             // Don't care
-    hadc->Init.ExternalTrigConv         = ADC_SOFTWARE_START;   
+    hadc->Init.ExternalTrigConv         = ADC_SOFTWARE_START;
     hadc->Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE; // Don't care
     hadc->Init.ConversionDataManagement = ADC_CONVERSIONDATA_DMA_CIRCULAR;
     hadc->Init.Overrun                  = ADC_OVR_DATA_OVERWRITTEN;
@@ -198,13 +204,13 @@ void adcInitDevice(adcDevice_t *adcdev, int channelCount)
     // Initialize this ADC peripheral
 
     if (HAL_ADC_Init(hadc) != HAL_OK) {
-      Error_Handler();
+      errorHandler();
     }
 
     // Execute calibration
 
     if (HAL_ADCEx_Calibration_Start(hadc, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED) != HAL_OK) {
-      Error_Handler();
+      errorHandler();
     }
 }
 
@@ -281,7 +287,7 @@ void adcInit(const adcConfig_t *config)
             // Find an ADC device that can handle this input pin
 
             for (dev = 0; dev < ADCDEV_COUNT; dev++) {
-                if (!adcDevice[dev].ADCx 
+                if (!adcDevice[dev].ADCx
 #ifndef USE_DMA_SPEC
                      || !adcDevice[dev].dmaResource
 #endif
@@ -314,6 +320,24 @@ void adcInit(const adcConfig_t *config)
         if (adcOperatingConfig[i].tag) {
             IOInit(IOGetByTag(adcOperatingConfig[i].tag), OWNER_ADC_BATT + i, 0);
             IOConfigGPIO(IOGetByTag(adcOperatingConfig[i].tag), IO_CONFIG(GPIO_MODE_ANALOG, 0, GPIO_NOPULL));
+        }
+    }
+
+    // DeInit ADCx with inputs
+    // We have to batch call DeInit() for all devices as DeInit() initializes ADCx_COMMON register.
+
+    for (int dev = 0; dev < ADCDEV_COUNT; dev++) {
+        adcDevice_t *adc = &adcDevice[dev];
+
+        if (!(adc->ADCx && adc->channelBits)) {
+            continue;
+        }
+
+        adc->ADCHandle.Instance = adc->ADCx;
+
+        if (HAL_ADC_DeInit(&adc->ADCHandle) != HAL_OK) { 
+            // ADC de-initialization Error
+            errorHandler();
         }
     }
 
@@ -366,29 +390,33 @@ void adcInit(const adcConfig_t *config)
             sConfig.Rank         = adcRegularRankMap[rank++];   /* Rank of sampled channel number ADCx_CHANNEL */
             sConfig.SamplingTime = ADC_SAMPLETIME_387CYCLES_5;  /* Sampling time (number of clock cycles unit) */
             sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* Single-ended input channel */
-            sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* No offset subtraction */ 
+            sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* No offset subtraction */
             sConfig.Offset = 0;                                 /* Parameter discarded because offset correction is disabled */
-  
+
             if (HAL_ADC_ConfigChannel(&adc->ADCHandle, &sConfig) != HAL_OK) {
-                Error_Handler();
+                errorHandler();
             }
         }
 
         // Configure DMA for this ADC peripheral
 
-        dmaIdentifier_e dmaIdentifier;
 #ifdef USE_DMA_SPEC
         const dmaChannelSpec_t *dmaSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_ADC, dev, config->dmaopt[dev]);
+        dmaIdentifier_e dmaIdentifier = dmaGetIdentifier(dmaSpec->ref);
 
-        if (!dmaSpec) {
+        if (!dmaSpec || !dmaAllocate(dmaIdentifier, OWNER_ADC, RESOURCE_INDEX(dev))) {
             return;
         }
 
         adc->DmaHandle.Instance                 = dmaSpec->ref;
         adc->DmaHandle.Init.Request             = dmaSpec->channel;
-        dmaIdentifier = dmaGetIdentifier(dmaSpec->ref);
 #else
-        dmaIdentifier = dmaGetIdentifier(adc->dmaResource);
+        dmaIdentifier_e dmaIdentifier = dmaGetIdentifier(adc->dmaResource);
+
+        if (!dmaAllocate(dmaIdentifier, OWNER_ADC, RESOURCE_INDEX(dev))) {
+            return;
+        }
+
         adc->DmaHandle.Instance                 = (DMA_ARCH_TYPE *)adc->dmaResource;
         adc->DmaHandle.Init.Request             = adc->channel;
 #endif
@@ -402,11 +430,13 @@ void adcInit(const adcConfig_t *config)
 
         // Deinitialize  & Initialize the DMA for new transfer
 
+        // dmaEnable must be called before calling HAL_DMA_Init,
+        // to enable clock for associated DMA if not already done so.
+        dmaEnable(dmaIdentifier);
+
         HAL_DMA_DeInit(&adc->DmaHandle);
         HAL_DMA_Init(&adc->DmaHandle);
 
-        dmaInit(dmaIdentifier, OWNER_ADC, RESOURCE_INDEX(dev));
-  
         // Associate the DMA handle
 
         __HAL_LINKDMA(&adc->ADCHandle, DMA_Handle, adc->DmaHandle);
@@ -419,7 +449,7 @@ void adcInit(const adcConfig_t *config)
         // NVIC configuration for DMA Input data interrupt
 
         HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 1, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);  
+        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
 #endif
     }
 
@@ -440,7 +470,7 @@ void adcInit(const adcConfig_t *config)
         // Start conversion in DMA mode
 
         if (HAL_ADC_Start_DMA(&adc->ADCHandle, (uint32_t *)&adcConversionBuffer[dmaBufferIndex], BITCOUNT(adc->channelBits)) != HAL_OK) {
-            Error_Handler();
+            errorHandler();
         }
 
         dmaBufferIndex += BITCOUNT(adc->channelBits);
@@ -453,7 +483,9 @@ void adcGetChannelValues(void)
     // Cache coherency should be maintained by MPU facility
 
     for (int i = 0; i < ADC_CHANNEL_INTERNAL; i++) {
-        adcValues[i] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
+        if (adcOperatingConfig[i].enabled) {
+            adcValues[adcOperatingConfig[i].dmaIndex] = adcConversionBuffer[adcOperatingConfig[i].dmaIndex];
+        }
     }
 }
 
@@ -484,7 +516,7 @@ uint16_t adcInternalReadVrefint(void)
 
 uint16_t adcInternalReadTempsensor(void)
 {
-    uint16_t value = adcInternalRead(ADC_TEMPSENSOR); 
+    uint16_t value = adcInternalRead(ADC_TEMPSENSOR);
     return value;
 }
 #endif // USE_ADC_INTERNAL

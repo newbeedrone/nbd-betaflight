@@ -75,7 +75,7 @@
 
 /* ======== OSD ======== */
 #define USE_MAX7456
-#define USE_MAX7456_SIM // For NBD7456
+#define USE_NBD7456 // For NBD7456
 
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3
@@ -113,7 +113,7 @@
 #define CURRENT_METER_ADC_PIN           PA5
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     510
+#define CURRENT_METER_SCALE_DEFAULT     445
 #define CURRENT_METER_OFFSET_DEFAULT    0
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC

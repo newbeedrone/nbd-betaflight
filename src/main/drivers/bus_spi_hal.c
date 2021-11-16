@@ -36,7 +36,9 @@
 #include "nvic.h"
 #include "rcc.h"
 
-void spiInitDevice(SPIDevice device)
+#define SPI_TIMEOUT_SYS_TICKS   (SPI_TIMEOUT_US / 1000)
+
+void spiInitDevice(SPIDevice device, bool leadingEdge)
 {
     spiDevice_t *spi = &(spiDevice[device]);
 
@@ -44,16 +46,7 @@ void spiInitDevice(SPIDevice device)
         return;
     }
 
-#ifdef SDCARD_SPI_INSTANCE
-    if (spi->dev == SDCARD_SPI_INSTANCE) {
-        spi->leadingEdge = true;
-    }
-#endif
-#ifdef RX_SPI_INSTANCE
-    if (spi->dev == RX_SPI_INSTANCE) {
-        spi->leadingEdge = true;
-    }
-#endif
+    spi->leadingEdge = leadingEdge;
 
     // Enable SPI clock
     RCC_ClockCmd(spi->rcc, ENABLE);
@@ -69,7 +62,7 @@ void spiInitDevice(SPIDevice device)
     IOConfigGPIOAF(IOGetByTag(spi->mosi), SPI_IO_AF_CFG, spi->af);
 #endif
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
     IOConfigGPIOAF(IOGetByTag(spi->sck), spi->leadingEdge ? SPI_IO_AF_SCK_CFG_LOW : SPI_IO_AF_SCK_CFG_HIGH, spi->sckAF);
     IOConfigGPIOAF(IOGetByTag(spi->miso), SPI_IO_AF_MISO_CFG, spi->misoAF);
     IOConfigGPIOAF(IOGetByTag(spi->mosi), SPI_IO_AF_CFG, spi->mosiAF);
@@ -94,14 +87,15 @@ void spiInitDevice(SPIDevice device)
     spi->hspi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
     spi->hspi.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     spi->hspi.Init.TIMode = SPI_TIMODE_DISABLED;
+#if !defined(STM32G4)
     spi->hspi.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
     spi->hspi.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;  /* Recommanded setting to avoid glitches */
+#endif
 
     if (spi->leadingEdge) {
         spi->hspi.Init.CLKPolarity = SPI_POLARITY_LOW;
         spi->hspi.Init.CLKPhase = SPI_PHASE_1EDGE;
-    }
-    else {
+    } else {
         spi->hspi.Init.CLKPolarity = SPI_POLARITY_HIGH;
         spi->hspi.Init.CLKPhase = SPI_PHASE_2EDGE;
     }
@@ -125,10 +119,11 @@ uint8_t spiTransferByte(SPI_TypeDef *instance, uint8_t out)
 bool spiIsBusBusy(SPI_TypeDef *instance)
 {
     SPIDevice device = spiDeviceByInstance(instance);
-    if(spiDevice[device].hspi.State == HAL_SPI_STATE_BUSY)
+    if (spiDevice[device].hspi.State == HAL_SPI_STATE_BUSY) {
         return true;
-    else
+    } else {
         return false;
+    }
 }
 
 bool spiTransfer(SPI_TypeDef *instance, const uint8_t *out, uint8_t *in, int len)
@@ -136,20 +131,18 @@ bool spiTransfer(SPI_TypeDef *instance, const uint8_t *out, uint8_t *in, int len
     SPIDevice device = spiDeviceByInstance(instance);
     HAL_StatusTypeDef status;
 
-#define SPI_DEFAULT_TIMEOUT 10
-
     if (!in) {
         // Tx only
-        status = HAL_SPI_Transmit(&spiDevice[device].hspi, out, len, SPI_DEFAULT_TIMEOUT);
-    } else if(!out) {
+        status = HAL_SPI_Transmit(&spiDevice[device].hspi, out, len, SPI_TIMEOUT_SYS_TICKS);
+    } else if (!out) {
         // Rx only
-        status = HAL_SPI_Receive(&spiDevice[device].hspi, in, len, SPI_DEFAULT_TIMEOUT);
+        status = HAL_SPI_Receive(&spiDevice[device].hspi, in, len, SPI_TIMEOUT_SYS_TICKS);
     } else {
         // Tx and Rx
-        status = HAL_SPI_TransmitReceive(&spiDevice[device].hspi, out, in, len, SPI_DEFAULT_TIMEOUT);
+        status = HAL_SPI_TransmitReceive(&spiDevice[device].hspi, out, in, len, SPI_TIMEOUT_SYS_TICKS);
     }
 
-    if(status != HAL_OK) {
+    if (status != HAL_OK) {
         spiTimeoutUserCallback(instance);
     }
 
@@ -217,8 +210,9 @@ void SPI4_IRQHandler(void)
 void dmaSPIIRQHandler(dmaChannelDescriptor_t* descriptor)
 {
     SPIDevice device = descriptor->userParam;
-    if (device != SPIINVALID)
+    if (device != SPIINVALID) {
         HAL_DMA_IRQHandler(&spiDevice[device].hdma);
+    }
 }
 #endif // USE_DMA
 #endif

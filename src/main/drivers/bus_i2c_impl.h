@@ -25,20 +25,19 @@
 #include "drivers/io_types.h"
 #include "drivers/rcc_types.h"
 
-#define I2C_SHORT_TIMEOUT            ((uint32_t)0x1000)
-#define I2C_LONG_TIMEOUT             ((uint32_t)(10 * I2C_SHORT_TIMEOUT))
-#define I2C_DEFAULT_TIMEOUT          I2C_SHORT_TIMEOUT
+#define I2C_TIMEOUT_US          10000
+#define I2C_TIMEOUT_SYS_TICKS   (I2C_TIMEOUT_US / 1000)
 
 #define I2C_PIN_SEL_MAX 4
 
 typedef struct i2cPinDef_s {
     ioTag_t ioTag;
-#if defined(STM32F4) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32H7) || defined(STM32G4)
     uint8_t af;
 #endif
 } i2cPinDef_t;
 
-#if defined(STM32F4) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32H7) || defined(STM32G4)
 #define I2CPINDEF(pin, af) { DEFIO_TAG_E(pin), af }
 #elif defined(STM32F1)
 #define I2CPINDEF(pin, af) { DEFIO_TAG_E(pin) }
@@ -79,7 +78,7 @@ typedef struct i2cDevice_s {
     I2C_TypeDef *reg;
     IO_t scl;
     IO_t sda;
-#if defined(STM32F4) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32H7) || defined(STM32G4)
     uint8_t sclAF;
     uint8_t sdaAF;
 #endif
