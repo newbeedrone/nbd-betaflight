@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Infinity AIO F7"
+#define TARGET_BOARD_IDENTIFIER         "Infinity AIO F7 Rev_B"
 #define USBD_PRODUCT_STRING             "Infinity AIO F7"
 
 /* ======== LED ======== */
@@ -83,14 +83,16 @@
 
 /* ======== I2C ======== */
 #define USE_I2C
-#define USE_I2C_DEVICE_3
-#define I2C_DEVICE_3                    (I2CDEV_3)
-#define I2C3_SCL                        PA8
-#define I2C3_SDA                        PC9
+#define USE_I2C_DEVICE_1
+#define I2C_DEVICE_1                    (I2CDEV_1)
+#define I2C1_SCL                        PB8
+#define I2C1_SDA                        PB9
 
-/* ======== GYRO ======== */
+/* ======== GYRO & ACC ======== */
+#define USE_ACC
 #define USE_GYRO
-#define USE_GYRO_SPI_MPU6000
+#define USE_SPI_GYRO
+#define USE_ACCGYRO_BMI270
 
 #define USE_EXTI
 #define USE_GYRO_EXTI
@@ -102,15 +104,11 @@
 
 #define GYRO_1_ALIGN                    CW180_DEG
 
-/* ======== ACC ======== */
-#define USE_ACC
-#define USE_ACC_SPI_MPU6000
-
 /* ======== MAG ======== */
 #define USE_MAG
 #define USE_MAG_QMC5883
 
-#define MAG_I2C_INSTANCE                (I2CDEV_3)
+#define MAG_I2C_INSTANCE                (I2CDEV_1)
 
 /* ======== OSD ======== */
 #define USE_MAX7456
