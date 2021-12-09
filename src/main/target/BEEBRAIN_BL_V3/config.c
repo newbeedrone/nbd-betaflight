@@ -236,6 +236,22 @@ void targetConfiguration(void)
     pidProfilesMutable(0)->d_min[FD_PITCH] = 64;
     pidProfilesMutable(0)->d_min_gain = 30;
     pidProfilesMutable(0)->d_min_advance = 1;
+#elif defined (BEEBRAIN_BL_V3_MQT)
+    strcpy(pilotConfigMutable()->name, "BBBL V3 MQT");
+
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 55;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 108;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 58;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 114;
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 50;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 102;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 54;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 108;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 54;
+    pidProfilesMutable(0)->pid[PID_YAW].I   = 108;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 108;
+    pidProfilesMutable(0)->d_min[FD_ROLL]   = 0;
+    pidProfilesMutable(0)->d_min[FD_PITCH]  = 0;
 #endif
 }
 #endif
