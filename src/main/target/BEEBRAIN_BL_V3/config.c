@@ -96,6 +96,7 @@ void targetConfiguration(void)
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
     vtxSettingsConfigMutable()->power = 1;
+    vtxSettingsConfigMutable()->lowPowerDisarm = 1;
 
     uint16_t vtxTableFrequency[6][8] = {
         { 5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725 }, // Boscam A
@@ -216,42 +217,39 @@ void targetConfiguration(void)
     pidConfigMutable()->pid_process_denom = 2;
 
     gyroConfigMutable()->gyro_lowpass_hz = 175;
-    gyroConfigMutable()->gyro_lowpass2_hz = 350;
+    gyroConfigMutable()->gyro_lowpass2_hz = 171;
     gyroConfigMutable()->dyn_notch_width_percent = 0;
     gyroConfigMutable()->dyn_notch_q = 250;
-    gyroConfigMutable()->dyn_notch_min_hz = 125;
-    gyroConfigMutable()->dyn_notch_max_hz = 350;
-    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 280;
+    gyroConfigMutable()->dyn_notch_min_hz = 150;
+    gyroConfigMutable()->dyn_notch_max_hz = 500;
+    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 0;
     gyroConfigMutable()->dyn_lpf_gyro_max_hz = 700;
 
     motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
 
-    pidProfilesMutable(0)->thrustLinearization = 25;
-    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 50;
-    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 170;
-    pidProfilesMutable(0)->dterm_lowpass2_hz = 150;
+    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 0;
+    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 187;
+    pidProfilesMutable(0)->dterm_lowpass_hz = 0;
+    pidProfilesMutable(0)->dterm_lowpass2_hz = 110;
     pidProfilesMutable(0)->vbatPidCompensation = true;
-    pidProfilesMutable(0)->vbat_sag_compensation = 100;
-    pidProfilesMutable(0)->itermAcceleratorGain = 10000;
     pidProfilesMutable(0)->iterm_relax_cutoff = 10;
-    pidProfilesMutable(0)->pid[PID_PITCH].P = 92;
-    pidProfilesMutable(0)->pid[PID_PITCH].I = 90;
-    pidProfilesMutable(0)->pid[PID_PITCH].D = 90;
-    pidProfilesMutable(0)->pid[PID_PITCH].F = 171;
-    pidProfilesMutable(0)->pid[PID_ROLL].P  = 85;
-    pidProfilesMutable(0)->pid[PID_ROLL].I  = 85;
-    pidProfilesMutable(0)->pid[PID_ROLL].D  = 83;
-    pidProfilesMutable(0)->pid[PID_ROLL].F  = 162;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 74;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 20;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 98;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 259;
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 67;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 20;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 90;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 245;
     pidProfilesMutable(0)->pid[PID_YAW].P   = 90;
-    pidProfilesMutable(0)->pid[PID_YAW].I   = 90;
-    pidProfilesMutable(0)->pid[PID_YAW].D   = 0;
-    pidProfilesMutable(0)->pid[PID_YAW].F   = 162;
-    pidProfilesMutable(0)->d_min[FD_ROLL] = 0;
-    pidProfilesMutable(0)->d_min[FD_PITCH] = 0;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 245;
+    pidProfilesMutable(0)->d_min[FD_ROLL] = 59;
+    pidProfilesMutable(0)->d_min[FD_PITCH] = 64;
     pidProfilesMutable(0)->d_min_gain = 30;
     pidProfilesMutable(0)->d_min_advance = 1;
+
 #elif defined (BEEBRAIN_BL_V3_MQT)
     strcpy(pilotConfigMutable()->name, "BBBL V3 MQT");
 
