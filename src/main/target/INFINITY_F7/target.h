@@ -92,7 +92,7 @@
 #define USE_GYRO
 #define USE_SPI_GYRO
 #define USE_MULTI_GYRO
-#define USE_ACCGYRO_BMI160
+#define USE_ACCGYRO_BMI270
 
 #define BMI160_SPI_DIVISOR              16
 

@@ -3,4 +3,5 @@ FEATURES       += VCP ONBOARDFLASH
 
 TARGET_SRC = \
             drivers/max7456.c \
-            drivers/accgyro/accgyro_spi_bmi160.c \
+            $(ROOT)/lib/main/BoschSensortec/BMI270-Sensor-API/bmi270.c \
+            drivers/accgyro/accgyro_spi_bmi270.c \
