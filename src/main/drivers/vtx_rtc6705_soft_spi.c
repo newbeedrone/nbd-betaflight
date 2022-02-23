@@ -26,6 +26,7 @@
 #if defined(USE_VTX_RTC6705_SOFTSPI)
 
 #include "drivers/bus_spi.h"
+#include "drivers/bus_spi_impl.h"
 #include "drivers/io.h"
 #include "drivers/light_led.h"
 #include "drivers/time.h"
@@ -50,6 +51,22 @@
 #define DISABLE_RTC6705()     IOHi(rtc6705CsnPin)
 #define ENABLE_RTC6705()      IOLo(rtc6705CsnPin)
 
+#if defined(RTC6705_SOFT_ON_HW_SPI_INSTANCE)
+#define DISABLE_HW_SPI()      do {                                              \
+                                  SPI_Cmd(RTC6705_SOFT_ON_HW_SPI_INSTANCE, DISABLE);       \
+                                  IOConfigGPIO(rtc6705DataPin, IOCFG_OUT_PP);   \
+                                  IOConfigGPIO(rtc6705ClkPin, IOCFG_OUT_PP);    \
+                              } while (0)
+#define ENABLE_HW_SPI()       do {                                              \
+                                  IOConfigGPIOAF(rtc6705DataPin, SPI_IO_AF_CFG, spiDevice[spiDeviceByInstance(RTC6705_SOFT_ON_HW_SPI_INSTANCE)].af); \
+                                  IOConfigGPIOAF(rtc6705ClkPin, SPI_IO_AF_CFG, spiDevice[spiDeviceByInstance(RTC6705_SOFT_ON_HW_SPI_INSTANCE)].af);  \
+                                  SPI_Cmd(RTC6705_SOFT_ON_HW_SPI_INSTANCE, ENABLE);        \
+                              } while (0)
+#else
+#define DISABLE_HW_SPI()      do {} while (0)
+#define ENABLE_HW_SPI()       do {} while (0)
+#endif
+
 static IO_t rtc6705DataPin = IO_NONE;
 static IO_t rtc6705CsnPin = IO_NONE;
 static IO_t rtc6705ClkPin = IO_NONE;
@@ -66,11 +83,13 @@ bool rtc6705SoftSpiIOInit(const vtxIOConfig_t *vtxIOConfig, const IO_t csnPin)
         return false;
     }
 
+#if !defined(RTC6705_SOFT_ON_HW_SPI_INSTANCE)
     IOInit(rtc6705DataPin, OWNER_VTX_DATA, RESOURCE_SOFT_OFFSET);
     IOConfigGPIO(rtc6705DataPin, IOCFG_OUT_PP);
 
     IOInit(rtc6705ClkPin, OWNER_VTX_CLK, RESOURCE_SOFT_OFFSET);
     IOConfigGPIO(rtc6705ClkPin, IOCFG_OUT_PP);
+#endif
 
     // Important: The order of GPIO configuration calls are critical to ensure that incorrect signals are not briefly sent to the VTX.
     // GPIO bit is enabled so here so the CS/LE pin output is not pulled low when the GPIO is set in output mode.
@@ -124,12 +143,16 @@ void rtc6705SoftSpiSetFrequency(uint16_t channel_freq)
     freq /= 40;
     const uint32_t N = freq / 64;
     const uint32_t A = freq % 64;
+    DISABLE_HW_SPI();
     rtc6705_write_register(0, 400);
     rtc6705_write_register(1, (N << 7) | A);
+    ENABLE_HW_SPI();
 }
 
 void rtc6705SoftSpiSetRFPower(uint8_t rf_power)
 {
+    DISABLE_HW_SPI();
     rtc6705_write_register(7, (rf_power > 1 ? PA_CONTROL_DEFAULT : (PA_CONTROL_DEFAULT | PD_Q5G_MASK) & (~(PA5G_PW_MASK | PA5G_BS_MASK))));
+    ENABLE_HW_SPI();
 }
 #endif
