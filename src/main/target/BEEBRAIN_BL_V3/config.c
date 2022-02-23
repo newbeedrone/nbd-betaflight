@@ -345,6 +345,93 @@ void targetConfiguration(void)
     controlRateProfilesMutable(0)->rcExpo[FD_YAW]  = 15;
     controlRateProfilesMutable(0)->dynThrPID = 65;
     controlRateProfilesMutable(0)->tpa_breakpoint = 1250;
+
+#elif defined(BEEBRAIN_BL_V3_SVB)
+    strcpy(pilotConfigMutable()->name, "SavageBee V3");
+
+    motorConfigMutable()->digitalIdleOffsetValue = 400;
+    mixerConfigMutable()->yaw_motors_reversed = true;
+
+    gyroConfigMutable()->gyro_lowpass_type = FILTER_PT1;
+    gyroConfigMutable()->gyro_lowpass_hz = 200;
+    gyroConfigMutable()->gyro_lowpass2_hz = 225;
+    gyroConfigMutable()->yaw_spin_threshold = 1950;
+    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 180;
+    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 450;
+
+    motorConfigMutable()->dev.useDshotTelemetry = true;
+    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
+    motorConfigMutable()->motorPoleCount = 12;
+
+  //Profile 0
+    pidProfilesMutable(0)->dterm_filter_type = FILTER_PT1;
+    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 60;
+    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 145;
+    pidProfilesMutable(0)->dterm_lowpass_hz = 150;
+    pidProfilesMutable(0)->dterm_lowpass2_hz = 128;
+    pidProfilesMutable(0)->dterm_notch_cutoff = 0;
+    pidProfilesMutable(0)->vbatPidCompensation = true;
+    pidProfilesMutable(0)->itermAcceleratorGain = 5200;
+    pidProfilesMutable(0)->feedForwardTransition = 80;
+    pidProfilesMutable(0)->iterm_relax_cutoff = 20;
+
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 60;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 66;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 54;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 20;
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 57;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 60;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 35;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 20;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 60;
+    pidProfilesMutable(0)->pid[PID_YAW].I   = 90;
+    pidProfilesMutable(0)->pid[PID_YAW].D   = 0;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 0;
+    pidProfilesMutable(0)->pid[PID_LEVEL].P = 70;
+    pidProfilesMutable(0)->pid[PID_LEVEL].I = 70;
+    pidProfilesMutable(0)->pid[PID_LEVEL].D = 100;
+    pidProfilesMutable(0)->levelAngleLimit  = 85;
+    pidProfilesMutable(0)->d_min[FD_ROLL] = 0;
+    pidProfilesMutable(0)->d_min[FD_PITCH] = 0;
+    pidProfilesMutable(0)->d_min_gain = 25;
+    pidProfilesMutable(0)->d_min_advance = 1;
+    pidProfilesMutable(0)->auto_profile_cell_count = 1;
+
+  //Profile 1
+    pidProfilesMutable(1)->dterm_filter_type = FILTER_PT1;
+    pidProfilesMutable(1)->dyn_lpf_dterm_min_hz = 60;
+    pidProfilesMutable(1)->dyn_lpf_dterm_max_hz = 145;
+    pidProfilesMutable(1)->dterm_lowpass2_hz = 128;
+    pidProfilesMutable(1)->vbatPidCompensation = true;
+    pidProfilesMutable(1)->itermAcceleratorGain = 5200;
+    pidProfilesMutable(1)->feedForwardTransition = 80;
+    pidProfilesMutable(1)->iterm_relax_cutoff = 20;
+
+    pidProfilesMutable(1)->pid[PID_PITCH].P = 49;
+    pidProfilesMutable(1)->pid[PID_PITCH].I = 66;
+    pidProfilesMutable(1)->pid[PID_PITCH].D = 40;
+    pidProfilesMutable(1)->pid[PID_PITCH].F = 20;
+    pidProfilesMutable(1)->pid[PID_ROLL].P  = 43;
+    pidProfilesMutable(1)->pid[PID_ROLL].I  = 62;
+    pidProfilesMutable(1)->pid[PID_ROLL].D  = 52;
+    pidProfilesMutable(1)->pid[PID_ROLL].F  = 20;
+    pidProfilesMutable(1)->pid[PID_YAW].P   = 48;
+    pidProfilesMutable(1)->pid[PID_YAW].I   = 69;
+    pidProfilesMutable(1)->pid[PID_YAW].D   = 0;
+    pidProfilesMutable(1)->pid[PID_YAW].F   = 0;
+    pidProfilesMutable(1)->d_min[FD_ROLL] = 0;
+    pidProfilesMutable(1)->d_min[FD_PITCH] = 0;
+    pidProfilesMutable(1)->auto_profile_cell_count = 2;
+
+    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 100;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 73;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 73;
+    controlRateProfilesMutable(0)->rates[FD_YAW] = 73;
+    controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 15;
+    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 15;
+    controlRateProfilesMutable(0)->rcExpo[FD_YAW]  = 15;
+    controlRateProfilesMutable(0)->dynThrPID = 65;
+    controlRateProfilesMutable(0)->tpa_breakpoint = 1250;
 #endif
 }
 #endif
