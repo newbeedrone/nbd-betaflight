@@ -294,57 +294,43 @@ void targetConfiguration(void)
 #elif defined (BEEBRAIN_BL_V3_75)
     strcpy(pilotConfigMutable()->name, "BBBL V3 75");
 
-    gyroConfigMutable()->gyro_lowpass_type = FILTER_PT1;
-    gyroConfigMutable()->gyro_lowpass_hz = 200;
-    gyroConfigMutable()->gyro_lowpass2_hz = 238;
-    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 190;
-    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 475;
+    gyroConfigMutable()->gyro_lowpass_hz = 175;
+    gyroConfigMutable()->gyro_lowpass2_hz = 300;
+    gyroConfigMutable()->dyn_notch_width_percent = 0;
+    gyroConfigMutable()->dyn_notch_q = 250;
+    gyroConfigMutable()->dyn_notch_min_hz = 150;
+    gyroConfigMutable()->dyn_notch_max_hz = 500;
+    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 240;
+    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 600;
 
     motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
 
-    pidProfilesMutable(0)->dterm_filter_type = FILTER_PT1;
-    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 63;
-    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 153;
-    pidProfilesMutable(0)->dterm_lowpass_hz = 150;
-    pidProfilesMutable(0)->dterm_lowpass2_hz = 135;
-    pidProfilesMutable(0)->dterm_notch_cutoff = 0;
+    pidProfilesMutable(0)->thrustLinearization = 0;
+    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 0;
+    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 272;
+    pidProfilesMutable(0)->dterm_lowpass2_hz = 240;
+    pidProfilesMutable(0)->itermAcceleratorGain = 10000;
     pidProfilesMutable(0)->vbatPidCompensation = true;
-    pidProfilesMutable(0)->itermAcceleratorGain = 5000;
-    pidProfilesMutable(0)->feedForwardTransition = 80;
-    pidProfilesMutable(0)->iterm_relax = ITERM_RELAX_RP_INC;
-
-    pidProfilesMutable(0)->pid[PID_PITCH].P = 61;
-    pidProfilesMutable(0)->pid[PID_PITCH].I = 62;
-    pidProfilesMutable(0)->pid[PID_PITCH].D = 42;
-    pidProfilesMutable(0)->pid[PID_PITCH].F = 20;
-    pidProfilesMutable(0)->pid[PID_ROLL].P  = 59;
-    pidProfilesMutable(0)->pid[PID_ROLL].I  = 57;
-    pidProfilesMutable(0)->pid[PID_ROLL].D  = 48;
-    pidProfilesMutable(0)->pid[PID_ROLL].F  = 20;
-    pidProfilesMutable(0)->pid[PID_YAW].P   = 52;
-    pidProfilesMutable(0)->pid[PID_YAW].I   = 58;
-    pidProfilesMutable(0)->pid[PID_YAW].D   = 0;
-    pidProfilesMutable(0)->pid[PID_YAW].F   = 0;
-    pidProfilesMutable(0)->pid[PID_LEVEL].P = 70;
-    pidProfilesMutable(0)->pid[PID_LEVEL].I = 70;
-    pidProfilesMutable(0)->pid[PID_LEVEL].D = 100;
-    pidProfilesMutable(0)->levelAngleLimit  = 85;
+    pidProfilesMutable(0)->vbat_sag_compensation = 0;
+    pidProfilesMutable(0)->iterm_relax_cutoff = 10;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 74;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 50;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 72;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 133;
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 70;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 50;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 67;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 126;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 72;
+    pidProfilesMutable(0)->pid[PID_YAW].I   = 90;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 126;
     pidProfilesMutable(0)->d_min[FD_ROLL]   = 0;
     pidProfilesMutable(0)->d_min[FD_PITCH]  = 0;
-    pidProfilesMutable(0)->d_min_gain       = 25;
+    pidProfilesMutable(0)->d_min_gain       = 30;
     pidProfilesMutable(0)->d_min_advance    = 1;
-
-    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 100;
-    controlRateProfilesMutable(0)->rates[FD_ROLL] = 73;
-    controlRateProfilesMutable(0)->rates[FD_PITCH] = 73;
-    controlRateProfilesMutable(0)->rates[FD_YAW] = 73;
-    controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 15;
-    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 15;
-    controlRateProfilesMutable(0)->rcExpo[FD_YAW]  = 15;
-    controlRateProfilesMutable(0)->dynThrPID = 65;
-    controlRateProfilesMutable(0)->tpa_breakpoint = 1250;
+    pidProfilesMutable(0)->auto_profile_cell_count = 1;
 
 #elif defined(BEEBRAIN_BL_V3_SVB)
     strcpy(pilotConfigMutable()->name, "SavageBee V3");
