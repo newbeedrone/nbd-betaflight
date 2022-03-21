@@ -79,7 +79,7 @@ void targetConfiguration(void)
 
     // OSD
     osdElementConfigMutable()->item_pos[OSD_CRAFT_NAME]        = OSD_POS(9, 10) | OSD_PROFILE_1_FLAG;
-    osdElementConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE] = OSD_POS(23, 9) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_AVG_CELL_VOLTAGE]  = OSD_POS(23, 9) | OSD_PROFILE_1_FLAG;
     osdElementConfigMutable()->item_pos[OSD_ITEM_TIMER_2]      = OSD_POS(2,  9) | OSD_PROFILE_1_FLAG;
     osdElementConfigMutable()->item_pos[OSD_FLYMODE]           = OSD_POS(17, 9) | OSD_PROFILE_1_FLAG;
     osdElementConfigMutable()->item_pos[OSD_VTX_CHANNEL]       = OSD_POS(9,  9) | OSD_PROFILE_1_FLAG;
@@ -331,6 +331,48 @@ void targetConfiguration(void)
     pidProfilesMutable(0)->d_min_gain       = 30;
     pidProfilesMutable(0)->d_min_advance    = 1;
     pidProfilesMutable(0)->auto_profile_cell_count = 1;
+
+#elif defined (BEEBRAIN_BL_V3_ARCB)
+    strcpy(pilotConfigMutable()->name, "AcroBee V3 75");
+
+    gyroConfigMutable()->gyro_lowpass_hz = 175;
+    gyroConfigMutable()->gyro_lowpass2_hz = 300;
+    gyroConfigMutable()->dyn_notch_width_percent = 0;
+    gyroConfigMutable()->dyn_notch_q = 250;
+    gyroConfigMutable()->dyn_notch_min_hz = 150;
+    gyroConfigMutable()->dyn_notch_max_hz = 500;
+    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 240;
+    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 600;
+
+    motorConfigMutable()->digitalIdleOffsetValue = 300;
+    motorConfigMutable()->dev.useDshotTelemetry = true;
+    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
+    motorConfigMutable()->motorPoleCount = 12;
+
+    pidProfilesMutable(0)->thrustLinearization = 0;
+    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 0;
+    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 272;
+    pidProfilesMutable(0)->dterm_lowpass2_hz = 240;
+    pidProfilesMutable(0)->itermAcceleratorGain = 10000;
+    pidProfilesMutable(0)->vbatPidCompensation = true;
+    pidProfilesMutable(0)->vbat_sag_compensation = 0;
+    pidProfilesMutable(0)->iterm_relax_cutoff = 10;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 74;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 68;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 72;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 133;
+    pidProfilesMutable(0)->pid[PID_ROLL].P  = 65;
+    pidProfilesMutable(0)->pid[PID_ROLL].I  = 50;
+    pidProfilesMutable(0)->pid[PID_ROLL].D  = 52;
+    pidProfilesMutable(0)->pid[PID_ROLL].F  = 126;
+    pidProfilesMutable(0)->pid[PID_YAW].P   = 72;
+    pidProfilesMutable(0)->pid[PID_YAW].I   = 90;
+    pidProfilesMutable(0)->pid[PID_YAW].F   = 126;
+    pidProfilesMutable(0)->d_min[FD_ROLL]   = 0;
+    pidProfilesMutable(0)->d_min[FD_PITCH]  = 0;
+    pidProfilesMutable(0)->d_min_gain       = 30;
+    pidProfilesMutable(0)->d_min_advance    = 1;
+    pidProfilesMutable(0)->auto_profile_cell_count = 2;
 
 #elif defined(BEEBRAIN_BL_V3_SVB)
     strcpy(pilotConfigMutable()->name, "SavageBee V3");
