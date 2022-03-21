@@ -303,10 +303,12 @@ void targetConfiguration(void)
     gyroConfigMutable()->dyn_lpf_gyro_min_hz = 240;
     gyroConfigMutable()->dyn_lpf_gyro_max_hz = 600;
 
+    motorConfigMutable()->digitalIdleOffsetValue = 300;
     motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
 
+  //Profile 1
     pidProfilesMutable(0)->thrustLinearization = 0;
     pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 0;
     pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 272;
@@ -332,47 +334,31 @@ void targetConfiguration(void)
     pidProfilesMutable(0)->d_min_advance    = 1;
     pidProfilesMutable(0)->auto_profile_cell_count = 1;
 
-#elif defined (BEEBRAIN_BL_V3_ARCB)
-    strcpy(pilotConfigMutable()->name, "AcroBee V3 75");
-
-    gyroConfigMutable()->gyro_lowpass_hz = 175;
-    gyroConfigMutable()->gyro_lowpass2_hz = 300;
-    gyroConfigMutable()->dyn_notch_width_percent = 0;
-    gyroConfigMutable()->dyn_notch_q = 250;
-    gyroConfigMutable()->dyn_notch_min_hz = 150;
-    gyroConfigMutable()->dyn_notch_max_hz = 500;
-    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 240;
-    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 600;
-
-    motorConfigMutable()->digitalIdleOffsetValue = 300;
-    motorConfigMutable()->dev.useDshotTelemetry = true;
-    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
-    motorConfigMutable()->motorPoleCount = 12;
-
-    pidProfilesMutable(0)->thrustLinearization = 0;
-    pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 0;
-    pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 272;
-    pidProfilesMutable(0)->dterm_lowpass2_hz = 240;
-    pidProfilesMutable(0)->itermAcceleratorGain = 10000;
-    pidProfilesMutable(0)->vbatPidCompensation = true;
-    pidProfilesMutable(0)->vbat_sag_compensation = 0;
-    pidProfilesMutable(0)->iterm_relax_cutoff = 10;
-    pidProfilesMutable(0)->pid[PID_PITCH].P = 74;
-    pidProfilesMutable(0)->pid[PID_PITCH].I = 68;
-    pidProfilesMutable(0)->pid[PID_PITCH].D = 72;
-    pidProfilesMutable(0)->pid[PID_PITCH].F = 133;
-    pidProfilesMutable(0)->pid[PID_ROLL].P  = 65;
-    pidProfilesMutable(0)->pid[PID_ROLL].I  = 50;
-    pidProfilesMutable(0)->pid[PID_ROLL].D  = 52;
-    pidProfilesMutable(0)->pid[PID_ROLL].F  = 126;
-    pidProfilesMutable(0)->pid[PID_YAW].P   = 72;
-    pidProfilesMutable(0)->pid[PID_YAW].I   = 90;
-    pidProfilesMutable(0)->pid[PID_YAW].F   = 126;
-    pidProfilesMutable(0)->d_min[FD_ROLL]   = 0;
-    pidProfilesMutable(0)->d_min[FD_PITCH]  = 0;
-    pidProfilesMutable(0)->d_min_gain       = 30;
-    pidProfilesMutable(0)->d_min_advance    = 1;
-    pidProfilesMutable(0)->auto_profile_cell_count = 2;
+  //Profile 2
+    pidProfilesMutable(1)->thrustLinearization = 0;
+    pidProfilesMutable(1)->dyn_lpf_dterm_min_hz = 0;
+    pidProfilesMutable(1)->dyn_lpf_dterm_max_hz = 272;
+    pidProfilesMutable(1)->dterm_lowpass2_hz = 240;
+    pidProfilesMutable(1)->itermAcceleratorGain = 10000;
+    pidProfilesMutable(1)->vbatPidCompensation = true;
+    pidProfilesMutable(1)->vbat_sag_compensation = 0;
+    pidProfilesMutable(1)->iterm_relax_cutoff = 10;
+    pidProfilesMutable(1)->pid[PID_PITCH].P = 74;
+    pidProfilesMutable(1)->pid[PID_PITCH].I = 68;
+    pidProfilesMutable(1)->pid[PID_PITCH].D = 72;
+    pidProfilesMutable(1)->pid[PID_PITCH].F = 133;
+    pidProfilesMutable(1)->pid[PID_ROLL].P  = 65;
+    pidProfilesMutable(1)->pid[PID_ROLL].I  = 50;
+    pidProfilesMutable(1)->pid[PID_ROLL].D  = 52;
+    pidProfilesMutable(1)->pid[PID_ROLL].F  = 126;
+    pidProfilesMutable(1)->pid[PID_YAW].P   = 72;
+    pidProfilesMutable(1)->pid[PID_YAW].I   = 90;
+    pidProfilesMutable(1)->pid[PID_YAW].F   = 126;
+    pidProfilesMutable(1)->d_min[FD_ROLL]   = 0;
+    pidProfilesMutable(1)->d_min[FD_PITCH]  = 0;
+    pidProfilesMutable(1)->d_min_gain       = 30;
+    pidProfilesMutable(1)->d_min_advance    = 1;
+    pidProfilesMutable(1)->auto_profile_cell_count = 2;
 
 #elif defined(BEEBRAIN_BL_V3_SVB)
     strcpy(pilotConfigMutable()->name, "SavageBee V3");
@@ -391,7 +377,7 @@ void targetConfiguration(void)
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
 
-  //Profile 0
+  //Profile 1
     pidProfilesMutable(0)->dterm_filter_type = FILTER_PT1;
     pidProfilesMutable(0)->dyn_lpf_dterm_min_hz = 60;
     pidProfilesMutable(0)->dyn_lpf_dterm_max_hz = 145;
@@ -425,7 +411,7 @@ void targetConfiguration(void)
     pidProfilesMutable(0)->d_min_advance = 1;
     pidProfilesMutable(0)->auto_profile_cell_count = 1;
 
-  //Profile 1
+  //Profile 2
     pidProfilesMutable(1)->dterm_filter_type = FILTER_PT1;
     pidProfilesMutable(1)->dyn_lpf_dterm_min_hz = 60;
     pidProfilesMutable(1)->dyn_lpf_dterm_max_hz = 145;
