@@ -368,10 +368,13 @@ void targetConfiguration(void)
 
     gyroConfigMutable()->gyro_lowpass_type = FILTER_PT1;
     gyroConfigMutable()->gyro_lowpass_hz = 200;
-    gyroConfigMutable()->gyro_lowpass2_hz = 225;
+    gyroConfigMutable()->gyro_lowpass2_hz = 375;
     gyroConfigMutable()->yaw_spin_threshold = 1950;
-    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 180;
-    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 450;
+    gyroConfigMutable()->dyn_notch_width_percent = 0;
+    gyroConfigMutable()->dyn_notch_q = 250;
+    gyroConfigMutable()->dyn_notch_max_hz = 350;
+    gyroConfigMutable()->dyn_lpf_gyro_min_hz = 300;
+    gyroConfigMutable()->dyn_lpf_gyro_max_hz = 750;
 
     motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
@@ -413,26 +416,26 @@ void targetConfiguration(void)
 
   //Profile 2
     pidProfilesMutable(1)->dterm_filter_type = FILTER_PT1;
-    pidProfilesMutable(1)->dyn_lpf_dterm_min_hz = 60;
-    pidProfilesMutable(1)->dyn_lpf_dterm_max_hz = 145;
-    pidProfilesMutable(1)->dterm_lowpass2_hz = 128;
-    pidProfilesMutable(1)->vbatPidCompensation = true;
-    pidProfilesMutable(1)->itermAcceleratorGain = 5200;
-    pidProfilesMutable(1)->feedForwardTransition = 80;
-    pidProfilesMutable(1)->iterm_relax_cutoff = 20;
+    pidProfilesMutable(1)->dyn_lpf_dterm_min_hz = 105;
+    pidProfilesMutable(1)->dyn_lpf_dterm_max_hz = 255;
+    pidProfilesMutable(1)->dterm_lowpass2_hz = 225;
+    pidProfilesMutable(1)->vbatPidCompensation = false;
+    pidProfilesMutable(1)->itermAcceleratorGain = 3500;
+    pidProfilesMutable(1)->feedForwardTransition = 0;
+    pidProfilesMutable(1)->iterm_relax_cutoff = 15;
 
-    pidProfilesMutable(1)->pid[PID_PITCH].P = 49;
-    pidProfilesMutable(1)->pid[PID_PITCH].I = 66;
-    pidProfilesMutable(1)->pid[PID_PITCH].D = 40;
-    pidProfilesMutable(1)->pid[PID_PITCH].F = 20;
-    pidProfilesMutable(1)->pid[PID_ROLL].P  = 43;
-    pidProfilesMutable(1)->pid[PID_ROLL].I  = 62;
-    pidProfilesMutable(1)->pid[PID_ROLL].D  = 52;
-    pidProfilesMutable(1)->pid[PID_ROLL].F  = 20;
-    pidProfilesMutable(1)->pid[PID_YAW].P   = 48;
-    pidProfilesMutable(1)->pid[PID_YAW].I   = 69;
+    pidProfilesMutable(1)->pid[PID_PITCH].P = 69;
+    pidProfilesMutable(1)->pid[PID_PITCH].I = 90;
+    pidProfilesMutable(1)->pid[PID_PITCH].D = 44;
+    pidProfilesMutable(1)->pid[PID_PITCH].F = 143;
+    pidProfilesMutable(1)->pid[PID_ROLL].P  = 63;
+    pidProfilesMutable(1)->pid[PID_ROLL].I  = 85;
+    pidProfilesMutable(1)->pid[PID_ROLL].D  = 40;
+    pidProfilesMutable(1)->pid[PID_ROLL].F  = 135;
+    pidProfilesMutable(1)->pid[PID_YAW].P   = 68;
+    pidProfilesMutable(1)->pid[PID_YAW].I   = 90;
     pidProfilesMutable(1)->pid[PID_YAW].D   = 0;
-    pidProfilesMutable(1)->pid[PID_YAW].F   = 0;
+    pidProfilesMutable(1)->pid[PID_YAW].F   = 135;
     pidProfilesMutable(1)->d_min[FD_ROLL] = 0;
     pidProfilesMutable(1)->d_min[FD_PITCH] = 0;
     pidProfilesMutable(1)->auto_profile_cell_count = 2;
