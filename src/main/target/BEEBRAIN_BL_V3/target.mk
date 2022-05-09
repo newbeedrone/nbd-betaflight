@@ -4,7 +4,8 @@ FEATURES     += VCP
 TARGET_SRC = \
             drivers/max7456.c \
             drivers/vtx_rtc6705.c \
-            drivers/accgyro/accgyro_spi_mpu6000.c \
+            $(ROOT)/lib/main/BoschSensortec/BMI270-Sensor-API/bmi270.c \
+            drivers/accgyro/accgyro_spi_bmi270.c \
             drivers/rx/rx_cc2500.c \
             rx/cc2500_common.c \
             rx/cc2500_frsky_shared.c \
