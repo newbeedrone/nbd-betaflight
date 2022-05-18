@@ -112,8 +112,8 @@
 #define GYRO_2_CS_PIN                   SPI2_NSS_PIN
 #define GYRO_2_SPI_INSTANCE             SPI2
 
-#define GYRO_1_ALIGN                    CW180_DEG
-#define GYRO_2_ALIGN                    CW180_DEG
+#define GYRO_1_ALIGN                    CW0_DEG
+#define GYRO_2_ALIGN                    CW270_DEG
 
 #define GYRO_CONFIG_USE_GYRO_DEFAULT    GYRO_CONFIG_USE_GYRO_BOTH
 
