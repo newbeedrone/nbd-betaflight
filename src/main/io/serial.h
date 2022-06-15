@@ -74,7 +74,8 @@ typedef enum {
     BAUD_1000000,
     BAUD_1500000,
     BAUD_2000000,
-    BAUD_2470000
+    BAUD_2470000,
+    BAUD_COUNT
 } baudRate_e;
 
 extern const uint32_t baudRates[];
@@ -91,11 +92,13 @@ typedef enum {
     SERIAL_PORT_USART6,
     SERIAL_PORT_USART7,
     SERIAL_PORT_USART8,
-    SERIAL_PORT_LPUART1,
+    SERIAL_PORT_UART9,
+    SERIAL_PORT_USART10,
     SERIAL_PORT_USB_VCP = 20,
     SERIAL_PORT_SOFTSERIAL1 = 30,
     SERIAL_PORT_SOFTSERIAL2,
-    SERIAL_PORT_IDENTIFIER_MAX = SERIAL_PORT_SOFTSERIAL2,
+    SERIAL_PORT_LPUART1 = 40,
+    SERIAL_PORT_IDENTIFIER_MAX = SERIAL_PORT_LPUART1,
 } serialPortIdentifier_e;
 
 extern const serialPortIdentifier_e serialPortIdentifiers[SERIAL_PORT_COUNT];
@@ -120,7 +123,7 @@ serialPort_t *findSharedSerialPort(uint16_t functionMask, serialPortFunction_e s
 //
 typedef struct serialPortConfig_s {
     uint32_t functionMask;
-    serialPortIdentifier_e identifier;
+    int8_t identifier;
     uint8_t msp_baudrateIndex;
     uint8_t gps_baudrateIndex;
     uint8_t blackbox_baudrateIndex;

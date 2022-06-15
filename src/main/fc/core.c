@@ -61,8 +61,8 @@
 #include "flight/failsafe.h"
 #include "flight/gps_rescue.h"
 
-#if defined(USE_GYRO_DATA_ANALYSE)
-#include "flight/gyroanalyse.h"
+#if defined(USE_DYN_NOTCH_FILTER)
+#include "flight/dyn_notch_filter.h"
 #endif
 
 #include "flight/imu.h"
@@ -74,7 +74,6 @@
 
 #include "io/beeper.h"
 #include "io/gps.h"
-#include "io/motors.h"
 #include "io/pidaudio.h"
 #include "io/serial.h"
 #include "io/servos.h"
@@ -145,7 +144,7 @@ enum {
 int16_t magHold;
 #endif
 
-static FAST_RAM_ZERO_INIT uint8_t pidUpdateCounter;
+static FAST_DATA_ZERO_INIT uint8_t pidUpdateCounter;
 
 static bool flipOverAfterCrashActive = false;
 
@@ -277,7 +276,7 @@ void updateArmingStatus(void)
             // We also need to prevent arming until it's possible to send DSHOT commands.
             // Otherwise if the initial arming is in crash-flip the motor direction commands
             // might not be sent.
-            && (!isMotorProtocolDshot() || dshotCommandsAreEnabled(DSHOT_CMD_TYPE_INLINE))
+            && (!isMotorProtocolDshot() || dshotStreamingCommandsAreEnabled())
 #endif
         ) {
             // If so, unset the grace time arming disable flag
@@ -441,7 +440,7 @@ void disarm(flightLogDisarmReason_e reason)
         lastDisarmTimeUs = micros();
 
 #ifdef USE_OSD
-        if (flipOverAfterCrashActive || isLaunchControlActive()) {
+        if (IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH) || isLaunchControlActive()) {
             osdSuppressStats(true);
         }
 #endif
@@ -463,11 +462,13 @@ void disarm(flightLogDisarmReason_e reason)
             dshotCommandWrite(ALL_MOTORS, getMotorCount(), DSHOT_CMD_SPIN_DIRECTION_NORMAL, DSHOT_CMD_TYPE_INLINE);
         }
 #endif
-        flipOverAfterCrashActive = false;
-
 #ifdef USE_PERSISTENT_STATS
-        statsOnDisarm();
+        if (!flipOverAfterCrashActive) {
+            statsOnDisarm();
+        }
 #endif
+
+        flipOverAfterCrashActive = false;
 
         // if ARMING_DISABLED_RUNAWAY_TAKEOFF is set then we want to play it's beep pattern instead
         if (!(getArmingDisableFlags() & (ARMING_DISABLED_RUNAWAY_TAKEOFF | ARMING_DISABLED_CRASH_DETECTED))) {
@@ -564,7 +565,7 @@ void tryArm(void)
         }
         imuQuaternionHeadfreeOffsetSet();
 
-#if defined(USE_GYRO_DATA_ANALYSE)
+#if defined(USE_DYN_NOTCH_FILTER)
         resetMaxFFT();
 #endif
 
@@ -758,17 +759,6 @@ bool isAirmodeActivated()
  */
 bool processRx(timeUs_t currentTimeUs)
 {
-    static bool armedBeeperOn = false;
-#ifdef USE_TELEMETRY
-    static bool sharedPortTelemetryEnabled = false;
-#endif
-
-    timeDelta_t frameAgeUs;
-    timeDelta_t frameDeltaUs = rxGetFrameDelta(&frameAgeUs);
-
-    DEBUG_SET(DEBUG_RX_TIMING, 0, MIN(frameDeltaUs / 10, INT16_MAX));
-    DEBUG_SET(DEBUG_RX_TIMING, 1, MIN(frameAgeUs / 10, INT16_MAX));
-
     if (!calculateRxChannelsAndUpdateFailsafe(currentTimeUs)) {
         return false;
     }
@@ -786,7 +776,6 @@ bool processRx(timeUs_t currentTimeUs)
     if (currentTimeUs > FAILSAFE_POWER_ON_DELAY_US && !failsafeIsMonitoring()) {
         failsafeStartMonitoring();
     }
-    failsafeUpdateState();
 
     const throttleStatus_e throttleStatus = calculateThrottleStatus();
     const uint8_t throttlePercent = calculateThrottlePercentAbs();
@@ -904,6 +893,17 @@ bool processRx(timeUs_t currentTimeUs)
         }
     }
 #endif
+
+    return true;
+}
+
+void processRxModes(timeUs_t currentTimeUs)
+{
+    static bool armedBeeperOn = false;
+#ifdef USE_TELEMETRY
+    static bool sharedPortTelemetryEnabled = false;
+#endif
+    const throttleStatus_e throttleStatus = calculateThrottleStatus();
 
     // When armed and motors aren't spinning, do beeps and then disarm
     // board after delay so users without buzzer won't lose fingers.
@@ -1096,8 +1096,6 @@ bool processRx(timeUs_t currentTimeUs)
 #endif
 
     pidSetAntiGravityState(IS_RC_MODE_ACTIVE(BOXANTIGRAVITY) || featureIsEnabled(FEATURE_ANTI_GRAVITY));
-
-    return true;
 }
 
 static FAST_CODE void subTaskPidController(timeUs_t currentTimeUs)
@@ -1206,7 +1204,7 @@ static FAST_CODE void subTaskMotorUpdate(timeUs_t currentTimeUs)
         startTime = micros();
     }
 
-    mixTable(currentTimeUs, currentPidProfile->vbatPidCompensation);
+    mixTable(currentTimeUs);
 
 #ifdef USE_SERVOS
     // motor outputs are used as sources for servo mixing, so motors must be calculated using mixTable() before servos.
@@ -1305,10 +1303,8 @@ FAST_CODE void taskMainPidLoop(timeUs_t currentTimeUs)
     subTaskMotorUpdate(currentTimeUs);
     subTaskPidSubprocesses(currentTimeUs);
 
-    if (debugMode == DEBUG_CYCLETIME) {
-        DEBUG_SET(DEBUG_CYCLETIME, 0, getTaskDeltaTimeUs(TASK_SELF));
-        DEBUG_SET(DEBUG_CYCLETIME, 1, getAverageSystemLoadPercent());
-    }
+    DEBUG_SET(DEBUG_CYCLETIME, 0, getTaskDeltaTimeUs(TASK_SELF));
+    DEBUG_SET(DEBUG_CYCLETIME, 1, getAverageSystemLoadPercent());
 }
 
 bool isFlipOverAfterCrashActive(void)

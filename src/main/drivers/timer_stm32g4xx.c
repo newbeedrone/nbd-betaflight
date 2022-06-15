@@ -39,8 +39,8 @@ const timerDef_t timerDefinitions[HARDWARE_TIMER_DEFINITION_COUNT] = {
     { .TIMx = TIM3,  .rcc = RCC_APB11(TIM3), .inputIrq = TIM3_IRQn},
     { .TIMx = TIM4,  .rcc = RCC_APB11(TIM4), .inputIrq = TIM4_IRQn},
     { .TIMx = TIM5,  .rcc = RCC_APB11(TIM5), .inputIrq = TIM5_IRQn},
-    { .TIMx = TIM6,  .rcc = RCC_APB11(TIM6), .inputIrq = 0},
-    { .TIMx = TIM7,  .rcc = RCC_APB11(TIM7), .inputIrq = 0},
+    { .TIMx = TIM6,  .rcc = RCC_APB11(TIM6), .inputIrq = TIM6_DAC_IRQn},
+    { .TIMx = TIM7,  .rcc = RCC_APB11(TIM7), .inputIrq = TIM7_DAC_IRQn},
     { .TIMx = TIM8,  .rcc = RCC_APB2(TIM8),  .inputIrq = TIM8_CC_IRQn},
     { .TIMx = TIM15, .rcc = RCC_APB2(TIM15), .inputIrq = TIM1_BRK_TIM15_IRQn},
     { .TIMx = TIM16, .rcc = RCC_APB2(TIM16), .inputIrq = TIM1_UP_TIM16_IRQn},
@@ -74,6 +74,8 @@ const timerHardware_t fullTimerHardware[FULL_TIMER_CHANNEL_COUNT] = {
 
     DEF_TIM(TIM8, CH1N, PA7, TIM_USE_ANY, 0, 0, 0),
 
+    DEF_TIM(TIM8, CH2, PA14, TIM_USE_ANY, 0, 0, 0),
+    
     DEF_TIM(TIM1, CH1N, PA7, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM1, CH1, PA8, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM1, CH2, PA9, TIM_USE_ANY, 0, 0, 0),
@@ -124,9 +126,11 @@ const timerHardware_t fullTimerHardware[FULL_TIMER_CHANNEL_COUNT] = {
     DEF_TIM(TIM8, CH1N, PB3, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM8, CH2N, PB4, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM1, CH3N, PB15, TIM_USE_ANY, 0, 0, 0),
+    
+    DEF_TIM(TIM8, CH1, PB6, TIM_USE_ANY, 0, 0, 0),
 
     DEF_TIM(TIM1, CH2N, PB0, TIM_USE_ANY, 0, 0, 0),
-    DEF_TIM(TIM1, CH3N, PB0, TIM_USE_ANY, 0, 0, 0),
+    DEF_TIM(TIM1, CH3N, PB1, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM1, CH1N, PB13, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM1, CH2N, PB14, TIM_USE_ANY, 0, 0, 0),
 

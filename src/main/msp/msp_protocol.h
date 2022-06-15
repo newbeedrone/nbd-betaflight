@@ -62,7 +62,7 @@
 #define MSP_PROTOCOL_VERSION                0
 
 #define API_VERSION_MAJOR                   1  // increment when major changes are made
-#define API_VERSION_MINOR                   43 // increment after a release, to set the version for all changes to go into the following release (if no changes to MSP are made between the releases, this can be reverted before the release)
+#define API_VERSION_MINOR                   44 // increment after a release, to set the version for all changes to go into the following release (if no changes to MSP are made between the releases, this can be reverted before the release)
 
 #define API_VERSION_LENGTH                  2
 
@@ -277,13 +277,20 @@
 #define MSP_BATTERY_STATE        130    //out message         Connected/Disconnected, Voltage, Current Used
 #define MSP_MOTOR_CONFIG         131    //out message         Motor configuration (min/max throttle, etc)
 #define MSP_GPS_CONFIG           132    //out message         GPS configuration
-#define MSP_COMPASS_CONFIG       133    //out message         Compass configuration
+//DEPRECATED - #define MSP_COMPASS_CONFIG       133    //out message         Compass configuration
 #define MSP_ESC_SENSOR_DATA      134    //out message         Extra ESC data from 32-Bit ESCs (Temperature, RPM)
 #define MSP_GPS_RESCUE           135    //out message         GPS Rescues's angle, initialAltitude, descentDistance, rescueGroundSpeed, sanityChecks and minSats
 #define MSP_GPS_RESCUE_PIDS      136    //out message         GPS Rescues's throttleP and velocity PIDS + yaw P
 #define MSP_VTXTABLE_BAND        137    //out message         vtxTable band/channel data
 #define MSP_VTXTABLE_POWERLEVEL  138    //out message         vtxTable powerLevel data
 #define MSP_MOTOR_TELEMETRY      139    //out message         Per-motor telemetry data (RPM, packet stats, ESC temp, etc.)
+
+#define MSP_SIMPLIFIED_TUNING             140    //out message    Simplified tuning values and enabled state
+#define MSP_SET_SIMPLIFIED_TUNING         141    //in message     Set simplified tuning positions and apply the calculated tuning
+#define MSP_CALCULATE_SIMPLIFIED_PID      142    //out message    Requests calculations of PID values based on sliders. Sends the calculated values back. But don't save anything to the firmware
+#define MSP_CALCULATE_SIMPLIFIED_GYRO     143    //out message    Requests calculations of gyro filter values based on sliders. Sends the calculated values back. But don't save anything to the firmware
+#define MSP_CALCULATE_SIMPLIFIED_DTERM    144    //out message    Requests calculations of gyro filter values based on sliders. Sends the calculated values back. But don't save anything to the firmware
+#define MSP_VALIDATE_SIMPLIFIED_TUNING    145    //out message    Returns an array of true/false showing which simpligfied tuning groups are matching with value and which are not
 
 #define MSP_SET_RAW_RC           200    //in message          8 rc chan
 #define MSP_SET_RAW_GPS          201    //in message          fix, numsat, lat, lon, alt, speed
@@ -309,7 +316,7 @@
 #define MSP_SET_LED_STRIP_MODECOLOR 221 //in  message         Set LED strip mode_color settings
 #define MSP_SET_MOTOR_CONFIG     222    //out message         Motor configuration (min/max throttle, etc)
 #define MSP_SET_GPS_CONFIG       223    //out message         GPS configuration
-#define MSP_SET_COMPASS_CONFIG   224    //out message         Compass configuration
+//DEPRECATED - #define MSP_SET_COMPASS_CONFIG   224    //out message         Compass configuration
 #define MSP_SET_GPS_RESCUE       225    //in message          GPS Rescues's angle, initialAltitude, descentDistance, rescueGroundSpeed, sanityChecks and minSats
 #define MSP_SET_GPS_RESCUE_PIDS  226    //in message          GPS Rescues's throttleP and velocity PIDS + yaw P
 #define MSP_SET_VTXTABLE_BAND    227    //in message          set vtxTable band/channel data (one band at a time)

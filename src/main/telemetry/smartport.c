@@ -59,7 +59,6 @@
 
 #include "io/beeper.h"
 #include "io/gps.h"
-#include "io/motors.h"
 #include "io/serial.h"
 
 #include "msp/msp.h"
@@ -122,11 +121,12 @@ enum
     FSSP_DATAID_ADC1       = 0xF102 ,
     FSSP_DATAID_ADC2       = 0xF103 ,
     FSSP_DATAID_LATLONG    = 0x0800 ,
-    FSSP_DATAID_CAP_USED   = 0x0600 ,
     FSSP_DATAID_VARIO      = 0x0110 ,
     FSSP_DATAID_CELLS      = 0x0300 ,
     FSSP_DATAID_CELLS_LAST = 0x030F ,
     FSSP_DATAID_HEADING    = 0x0840 ,
+// DIY range 0x5100 to 0x52FF
+    FSSP_DATAID_CAP_USED   = 0x5250 ,
 #if defined(USE_ACC)
     FSSP_DATAID_PITCH      = 0x5230 , // custom
     FSSP_DATAID_ROLL       = 0x5240 , // custom
@@ -361,6 +361,10 @@ static void initSmartPortSensors(void)
         if (telemetryIsSensorEnabled(SENSOR_FUEL)) {
             ADD_SENSOR(FSSP_DATAID_FUEL);
         }
+
+        if (telemetryIsSensorEnabled(SENSOR_CAP_USED)) {
+            ADD_SENSOR(FSSP_DATAID_CAP_USED);
+        }
     }
 
     if (telemetryIsSensorEnabled(SENSOR_HEADING)) {
@@ -502,10 +506,10 @@ void checkSmartPortTelemetryState(void)
 }
 
 #if defined(USE_MSP_OVER_TELEMETRY)
-static void smartPortSendMspResponse(uint8_t *data) {
+static void smartPortSendMspResponse(uint8_t *data, const uint8_t dataSize) {
     smartPortPayload_t payload;
     payload.frameId = FSSP_MSPS_FRAME;
-    memcpy(&payload.valueId, data, SMARTPORT_MSP_PAYLOAD_SIZE);
+    memcpy(&payload.valueId, data, MIN(dataSize,SMARTPORT_MSP_PAYLOAD_SIZE));
 
     smartPortWriteFrame(&payload);
 }
@@ -603,7 +607,6 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
         int32_t tmpi;
         uint32_t tmp2 = 0;
         uint16_t vfasVoltage;
-        uint8_t cellCount;
 
 #ifdef USE_ESC_SENSOR_TELEMETRY
         escSensorData_t *escData;
@@ -611,11 +614,7 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
 
         switch (id) {
             case FSSP_DATAID_VFAS       :
-                vfasVoltage = getBatteryVoltage();
-                if (telemetryConfig()->report_cell_voltage) {
-                    cellCount = getBatteryCellCount();
-                    vfasVoltage = cellCount ? getBatteryVoltage() / cellCount : 0;
-                }
+                vfasVoltage = telemetryConfig()->report_cell_voltage ? getBatteryAverageCellVoltage() : getBatteryVoltage();
                 smartPortSendPackage(id, vfasVoltage); // in 0.01V according to SmartPort spec
                 *clearToSend = false;
                 break;
@@ -702,13 +701,27 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 *clearToSend = false;
                 break;
             case FSSP_DATAID_FUEL       :
+                {
+                    uint32_t data;
+                    if (batteryConfig()->batteryCapacity > 0) {
+                        data = calculateBatteryPercentageRemaining();
+                    } else {
+                        data = getMAhDrawn();
+                    }
+                    smartPortSendPackage(id, data);
+                    *clearToSend = false;
+                }
+                break;
+            case FSSP_DATAID_CAP_USED   :
                 smartPortSendPackage(id, getMAhDrawn()); // given in mAh, should be in percent according to SmartPort spec
                 *clearToSend = false;
                 break;
+#if defined(USE_VARIO)
             case FSSP_DATAID_VARIO      :
                 smartPortSendPackage(id, getEstimatedVario()); // in cm/s according to SmartPort spec
                 *clearToSend = false;
                 break;
+#endif
             case FSSP_DATAID_HEADING    :
                 smartPortSendPackage(id, attitude.values.yaw * 10); // in degrees * 100 according to SmartPort spec
                 *clearToSend = false;
@@ -872,8 +885,7 @@ void processSmartPortTelemetry(smartPortPayload_t *payload, volatile bool *clear
                 break;
 #endif
             case FSSP_DATAID_A4         :
-                cellCount = getBatteryCellCount();
-                vfasVoltage = cellCount ? (getBatteryVoltage() / cellCount) : 0; // in 0.01V according to SmartPort spec
+                vfasVoltage = getBatteryAverageCellVoltage(); // in 0.01V according to SmartPort spec
                 smartPortSendPackage(id, vfasVoltage);
                 *clearToSend = false;
                 break;

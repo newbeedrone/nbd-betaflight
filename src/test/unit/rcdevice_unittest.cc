@@ -32,6 +32,7 @@ extern "C" {
 
     #include "fc/rc_controls.h"
     #include "fc/rc_modes.h"
+    #include "flight/imu.h"
 
     #include "drivers/serial.h"
 
@@ -52,7 +53,7 @@ extern "C" {
 
     #include "rx/rx.h"
 
-    int16_t rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];     // interval [1000;2000]
+    float rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];     // interval [1000;2000]
 
     extern rcdeviceSwitchState_t switchStates[BOXCAMERA3 - BOXCAMERA1 + 1];
     extern runcamDevice_t *camDevice;
@@ -994,4 +995,6 @@ extern "C" {
     bool cmsInMenu;
     uint32_t resumeRefreshAt = 0;
     int getArmingDisableFlags(void) {return 0;}
+    void pinioBoxTaskControl(void) {}
+    attitudeEulerAngles_t attitude = { { 0, 0, 0 } };
 }

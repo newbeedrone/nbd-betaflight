@@ -28,30 +28,25 @@
 
 #include "drivers/display_canvas.h"
 #include "drivers/osd.h"
+#include "drivers/beesign.h"
 
 #include "display.h"
 
-#include "drivers/beesign.h"
-
-void displayClearScreen(displayPort_t *instance)
+void displayClearScreen(displayPort_t *instance, displayClearOption_e options)
 {
-    instance->vTable->clearScreen(instance);
-    instance->cleared = true;
-    instance->cursorRow = -1;
-}
-
 #ifdef USE_OSD_BEESIGN
-void displayCleanScreen(displayPort_t *instance)
-{
     bsCleanScreen();
+#else
+    instance->vTable->clearScreen(instance, options);
+#endif
     instance->cleared = true;
     instance->cursorRow = -1;
 }
-#endif
 
-void displayDrawScreen(displayPort_t *instance)
+// Return true if screen still being transferred
+bool displayDrawScreen(displayPort_t *instance)
 {
-    instance->vTable->drawScreen(instance);
+    return instance->vTable->drawScreen(instance);
 }
 
 int displayScreenSize(const displayPort_t *instance)
@@ -62,7 +57,7 @@ int displayScreenSize(const displayPort_t *instance)
 void displayGrab(displayPort_t *instance)
 {
     instance->vTable->grab(instance);
-    instance->vTable->clearScreen(instance);
+    instance->vTable->clearScreen(instance, DISPLAY_CLEAR_WAIT);
     ++instance->grabCount;
 }
 
@@ -114,14 +109,14 @@ bool displayIsSynced(const displayPort_t *instance)
     return instance->vTable->isSynced(instance);
 }
 
-void displayHeartbeat(displayPort_t *instance)
+bool displayHeartbeat(displayPort_t *instance)
 {
-    instance->vTable->heartbeat(instance);
+    return instance->vTable->heartbeat(instance);
 }
 
-void displayResync(displayPort_t *instance)
+void displayRedraw(displayPort_t *instance)
 {
-    instance->vTable->resync(instance);
+    instance->vTable->redraw(instance);
 }
 
 uint16_t displayTxBytesFree(const displayPort_t *instance)
@@ -164,12 +159,19 @@ bool displayWriteFontCharacter(displayPort_t *instance, uint16_t addr, const osd
     return false;
 }
 
-bool displayIsReady(displayPort_t *instance)
+void displaySetBackgroundType(displayPort_t *instance, displayPortBackground_e backgroundType)
 {
-    if (instance->vTable->isReady) {
-        return instance->vTable->isReady(instance);
+    if (instance->vTable->setBackgroundType) {
+        instance->vTable->setBackgroundType(instance, backgroundType);
     }
-    // Drivers that don't provide an isReady method are
+}
+
+bool displayCheckReady(displayPort_t *instance, bool rescan)
+{
+    if (instance->vTable->checkReady) {
+        return instance->vTable->checkReady(instance, rescan);
+    }
+    // Drivers that don't provide a checkReady method are
     // assumed to be immediately ready (either by actually
     // begin ready very quickly or by blocking)
     return true;
@@ -204,12 +206,26 @@ bool displayGetCanvas(displayCanvas_t *canvas, const displayPort_t *instance)
     return false;
 }
 
-void displayInit(displayPort_t *instance, const displayPortVTable_t *vTable)
+bool displaySupportsOsdSymbols(displayPort_t *instance)
+{
+    // Assume device types that support OSD display will support the OSD symbols (since the OSD logic will use them)
+    if ((instance->deviceType == DISPLAYPORT_DEVICE_TYPE_MAX7456)
+        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_MSP)
+        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_FRSKYOSD)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void displayInit(displayPort_t *instance, const displayPortVTable_t *vTable, displayPortDeviceType_e deviceType)
 {
     instance->vTable = vTable;
-    instance->vTable->clearScreen(instance);
     instance->useFullscreen = false;
-    instance->cleared = true;
     instance->grabCount = 0;
-    instance->cursorRow = -1;
+    instance->deviceType = deviceType;
+
+    displayBeginTransaction(instance, DISPLAY_TRANSACTION_OPT_NONE);
+    displayClearScreen(instance, DISPLAY_CLEAR_WAIT);
+    displayCommitTransaction(instance);
 }

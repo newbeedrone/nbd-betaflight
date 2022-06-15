@@ -299,7 +299,7 @@ uint8_t armingFlags = 0;
 uint8_t stateFlags = 0;
 uint16_t flightModeFlags = 0;
 float rcCommand[4];
-int16_t rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];
+float rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];
 boxBitmask_t rcModeActivationMask;
 gpsSolutionData_t gpsSol;
 
@@ -311,7 +311,7 @@ void ws2811LedStripInit(ioTag_t ioTag) {
     UNUSED(ioTag);
 }
 
-void ws2811UpdateStrip(ledStripFormatRGB_e) {}
+void ws2811UpdateStrip(ledStripFormatRGB_e, uint8_t) {}
 
 void setLedValue(uint16_t index, const uint8_t value) {
     UNUSED(index);
@@ -395,6 +395,9 @@ bool isFlipOverAfterCrashActive(void) { return false; }
 
 void ws2811LedStripEnable(void) { }
 
-void setUsedLedCount(unsigned) { };
-
+void setUsedLedCount(unsigned) { }
+void pinioBoxTaskControl(void) {}
+void schedulerIgnoreTaskExecTime(void) {}
+bool schedulerGetIgnoreTaskExecTime() { return false; }
+void schedulerSetNextStateTime(timeDelta_t) {}
 }

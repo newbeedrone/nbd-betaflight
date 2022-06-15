@@ -52,8 +52,8 @@
 #define UART_TX_BUFFER_ATTRIBUTE DMA_RAM_W          // SRAM MPU NOT_BUFFERABLE
 #define UART_RX_BUFFER_ATTRIBUTE DMA_RAM_R          // SRAM MPU NOT CACHABLE
 #elif defined(STM32F7)
-#define UART_TX_BUFFER_ATTRIBUTE FAST_RAM_ZERO_INIT // DTCM RAM
-#define UART_RX_BUFFER_ATTRIBUTE FAST_RAM_ZERO_INIT // DTCM RAM
+#define UART_TX_BUFFER_ATTRIBUTE FAST_DATA_ZERO_INIT // DTCM RAM
+#define UART_RX_BUFFER_ATTRIBUTE FAST_DATA_ZERO_INIT // DTCM RAM
 #elif defined(STM32F4) || defined(STM32F3) || defined(STM32F1)
 #define UART_TX_BUFFER_ATTRIBUTE                    // NONE
 #define UART_RX_BUFFER_ATTRIBUTE                    // NONE
@@ -64,6 +64,10 @@
 #define UART_BUFFERS(n) \
     UART_BUFFER(UART_TX_BUFFER_ATTRIBUTE, n, T); \
     UART_BUFFER(UART_RX_BUFFER_ATTRIBUTE, n, R); struct dummy_s
+
+#define LPUART_BUFFERS(n) \
+    LPUART_BUFFER(UART_TX_BUFFER_ATTRIBUTE, n, T); \
+    LPUART_BUFFER(UART_RX_BUFFER_ATTRIBUTE, n, R); struct dummy_s
 
 #ifdef USE_UART1
 UART_BUFFERS(1);
@@ -99,6 +103,14 @@ UART_BUFFERS(8);
 
 #ifdef USE_UART9
 UART_BUFFERS(9);
+#endif
+
+#ifdef USE_UART10
+UART_BUFFERS(10);
+#endif
+
+#ifdef USE_LPUART1
+LPUART_BUFFERS(1);
 #endif
 
 #undef UART_BUFFERS
@@ -353,7 +365,7 @@ void uartConfigureDma(uartDevice_t *uartdev)
 #endif
 
 #define UART_IRQHandler(type, number, dev)                    \
-    void type ## number ## _IRQHandler(void)                  \
+    FAST_IRQ_HANDLER void type ## number ## _IRQHandler(void)                  \
     {                                                         \
         uartPort_t *uartPort = &(uartDevmap[UARTDEV_ ## dev]->port); \
         uartIrqHandler(uartPort);                                    \

@@ -47,7 +47,11 @@
 #define UART_RX_BUFFER_SIZE     128
 #endif
 #ifndef UART_TX_BUFFER_SIZE
+#ifdef USE_MSP_DISPLAYPORT
+#define UART_TX_BUFFER_SIZE     1280
+#else
 #define UART_TX_BUFFER_SIZE     256
+#endif
 #endif
 #elif defined(STM32F7)
 #define UARTDEV_COUNT_MAX 8
@@ -56,25 +60,37 @@
 #define UART_RX_BUFFER_SIZE     128
 #endif
 #ifndef UART_TX_BUFFER_SIZE
+#ifdef USE_MSP_DISPLAYPORT
+#define UART_TX_BUFFER_SIZE     1280
+#else
 #define UART_TX_BUFFER_SIZE     256
 #endif
+#endif
 #elif defined(STM32H7)
-#define UARTDEV_COUNT_MAX 8
+#define UARTDEV_COUNT_MAX 11 // UARTs 1 to 10 + LPUART1
 #define UARTHARDWARE_MAX_PINS 5
 #ifndef UART_RX_BUFFER_SIZE
 #define UART_RX_BUFFER_SIZE     128
 #endif
 #ifndef UART_TX_BUFFER_SIZE
+#ifdef USE_MSP_DISPLAYPORT
+#define UART_TX_BUFFER_SIZE     1280
+#else
 #define UART_TX_BUFFER_SIZE     256
 #endif
+#endif
 #elif defined(STM32G4)
-#define UARTDEV_COUNT_MAX 9  // UART1~5 + UART9 (Implemented with LPUART1)
+#define UARTDEV_COUNT_MAX 11  // UARTs 1 to 5 + LPUART1 (index 10)
 #define UARTHARDWARE_MAX_PINS 3
 #ifndef UART_RX_BUFFER_SIZE
 #define UART_RX_BUFFER_SIZE     128
 #endif
 #ifndef UART_TX_BUFFER_SIZE
+#ifdef USE_MSP_DISPLAYPORT
+#define UART_TX_BUFFER_SIZE     1280
+#else
 #define UART_TX_BUFFER_SIZE     256
+#endif
 #endif
 #else
 #error unknown MCU family
@@ -136,7 +152,19 @@
 #define UARTDEV_COUNT_9 0
 #endif
 
-#define UARTDEV_COUNT (UARTDEV_COUNT_1 + UARTDEV_COUNT_2 + UARTDEV_COUNT_3 + UARTDEV_COUNT_4 + UARTDEV_COUNT_5 + UARTDEV_COUNT_6 + UARTDEV_COUNT_7 + UARTDEV_COUNT_8 + UARTDEV_COUNT_9)
+#ifdef USE_UART10
+#define UARTDEV_COUNT_10 1
+#else
+#define UARTDEV_COUNT_10 0
+#endif
+
+#ifdef USE_LPUART1
+#define LPUARTDEV_COUNT_1 1
+#else
+#define LPUARTDEV_COUNT_1 0
+#endif
+
+#define UARTDEV_COUNT (UARTDEV_COUNT_1 + UARTDEV_COUNT_2 + UARTDEV_COUNT_3 + UARTDEV_COUNT_4 + UARTDEV_COUNT_5 + UARTDEV_COUNT_6 + UARTDEV_COUNT_7 + UARTDEV_COUNT_8 + UARTDEV_COUNT_9 + UARTDEV_COUNT_10 + LPUARTDEV_COUNT_1)
 
 typedef struct uartPinDef_s {
     ioTag_t pin;
@@ -194,6 +222,9 @@ typedef struct uartDevice_s {
     uartPinDef_t tx;
     volatile uint8_t *rxBuffer;
     volatile uint8_t *txBuffer;
+#if !(defined(STM32F1) || defined(STM32F4)) // Older CPUs don't support pin swap.
+    bool pinSwap;
+#endif
 } uartDevice_t;
 
 extern uartDevice_t *uartDevmap[];
@@ -225,6 +256,12 @@ void uartDmaIrqHandler(dmaChannelDescriptor_t* descriptor);
 #define UART_BUFFERS_EXTERN(n) \
     UART_BUFFER(extern, n, R); \
     UART_BUFFER(extern, n, T); struct dummy_s
+
+#define LPUART_BUFFER(type, n, rxtx) type volatile uint8_t lpuart ## n ## rxtx ## xBuffer[UART_ ## rxtx ## X_BUFFER_SIZE]
+
+#define LPUART_BUFFERS_EXTERN(n) \
+    LPUART_BUFFER(extern, n, R); \
+    LPUART_BUFFER(extern, n, T); struct dummy_s
 
 #ifdef USE_UART1
 UART_BUFFERS_EXTERN(1);
@@ -260,6 +297,14 @@ UART_BUFFERS_EXTERN(8);
 
 #ifdef USE_UART9
 UART_BUFFERS_EXTERN(9);
+#endif
+
+#ifdef USE_UART10
+UART_BUFFERS_EXTERN(10);
+#endif
+
+#ifdef USE_LPUART1
+LPUART_BUFFERS_EXTERN(1);
 #endif
 
 #undef UART_BUFFERS_EXTERN

@@ -32,14 +32,20 @@
 #include "flash_impl.h"
 #include "flash_m25p16.h"
 #include "flash_w25n01g.h"
+#include "flash_w25q128fv.h"
 #include "flash_w25m.h"
 #include "drivers/bus_spi.h"
 #include "drivers/bus_quadspi.h"
 #include "drivers/io.h"
 #include "drivers/time.h"
 
-static busDevice_t busInstance;
-static busDevice_t *busdev;
+// 20 MHz max SPI frequency
+#define FLASH_MAX_SPI_CLK_HZ 20000000
+// 5 MHz max SPI init frequency
+#define FLASH_MAX_SPI_INIT_CLK 5000000
+
+static extDevice_t devInstance;
+static extDevice_t *dev;
 
 static flashDevice_t flashDevice;
 static flashPartitionTable_t flashPartitionTable;
@@ -50,39 +56,72 @@ static int flashPartitions = 0;
 #ifdef USE_QUADSPI
 static bool flashQuadSpiInit(const flashConfig_t *flashConfig)
 {
-    QUADSPI_TypeDef *quadSpiInstance = quadSpiInstanceByDevice(QUADSPI_CFG_TO_DEV(flashConfig->quadSpiDevice));
-    quadSpiSetDivisor(quadSpiInstance, QUADSPI_CLOCK_INITIALISATION);
+    bool detected = false;
 
-    uint8_t readIdResponse[4];
-    bool status = quadSpiReceive1LINE(quadSpiInstance, FLASH_INSTRUCTION_RDID, 8, readIdResponse, sizeof(readIdResponse));
-    if (!status) {
-        return false;
-    }
+    enum { TRY_1LINE = 0, TRY_4LINE, BAIL};
+    int phase = TRY_1LINE;
 
-    flashDevice.io.mode = FLASHIO_QUADSPI;
-    flashDevice.io.handle.quadSpi = quadSpiInstance;
+    QUADSPI_TypeDef *hqspi = quadSpiInstanceByDevice(QUADSPI_CFG_TO_DEV(flashConfig->quadSpiDevice));
 
-    // Manufacturer, memory type, and capacity
-    uint32_t chipID = (readIdResponse[0] << 16) | (readIdResponse[1] << 8) | (readIdResponse[2]);
+    do {
+        quadSpiSetDivisor(hqspi, QUADSPI_CLOCK_INITIALISATION);
 
-#if defined(USE_FLASH_W25N01G) || defined(USE_FLASH_W25M02G)
-    quadSpiSetDivisor(quadSpiInstance, QUADSPI_CLOCK_ULTRAFAST);
+        // 3 bytes for what we need, but some IC's need 8 dummy cycles after the instruction, so read 4 and make two attempts to
+        // assemble the chip id from the response.
+        uint8_t readIdResponse[4];
 
-#if defined(USE_FLASH_W25N01G)
-    if (w25n01g_detect(&flashDevice, chipID)) {
-        return true;
-    }
+        bool status = false;
+        switch (phase) {
+        case TRY_1LINE:
+            status = quadSpiReceive1LINE(hqspi, FLASH_INSTRUCTION_RDID, 0, readIdResponse, 4);
+            break;
+        case TRY_4LINE:
+            status = quadSpiReceive4LINES(hqspi, FLASH_INSTRUCTION_RDID, 2, readIdResponse, 3);
+            break;
+        default:
+            break;
+        }
+
+        if (!status) {
+            phase++;
+            continue;
+        }
+
+        flashDevice.io.handle.quadSpi = hqspi;
+        flashDevice.io.mode = FLASHIO_QUADSPI;
+
+        quadSpiSetDivisor(hqspi, QUADSPI_CLOCK_ULTRAFAST);
+
+
+        for (uint8_t offset = 0; offset <= 1 && !detected; offset++) {
+
+            uint32_t chipID = (readIdResponse[offset + 0] << 16) | (readIdResponse[offset + 1] << 8) | (readIdResponse[offset + 2]);
+
+            if (offset == 0) {
+#ifdef USE_FLASH_W25Q128FV
+                if (!detected && w25q128fv_detect(&flashDevice, chipID)) {
+                    detected = true;
+                }
 #endif
+            }
 
+            if (offset == 1) {
+#ifdef USE_FLASH_W25N01G
+                if (!detected && w25n01g_detect(&flashDevice, chipID)) {
+                    detected = true;
+                }
+#endif
 #if defined(USE_FLASH_W25M02G)
-    if (w25m_detect(&flashDevice, chipID)) {
-        return true;
-    }
+                if (!detected && w25m_detect(&flashDevice, chipID)) {
+                    detected = true;
+                }
 #endif
+            }
+        }
+        phase++;
+    } while (phase != BAIL && !detected);
 
-#endif
-
-    return false;
+    return detected;
 }
 #endif  // USE_QUADSPI
 
@@ -96,46 +135,34 @@ void flashPreInit(const flashConfig_t *flashConfig)
 static bool flashSpiInit(const flashConfig_t *flashConfig)
 {
     // Read chip identification and send it to device detect
-
-    busdev = &busInstance;
+    dev = &devInstance;
 
     if (flashConfig->csTag) {
-        busdev->busdev_u.spi.csnPin = IOGetByTag(flashConfig->csTag);
+        dev->busType_u.spi.csnPin = IOGetByTag(flashConfig->csTag);
     } else {
         return false;
     }
 
-    if (!IOIsFreeOrPreinit(busdev->busdev_u.spi.csnPin)) {
+    if (!IOIsFreeOrPreinit(dev->busType_u.spi.csnPin)) {
         return false;
     }
 
-    busdev->bustype = BUSTYPE_SPI;
-
-    SPI_TypeDef *instance = spiInstanceByDevice(SPI_CFG_TO_DEV(flashConfig->spiDevice));
-    if (!instance) {
+    if (!spiSetBusInstance(dev, flashConfig->spiDevice)) {
         return false;
     }
 
-    spiBusSetInstance(busdev, instance);
+    // Set the callback argument when calling back to this driver for DMA completion
+    dev->callbackArg = (uint32_t)&flashDevice;
 
-    IOInit(busdev->busdev_u.spi.csnPin, OWNER_FLASH_CS, 0);
-    IOConfigGPIO(busdev->busdev_u.spi.csnPin, SPI_IO_CS_CFG);
-    IOHi(busdev->busdev_u.spi.csnPin);
+    IOInit(dev->busType_u.spi.csnPin, OWNER_FLASH_CS, 0);
+    IOConfigGPIO(dev->busType_u.spi.csnPin, SPI_IO_CS_CFG);
+    IOHi(dev->busType_u.spi.csnPin);
 
-#ifdef USE_SPI_TRANSACTION
-    spiBusTransactionInit(busdev, SPI_MODE3_POL_HIGH_EDGE_2ND, SPI_CLOCK_FAST);
-#else
-#ifndef FLASH_SPI_SHARED
     //Maximum speed for standard READ command is 20mHz, other commands tolerate 25mHz
-    //spiSetDivisor(busdev->busdev_u.spi.instance, SPI_CLOCK_FAST);
-    spiSetDivisor(busdev->busdev_u.spi.instance, SPI_CLOCK_STANDARD*2);
-#endif
-#endif
+    spiSetClkDivisor(dev, spiCalculateDivider(FLASH_MAX_SPI_INIT_CLK));
 
     flashDevice.io.mode = FLASHIO_SPI;
-    flashDevice.io.handle.busdev = busdev;
-
-    const uint8_t out[] = { FLASH_INSTRUCTION_RDID, 0, 0, 0, 0 };
+    flashDevice.io.handle.dev = dev;
 
     delay(50); // short delay required after initialisation of SPI device instance.
 
@@ -143,18 +170,12 @@ static bool flashSpiInit(const flashConfig_t *flashConfig)
      * Some newer chips require one dummy byte to be read; we can read
      * 4 bytes for these chips while retaining backward compatibility.
      */
-    uint8_t readIdResponse[5];
-    readIdResponse[1] = readIdResponse[2] = 0;
+    uint8_t readIdResponse[4] = { 0 };
 
-    // Clearing the CS bit terminates the command early so we don't have to read the chip UID:
-#ifdef USE_SPI_TRANSACTION
-    spiBusTransactionTransfer(busdev, out, readIdResponse, sizeof(out));
-#else
-    spiBusTransfer(busdev, out, readIdResponse, sizeof(out));
-#endif
+    spiReadRegBuf(dev, FLASH_INSTRUCTION_RDID, readIdResponse, sizeof(readIdResponse));
 
     // Manufacturer, memory type, and capacity
-    uint32_t chipID = (readIdResponse[1] << 16) | (readIdResponse[2] << 8) | (readIdResponse[3]);
+    uint32_t chipID = (readIdResponse[0] << 16) | (readIdResponse[1] << 8) | (readIdResponse[2]);
 
 #ifdef USE_FLASH_M25P16
     if (m25p16_detect(&flashDevice, chipID)) {
@@ -169,7 +190,7 @@ static bool flashSpiInit(const flashConfig_t *flashConfig)
 #endif
 
     // Newer chips
-    chipID = (readIdResponse[2] << 16) | (readIdResponse[3] << 8) | (readIdResponse[4]);
+    chipID = (readIdResponse[1] << 16) | (readIdResponse[2] << 8) | (readIdResponse[3]);
 
 #ifdef USE_FLASH_W25N01G
     if (w25n01g_detect(&flashDevice, chipID)) {
@@ -221,22 +242,43 @@ bool flashWaitForReady(void)
 
 void flashEraseSector(uint32_t address)
 {
+    flashDevice.callback = NULL;
     flashDevice.vTable->eraseSector(&flashDevice, address);
 }
 
 void flashEraseCompletely(void)
 {
+    flashDevice.callback = NULL;
     flashDevice.vTable->eraseCompletely(&flashDevice);
 }
 
-void flashPageProgramBegin(uint32_t address)
+/* The callback, if provided, will receive the totoal number of bytes transfered
+ * by each call to flashPageProgramContinue() once the transfer completes.
+ */
+void flashPageProgramBegin(uint32_t address, void (*callback)(uint32_t length))
 {
-    flashDevice.vTable->pageProgramBegin(&flashDevice, address);
+    flashDevice.vTable->pageProgramBegin(&flashDevice, address, callback);
 }
 
-void flashPageProgramContinue(const uint8_t *data, int length)
+uint32_t flashPageProgramContinue(const uint8_t **buffers, uint32_t *bufferSizes, uint32_t bufferCount)
 {
-    flashDevice.vTable->pageProgramContinue(&flashDevice, data, length);
+    uint32_t maxBytesToWrite = flashDevice.geometry.pageSize - (flashDevice.currentWriteAddress % flashDevice.geometry.pageSize);
+
+    if (bufferCount == 0) {
+        return 0;
+    }
+
+    if (bufferSizes[0] >= maxBytesToWrite) {
+        bufferSizes[0] = maxBytesToWrite;
+        bufferCount = 1;
+    } else {
+        maxBytesToWrite -= bufferSizes[0];
+        if ((bufferCount == 2) && (bufferSizes[1] > maxBytesToWrite)) {
+            bufferSizes[1] = maxBytesToWrite;
+        }
+    }
+
+    return flashDevice.vTable->pageProgramContinue(&flashDevice, buffers, bufferSizes, bufferCount);
 }
 
 void flashPageProgramFinish(void)
@@ -244,13 +286,14 @@ void flashPageProgramFinish(void)
     flashDevice.vTable->pageProgramFinish(&flashDevice);
 }
 
-void flashPageProgram(uint32_t address, const uint8_t *data, int length)
+void flashPageProgram(uint32_t address, const uint8_t *data, uint32_t length, void (*callback)(uint32_t length))
 {
-    flashDevice.vTable->pageProgram(&flashDevice, address, data, length);
+    flashDevice.vTable->pageProgram(&flashDevice, address, data, length, callback);
 }
 
-int flashReadBytes(uint32_t address, uint8_t *buffer, int length)
+int flashReadBytes(uint32_t address, uint8_t *buffer, uint32_t length)
 {
+    flashDevice.callback = NULL;
     return flashDevice.vTable->readBytes(&flashDevice, address, buffer, length);
 }
 
@@ -399,6 +442,7 @@ const char *flashPartitionGetTypeName(flashPartitionType_e type)
 bool flashInit(const flashConfig_t *flashConfig)
 {
     memset(&flashPartitionTable, 0x00, sizeof(flashPartitionTable));
+    flashPartitions = 0;
 
     bool haveFlash = flashDeviceInit(flashConfig);
 

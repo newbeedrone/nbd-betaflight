@@ -32,25 +32,18 @@
 
 #include "drivers/dma.h"
 #include "drivers/dma_reqmap.h"
-#include "drivers/motor.h"
 #include "drivers/dshot.h"
 #include "drivers/dshot_dpwm.h"
 #include "drivers/dshot_command.h"
 #include "drivers/io.h"
 #include "drivers/nvic.h"
+#include "drivers/motor.h"
+#include "drivers/pwm_output.h"
+#include "drivers/pwm_output_dshot_shared.h"
 #include "drivers/rcc.h"
 #include "drivers/time.h"
 #include "drivers/timer.h"
 #include "drivers/system.h"
-
-#include "pwm_output.h"
-
-// TODO remove once debugging no longer needed
-#ifdef USE_DSHOT_TELEMETRY
-#include <string.h>
-#endif
-
-#include "pwm_output_dshot_shared.h"
 
 #ifdef USE_DSHOT_TELEMETRY
 
@@ -179,8 +172,8 @@ FAST_CODE static void motor_DMA_IRQHandler(dmaChannelDescriptor_t* descriptor)
 {
     if (DMA_GET_FLAG_STATUS(descriptor, DMA_IT_TCIF)) {
         motorDmaOutput_t * const motor = &dmaMotors[descriptor->userParam];
-        if (!motor->isInput) {
 #ifdef USE_DSHOT_TELEMETRY
+        if (!motor->isInput) {
             dshotDMAHandlerCycleCounters.irqAt = getCycleCounter();
 #endif
 #ifdef USE_DSHOT_DMAR
@@ -202,13 +195,13 @@ FAST_CODE static void motor_DMA_IRQHandler(dmaChannelDescriptor_t* descriptor)
                 LL_EX_TIM_EnableIT(motor->timerHardware->tim, motor->timerDmaSource);
                 dshotDMAHandlerCycleCounters.changeDirectionCompletedAt = getCycleCounter();
             }
-#endif
         }
+#endif
         DMA_CLEAR_FLAG(descriptor, DMA_IT_TCIF);
     }
 }
 
-bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, motorPwmProtocolTypes_e pwmProtocolType, uint8_t output)
+bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t motorIndex, uint8_t reorderedMotorIndex, motorPwmProtocolTypes_e pwmProtocolType, uint8_t output)
 {
 #ifdef USE_DSHOT_TELEMETRY
 #define OCINIT motor->ocInitStruct
@@ -259,7 +252,7 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
     } else
 #endif
     {
-        if (!dmaAllocate(dmaIdentifier, OWNER_MOTOR, RESOURCE_INDEX(motorIndex))) {
+        if (!dmaAllocate(dmaIdentifier, OWNER_MOTOR, RESOURCE_INDEX(reorderedMotorIndex))) {
             return false;
         }
     }

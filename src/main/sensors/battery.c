@@ -45,6 +45,8 @@
 #include "pg/pg.h"
 #include "pg/pg_ids.h"
 
+#include "scheduler/scheduler.h"
+
 #include "sensors/battery.h"
 
 /**
@@ -409,12 +411,10 @@ void batteryInit(void)
         default:
             break;
     }
-
 }
 
 void batteryUpdateCurrentMeter(timeUs_t currentTimeUs)
 {
-    UNUSED(currentTimeUs);
     if (batteryCellCount == 0) {
         currentMeterReset(&currentMeter);
         return;
@@ -462,15 +462,6 @@ void batteryUpdateCurrentMeter(timeUs_t currentTimeUs)
             currentMeterReset(&currentMeter);
             break;
     }
-}
-
-float calculateVbatPidCompensation(void) {
-    float batteryScaler =  1.0f;
-    if (batteryConfig()->voltageMeterSource != VOLTAGE_METER_NONE && batteryCellCount > 0) {
-        // Up to 33% PID gain. Should be fine for 4,2to 3,3 difference
-        batteryScaler =  constrainf((( (float)batteryConfig()->vbatmaxcellvoltage * batteryCellCount ) / (float) voltageMeter.displayFiltered), 1.0f, 1.33f);
-    }
-    return batteryScaler;
 }
 
 uint8_t calculateBatteryPercentageRemaining(void)
@@ -524,13 +515,13 @@ uint8_t getBatteryCellCount(void)
 
 uint16_t getBatteryAverageCellVoltage(void)
 {
-    return voltageMeter.displayFiltered / batteryCellCount;
+    return (batteryCellCount ? voltageMeter.displayFiltered / batteryCellCount : 0);
 }
 
 #if defined(USE_BATTERY_VOLTAGE_SAG_COMPENSATION)
 uint16_t getBatterySagCellVoltage(void)
 {
-    return voltageMeter.sagFiltered / batteryCellCount;
+    return (batteryCellCount ? voltageMeter.sagFiltered / batteryCellCount : 0);
 }
 #endif
 

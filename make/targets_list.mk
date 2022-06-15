@@ -21,10 +21,14 @@ UNIFIED_TARGETS := STM32F405 \
 	STM32F411 \
 	STM32F7X2 \
 	STM32F745 \
+	STM32G47X \
 	STM32H743
 
 # Legacy targets are targets that have been replaced by Unified Target configurations
 LEGACY_TARGETS := \
+
+# Temporarily excluded to get CI coverage for USE_SPI_TRANSACTION
+#    STM32F4DISCOVERY \
 
 CI_TARGETS := $(filter-out $(LEGACY_TARGETS) $(UNSUPPORTED_TARGETS), $(VALID_TARGETS))
 

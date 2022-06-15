@@ -47,14 +47,15 @@ static int release(displayPort_t *displayPort)
     return 0;
 }
 
-static int clearScreen(displayPort_t *displayPort)
+static int clearScreen(displayPort_t *displayPort, displayClearOption_e options)
 {
     UNUSED(displayPort);
+    UNUSED(options);
     frskyOsdClearScreen();
     return 0;
 }
 
-static int drawScreen(displayPort_t *displayPort)
+static bool drawScreen(displayPort_t *displayPort)
 {
     UNUSED(displayPort);
     frskyOsdUpdate();
@@ -98,14 +99,13 @@ static void updateGridSize(displayPort_t *displayPort)
     displayPort->cols = frskyOsdGetGridCols();
 }
 
-static void resync(displayPort_t *displayPort)
+static void redraw(displayPort_t *displayPort)
 {
     UNUSED(displayPort);
     // TODO(agh): Do we need to flush the screen here?
-    // MAX7456's driver does a full redraw in resync(),
+    // MAX7456's driver does a full redraw in redraw(),
     // so some callers might be expecting that.
     frskyOsdUpdate();
-    updateGridSize(displayPort);
 }
 
 static int heartbeat(displayPort_t *displayPort)
@@ -127,8 +127,10 @@ static bool writeFontCharacter(displayPort_t *instance, uint16_t addr, const osd
     return frskyOsdWriteFontCharacter(addr, chr);
 }
 
-static bool isReady(displayPort_t *instance)
+static bool checkReady(displayPort_t *instance, bool rescan)
 {
+    UNUSED(rescan);
+
     if (frskyOsdIsReady()) {
         updateGridSize(instance);
         return true;
@@ -481,10 +483,10 @@ static const displayPortVTable_t frskyOsdVTable = {
     .writeChar = writeChar,
     .isTransferInProgress = isTransferInProgress,
     .heartbeat = heartbeat,
-    .resync = resync,
+    .redraw = redraw,
     .txBytesFree = txBytesFree,
     .writeFontCharacter = writeFontCharacter,
-    .isReady = isReady,
+    .checkReady = checkReady,
     .beginTransaction = beginTransaction,
     .commitTransaction = commitTransaction,
     .getCanvas = getCanvas,
@@ -493,8 +495,8 @@ static const displayPortVTable_t frskyOsdVTable = {
 displayPort_t *frskyOsdDisplayPortInit(const videoSystem_e videoSystem)
 {
     if (frskyOsdInit(videoSystem)) {
-        displayInit(&frskyOsdDisplayPort, &frskyOsdVTable);
-        resync(&frskyOsdDisplayPort);
+        displayInit(&frskyOsdDisplayPort, &frskyOsdVTable, DISPLAYPORT_DEVICE_TYPE_FRSKYOSD);
+        redraw(&frskyOsdDisplayPort);
         return &frskyOsdDisplayPort;
     }
     return NULL;

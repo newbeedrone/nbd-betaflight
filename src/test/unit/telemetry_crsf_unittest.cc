@@ -57,6 +57,8 @@ extern "C" {
     #include "sensors/sensors.h"
     #include "sensors/acceleration.h"
 
+    #include "msp/msp_serial.h"
+
     #include "telemetry/crsf.h"
     #include "telemetry/telemetry.h"
     #include "telemetry/msp_shared.h"
@@ -69,6 +71,9 @@ extern "C" {
     int32_t testmAhDrawn = 0;
 
     serialPort_t *telemetrySharedPort;
+
+    int getCrsfFrame(uint8_t *frame, crsfFrameType_e frameType);
+
     PG_REGISTER(batteryConfig_t, batteryConfig, PG_BATTERY_CONFIG, 0);
     PG_REGISTER(telemetryConfig_t, telemetryConfig, PG_TELEMETRY_CONFIG, 0);
     PG_REGISTER(systemConfig_t, systemConfig, PG_SYSTEM_CONFIG, 0);
@@ -370,9 +375,8 @@ int32_t getMAhDrawn(void){
 }
 
 bool sendMspReply(uint8_t, mspResponseFnPtr) { return false; }
-bool handleMspFrame(uint8_t *, int, uint8_t *)  { return false; }
-void crsfScheduleMspResponse(void) {};
+bool handleMspFrame(uint8_t *, uint8_t, uint8_t *)  { return false; }
 bool isBatteryVoltageConfigured(void) { return true; }
 bool isAmperageConfigured(void) { return true; }
-
+timeUs_t rxFrameTimeUs(void) { return 0; }
 }

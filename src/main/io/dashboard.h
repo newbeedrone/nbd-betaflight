@@ -44,16 +44,16 @@ typedef enum {
     PAGE_RX,
     PAGE_PROFILE,
     PAGE_RPROF,
-#if defined(USE_TASK_STATISTICS)
     PAGE_TASKS,
-#endif
 #ifdef USE_GPS
     PAGE_GPS,
 #endif
 #ifdef ENABLE_DEBUG_DASHBOARD_PAGE
     PAGE_DEBUG,
 #endif
-
+#ifdef USE_BLACKBOX
+    PAGE_BB,
+#endif
     PAGE_COUNT
 } pageId_e;
 

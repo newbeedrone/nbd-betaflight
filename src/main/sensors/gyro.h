@@ -23,20 +23,26 @@
 #include "common/axis.h"
 #include "common/filter.h"
 #include "common/time.h"
+#include "common/utils.h"
 
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/bus.h"
 #include "drivers/sensor.h"
 
-#ifdef USE_GYRO_DATA_ANALYSE
-#include "flight/gyroanalyse.h"
+#ifdef USE_DYN_NOTCH_FILTER
+#include "flight/dyn_notch_filter.h"
 #endif
 
 #include "flight/pid.h"
 
 #include "pg/pg.h"
 
-#define FILTER_FREQUENCY_MAX 4000 // maximum frequency for filter cutoffs (nyquist limit of 8K max sampling)
+#define LPF_MAX_HZ 1000 // so little filtering above 1000hz that if the user wants less delay, they must disable the filter
+#define DYN_LPF_MAX_HZ 1000
+
+#define GYRO_LPF1_DYN_MIN_HZ_DEFAULT 250
+#define GYRO_LPF1_DYN_MAX_HZ_DEFAULT 500
+#define GYRO_LPF2_HZ_DEFAULT 500
 
 #ifdef USE_YAW_SPIN_RECOVERY
 #define YAW_SPIN_RECOVERY_THRESHOLD_MIN 500
@@ -46,6 +52,8 @@
 typedef union gyroLowpassFilter_u {
     pt1Filter_t pt1FilterState;
     biquadFilter_t biquadFilterState;
+    pt2Filter_t pt2FilterState;
+    pt3Filter_t pt3FilterState;
 } gyroLowpassFilter_t;
 
 typedef enum gyroDetectionFlags_e {
@@ -102,15 +110,6 @@ typedef struct gyro_s {
     filterApplyFnPtr notchFilter2ApplyFn;
     biquadFilter_t notchFilter2[XYZ_AXIS_COUNT];
 
-    filterApplyFnPtr notchFilterDynApplyFn;
-    filterApplyFnPtr notchFilterDynApplyFn2;
-    biquadFilter_t notchFilterDyn[XYZ_AXIS_COUNT];
-    biquadFilter_t notchFilterDyn2[XYZ_AXIS_COUNT];
-
-#ifdef USE_GYRO_DATA_ANALYSE
-    gyroAnalyseState_t gyroAnalyseState;
-#endif
-
     uint16_t accSampleRateHz;
     uint8_t gyroToUse;
     uint8_t gyroDebugMode;
@@ -122,6 +121,7 @@ typedef struct gyro_s {
     uint8_t dynLpfFilter;
     uint16_t dynLpfMin;
     uint16_t dynLpfMax;
+    uint8_t dynLpfCurveExpo;
 #endif
 
 #ifdef USE_GYRO_OVERFLOW_CHECK
@@ -142,7 +142,9 @@ enum {
 enum {
     DYN_LPF_NONE = 0,
     DYN_LPF_PT1,
-    DYN_LPF_BIQUAD
+    DYN_LPF_BIQUAD,
+    DYN_LPF_PT2,
+    DYN_LPF_PT3,
 };
 
 typedef enum {
@@ -156,47 +158,44 @@ typedef enum {
 #define GYRO_CONFIG_USE_GYRO_BOTH   2
 
 enum {
-    FILTER_LOWPASS = 0,
-    FILTER_LOWPASS2
+    FILTER_LPF1 = 0,
+    FILTER_LPF2
 };
 
 typedef struct gyroConfig_s {
-    uint8_t  gyroMovementCalibrationThreshold; // people keep forgetting that moving model while init results in wrong gyro offsets. and then they never reset gyro. so this is now on by default.
-    uint8_t  gyro_hardware_lpf;                // gyro DLPF setting
+    uint8_t gyroMovementCalibrationThreshold; // people keep forgetting that moving model while init results in wrong gyro offsets. and then they never reset gyro. so this is now on by default.
+    uint8_t gyro_hardware_lpf;                // gyro DLPF setting
+    uint8_t gyro_high_fsr;
+    uint8_t gyro_to_use;
 
-    uint8_t  gyro_high_fsr;
-    uint8_t  gyro_to_use;
-
-    uint16_t gyro_lowpass_hz;
-    uint16_t gyro_lowpass2_hz;
+    uint16_t gyro_lpf1_static_hz;
+    uint16_t gyro_lpf2_static_hz;
 
     uint16_t gyro_soft_notch_hz_1;
     uint16_t gyro_soft_notch_cutoff_1;
     uint16_t gyro_soft_notch_hz_2;
     uint16_t gyro_soft_notch_cutoff_2;
-    int16_t  gyro_offset_yaw;
-    uint8_t  checkOverflow;
+    int16_t gyro_offset_yaw;
+    uint8_t checkOverflow;
 
     // Lowpass primary/secondary
-    uint8_t  gyro_lowpass_type;
-    uint8_t  gyro_lowpass2_type;
+    uint8_t gyro_lpf1_type;
+    uint8_t gyro_lpf2_type;
 
-    uint8_t  yaw_spin_recovery;
-    int16_t  yaw_spin_threshold;
+    uint8_t yaw_spin_recovery;
+    int16_t yaw_spin_threshold;
 
     uint16_t gyroCalibrationDuration;   // Gyro calibration duration in 1/100 second
 
-    uint16_t dyn_lpf_gyro_min_hz;
-    uint16_t dyn_lpf_gyro_max_hz;
+    uint16_t gyro_lpf1_dyn_min_hz;
+    uint16_t gyro_lpf1_dyn_max_hz;
 
-    uint16_t dyn_notch_max_hz;
-    uint8_t  dyn_notch_width_percent;
-    uint16_t dyn_notch_q;
-    uint16_t dyn_notch_min_hz;
-
-    uint8_t  gyro_filter_debug_axis;
+    uint8_t gyro_filter_debug_axis;
 
     uint8_t gyrosDetected; // What gyros should detection be attempted for on startup. Automatically set on first startup.
+    uint8_t gyro_lpf1_dyn_expo; // set the curve for dynamic gyro lowpass filter
+    uint8_t simplified_gyro_filter;
+    uint8_t simplified_gyro_filter_multiplier;
 } gyroConfig_t;
 
 PG_DECLARE(gyroConfig_t, gyroConfig);
@@ -218,7 +217,4 @@ void dynLpfGyroUpdate(float throttle);
 #endif
 #ifdef USE_YAW_SPIN_RECOVERY
 void initYawSpinRecovery(int maxYawRate);
-#endif
-#ifdef USE_GYRO_DATA_ANALYSE
-bool isDynamicFilterActive(void);
 #endif

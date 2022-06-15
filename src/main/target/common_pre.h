@@ -28,11 +28,6 @@
 // -Wpadded can be turned on to check padding of structs
 //#pragma GCC diagnostic warning "-Wpadded"
 
-//#define SCHEDULER_DEBUG // define this to use scheduler debug[] values. Undefined by default for performance reasons
-
-#define I2C1_OVERCLOCK true
-#define I2C2_OVERCLOCK true
-
 #ifdef STM32F1
 #define MINIMAL_CLI
 // Using RX DMA disables the use of receive callbacks
@@ -43,14 +38,13 @@
 #ifdef STM32F3
 #define MINIMAL_CLI
 #define USE_DSHOT
-#define USE_GYRO_DATA_ANALYSE
+#define USE_DYN_NOTCH_FILTER
 #define USE_CCM_CODE
 #endif
 
 #ifdef STM32F4
-#define USE_SRAM2
 #if defined(STM32F40_41xxx)
-#define USE_FAST_RAM
+#define USE_FAST_DATA
 #endif
 #define USE_DSHOT
 #define USE_DSHOT_BITBANG
@@ -58,8 +52,7 @@
 #define USE_DSHOT_TELEMETRY_STATS
 #define USE_RPM_FILTER
 #define USE_DYN_IDLE
-#define I2C3_OVERCLOCK true
-#define USE_GYRO_DATA_ANALYSE
+#define USE_DYN_NOTCH_FILTER
 #define USE_ADC_INTERNAL
 #define USE_USB_CDC_HID
 #define USE_USB_MSC
@@ -69,28 +62,24 @@
 #define USE_TIMER_MGMT
 #define USE_PERSISTENT_OBJECTS
 #define USE_CUSTOM_DEFAULTS_ADDRESS
-// Re-enable this after 4.0 has been released, and remove the define from STM32F4DISCOVERY
-//#define USE_SPI_TRANSACTION
+#define USE_LATE_TASK_STATISTICS
 
 #if defined(STM32F40_41xxx) || defined(STM32F411xE)
 #define USE_OVERCLOCK
 #endif
-
 #endif // STM32F4
 
 #ifdef STM32F7
-#define USE_SRAM2
 #define USE_ITCM_RAM
-#define USE_FAST_RAM
+#define ITCM_RAM_OPTIMISATION "-O2"
+#define USE_FAST_DATA
 #define USE_DSHOT
 #define USE_DSHOT_BITBANG
 #define USE_DSHOT_TELEMETRY
 #define USE_DSHOT_TELEMETRY_STATS
 #define USE_RPM_FILTER
 #define USE_DYN_IDLE
-#define I2C3_OVERCLOCK true
-#define I2C4_OVERCLOCK true
-#define USE_GYRO_DATA_ANALYSE
+#define USE_DYN_NOTCH_FILTER
 #define USE_OVERCLOCK
 #define USE_ADC_INTERNAL
 #define USE_USB_CDC_HID
@@ -101,30 +90,52 @@
 #define USE_TIMER_MGMT
 #define USE_PERSISTENT_OBJECTS
 #define USE_CUSTOM_DEFAULTS_ADDRESS
-// Re-enable this after 4.0 has been released, and remove the define from STM32F4DISCOVERY
-//#define USE_SPI_TRANSACTION
+#define USE_LATE_TASK_STATISTICS
 #endif // STM32F7
 
 #ifdef STM32H7
 #define USE_ITCM_RAM
-#define USE_FAST_RAM
+#define USE_FAST_DATA
 #define USE_DSHOT
+#define USE_DSHOT_BITBANG
 #define USE_DSHOT_TELEMETRY
 #define USE_DSHOT_TELEMETRY_STATS
 #define USE_RPM_FILTER
 #define USE_DYN_IDLE
-#define I2C3_OVERCLOCK true
-#define I2C4_OVERCLOCK true
-#define USE_GYRO_DATA_ANALYSE
+#define USE_DYN_NOTCH_FILTER
 #define USE_ADC_INTERNAL
 #define USE_USB_CDC_HID
 #define USE_DMA_SPEC
 #define USE_TIMER_MGMT
 #define USE_PERSISTENT_OBJECTS
 #define USE_DMA_RAM
+#define USE_USB_MSC
+#define USE_RTC_TIME
+#define USE_PERSISTENT_MSC_RTC
+#define USE_DSHOT_CACHE_MGMT
+#define USE_LATE_TASK_STATISTICS
 #endif
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#ifdef STM32G4
+#define USE_FAST_RAM
+#define USE_DSHOT
+#define USE_DSHOT_BITBANG
+#define USE_DSHOT_TELEMETRY
+#define USE_DSHOT_TELEMETRY_STATS
+#define USE_RPM_FILTER
+#define USE_DYN_IDLE
+#define USE_OVERCLOCK
+#define USE_DYN_NOTCH_FILTER
+#define USE_ADC_INTERNAL
+#define USE_USB_MSC
+#define USE_USB_CDC_HID
+#define USE_MCO
+#define USE_DMA_SPEC
+#define USE_TIMER_MGMT
+#define USE_LATE_TASK_STATISTICS
+#endif
+
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
 #define TASK_GYROPID_DESIRED_PERIOD     125 // 125us = 8kHz
 #define SCHEDULER_DELAY_LIMIT           10
 #else
@@ -146,46 +157,87 @@
 #define DEFAULT_CPU_OVERCLOCK 0
 #endif
 
+#if defined(STM32H7)
+// Move ISRs to fast ram to avoid flash latency.
+#define FAST_IRQ_HANDLER FAST_CODE
+#else
+#define FAST_IRQ_HANDLER
+#endif
+
 
 #ifdef USE_ITCM_RAM
+#if defined(ITCM_RAM_OPTIMISATION) && !defined(DEBUG)
+#define FAST_CODE                   __attribute__((section(".tcm_code"))) __attribute__((optimize(ITCM_RAM_OPTIMISATION)))
+#else
 #define FAST_CODE                   __attribute__((section(".tcm_code")))
+#endif
+// Handle case where we'd prefer code to be in ITCM, but it won't fit on the F745
+#ifdef STM32F745xx
+#define FAST_CODE_PREF
+#else
+#define FAST_CODE_PREF                  __attribute__((section(".tcm_code")))
+#endif
 #define FAST_CODE_NOINLINE          NOINLINE
 #else
 #define FAST_CODE
+#define FAST_CODE_PREF
 #define FAST_CODE_NOINLINE
 #endif // USE_ITCM_RAM
 
 #ifdef USE_CCM_CODE
-#define CCM_CODE              __attribute__((section(".ccm_code")))
+#define CCM_CODE                    __attribute__((section(".ccm_code")))
 #else
 #define CCM_CODE
 #endif
 
-#ifdef USE_FAST_RAM
-#define FAST_RAM_ZERO_INIT             __attribute__ ((section(".fastram_bss"), aligned(4)))
-#define FAST_RAM                    __attribute__ ((section(".fastram_data"), aligned(4)))
+#ifdef USE_FAST_DATA
+#define FAST_DATA_ZERO_INIT         __attribute__ ((section(".fastram_bss"), aligned(4)))
+#define FAST_DATA                   __attribute__ ((section(".fastram_data"), aligned(4)))
 #else
-#define FAST_RAM_ZERO_INIT
-#define FAST_RAM
-#endif // USE_FAST_RAM
+#define FAST_DATA_ZERO_INIT
+#define FAST_DATA
+#endif // USE_FAST_DATA
+
+#if defined(STM32F4) || defined(STM32G4)
+// F4 can't DMA to/from CCM (core coupled memory) SRAM (where the stack lives)
+// On G4 there is no specific DMA target memory
+#define DMA_DATA_ZERO_INIT
+#define DMA_DATA
+#define STATIC_DMA_DATA_AUTO        static
+#elif defined (STM32F7)
+// F7 has no cache coherency issues DMAing to/from DTCM, otherwise buffers must be cache aligned
+#define DMA_DATA_ZERO_INIT          FAST_DATA_ZERO_INIT
+#define DMA_DATA                    FAST_DATA
+#define STATIC_DMA_DATA_AUTO        static DMA_DATA
+#else
+// DMA to/from any memory
+#define DMA_DATA_ZERO_INIT          __attribute__ ((section(".dmaram_bss"), aligned(32)))
+#define DMA_DATA                    __attribute__ ((section(".dmaram_data"), aligned(32)))
+#define STATIC_DMA_DATA_AUTO        static DMA_DATA
+#endif
 
 #if defined(STM32F4) || defined (STM32H7)
 // Data in RAM which is guaranteed to not be reset on hot reboot
 #define PERSISTENT                  __attribute__ ((section(".persistent_data"), aligned(4)))
 #endif
 
-#ifdef USE_SRAM2
-#define SRAM2                       __attribute__ ((section(".sram2"), aligned(4)))
-#else
-#define SRAM2
-#endif
-
 #ifdef USE_DMA_RAM
-#define DMA_RAM __attribute__((section(".DMA_RAM")))
-#define DMA_RW_AXI __attribute__((section(".DMA_RW_AXI")))
+#if defined(STM32H7)
+#define DMA_RAM __attribute__((section(".DMA_RAM"), aligned(32)))
+#define DMA_RW_AXI __attribute__((section(".DMA_RW_AXI"), aligned(32)))
+extern uint8_t _dmaram_start__;
+extern uint8_t _dmaram_end__;
+#elif defined(STM32G4)
+#define DMA_RAM_R __attribute__((section(".DMA_RAM_R")))
+#define DMA_RAM_W __attribute__((section(".DMA_RAM_W")))
+#define DMA_RAM_RW __attribute__((section(".DMA_RAM_RW")))
+#endif
 #else
 #define DMA_RAM
 #define DMA_RW_AXI
+#define DMA_RAM_R
+#define DMA_RAM_W
+#define DMA_RAM_RW
 #endif
 
 #define USE_BRUSHED_ESC_AUTODETECT  // Detect if brushed motors are connected and set defaults appropriately to avoid motors spinning on boot
@@ -197,12 +249,12 @@
 
 #define USE_CLI
 #define USE_SERIAL_PASSTHROUGH
-#define USE_TASK_STATISTICS
 #define USE_GYRO_REGISTER_DUMP  // Adds gyroregisters command to cli to dump configured register values
 #define USE_IMU_CALC
 #define USE_PPM
 #define USE_SERIAL_RX
 #define USE_SERIALRX_CRSF       // Team Black Sheep Crossfire protocol
+#define USE_SERIALRX_GHST       // ImmersionRC Ghost Protocol
 #define USE_SERIALRX_IBUS       // FlySky and Turnigy receivers
 #define USE_SERIALRX_SBUS       // Frsky and Futaba receivers
 #define USE_SERIALRX_SPEKTRUM   // SRXL, DSM2 and DSMX protocol
@@ -234,6 +286,7 @@
 #define USE_DSHOT_DMAR
 #define USE_SERIALRX_FPORT      // FrSky FPort
 #define USE_TELEMETRY_CRSF
+#define USE_TELEMETRY_GHST
 #define USE_TELEMETRY_SRXL
 
 #if ((TARGET_FLASH_SIZE > 256) || (FEATURE_CUT_LEVEL < 12))
@@ -328,7 +381,6 @@
 #if (TARGET_FLASH_SIZE > 256)
 #define USE_AIRMODE_LPF
 #define USE_CANVAS
-#define USE_DASHBOARD
 #define USE_FRSKYOSD
 #define USE_GPS
 #define USE_GPS_NMEA
@@ -355,8 +407,6 @@
 #define USE_ESC_SENSOR_TELEMETRY
 #define USE_OSD_PROFILES
 #define USE_OSD_STICK_OVERLAY
-#define USE_ESCSERIAL_SIMONK
-#define USE_SERIAL_4WAY_SK_BOOTLOADER
 #define USE_CMS_FAILSAFE_MENU
 #define USE_CMS_GPS_RESCUE_MENU
 #define USE_TELEMETRY_SENSORS_DISABLED_DETAILS
@@ -364,7 +414,20 @@
 #define USE_PERSISTENT_STATS
 #define USE_PROFILE_NAMES
 #define USE_SERIALRX_SRXL2     // Spektrum SRXL2 protocol
-#define USE_INTERPOLATED_SP
+#define USE_FEEDFORWARD
 #define USE_CUSTOM_BOX_NAMES
 #define USE_BATTERY_VOLTAGE_SAG_COMPENSATION
+#define USE_RX_MSP_OVERRIDE
+#define USE_SIMPLIFIED_TUNING
+#define USE_RX_LINK_UPLINK_POWER
+#define USE_CRSF_V3
+#endif
+
+#if (TARGET_FLASH_SIZE > 512)
+#define USE_ESCSERIAL_SIMONK
+#define USE_SERIAL_4WAY_SK_BOOTLOADER
+#define USE_DASHBOARD
+#define USE_EMFAT_AUTORUN
+#define USE_EMFAT_ICON
+#define USE_GPS_PLUS_CODES
 #endif

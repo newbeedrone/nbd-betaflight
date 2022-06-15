@@ -40,6 +40,9 @@
 
 #include "accgyro_spi_l3gd20.h"
 
+// 10 MHz max SPI frequency
+#define L3GD20_MAX_SPI_CLK_HZ 10000000
+
 #define READ_CMD               ((uint8_t)0x80)
 #define MULTIPLEBYTE_CMD       ((uint8_t)0x40)
 #define DUMMY_BYTE             ((uint8_t)0x00)
@@ -92,24 +95,23 @@ static void l3gd20IntExtiInit(gyroDev_t *gyro)
     IOInit(mpuIntIO, OWNER_GYRO_EXTI, 0);
     EXTIHandlerInit(&gyro->exti, l3gd20ExtiHandler);
     EXTIConfig(mpuIntIO, &gyro->exti, NVIC_PRIO_MPU_INT_EXTI, IOCFG_IN_FLOATING, BETAFLIGHT_EXTI_TRIGGER_RISING);
-    EXTIEnable(mpuIntIO, true);
+    EXTIEnable(mpuIntIO);
 }
 #endif
 
 void l3gd20GyroInit(gyroDev_t *gyro)
 {
-    spiSetDivisor(gyro->bus.busdev_u.spi.instance, SPI_CLOCK_STANDARD);
+    spiSetClkDivisor(&gyro->dev, spiCalculateDivider(L3GD20_MAX_SPI_CLK_HZ));
 
-    spiBusWriteRegister(&gyro->bus, CTRL_REG5_ADDR, BOOT);
+    spiWriteReg(&gyro->dev, CTRL_REG5_ADDR, BOOT);
 
     delayMicroseconds(100);
 
-    spiBusWriteRegister(&gyro->bus, CTRL_REG1_ADDR, MODE_ACTIVE | OUTPUT_DATARATE_3 | AXES_ENABLE | BANDWIDTH_3);
-    //spiBusWriteRegister(&gyro->bus, CTRL_REG1_ADDR. MODE_ACTIVE | OUTPUT_DATARATE_3 | AXES_ENABLE | BANDWIDTH_4);
+    spiWriteReg(&gyro->dev, CTRL_REG1_ADDR, MODE_ACTIVE | OUTPUT_DATARATE_3 | AXES_ENABLE | BANDWIDTH_3);
 
     delayMicroseconds(1);
 
-    spiBusWriteRegister(&gyro->bus, CTRL_REG4_ADDR, BLOCK_DATA_UPDATE_CONTINUOUS | BLE_MSB | FULLSCALE_2000);
+    spiWriteReg(&gyro->dev, CTRL_REG4_ADDR, BLOCK_DATA_UPDATE_CONTINUOUS | BLE_MSB | FULLSCALE_2000);
 
     delay(100);
 
@@ -123,7 +125,10 @@ static bool l3gd20GyroRead(gyroDev_t *gyro)
 {
     uint8_t buf[6];
 
-    spiBusReadRegisterBuffer(&gyro->bus, OUT_X_L_ADDR | READ_CMD | MULTIPLEBYTE_CMD,buf, sizeof(buf));
+    const bool ack = spiReadRegMskBufRB(&gyro->dev, OUT_X_L_ADDR | READ_CMD | MULTIPLEBYTE_CMD,buf, sizeof(buf));
+    if (!ack) {
+        return false;
+    }
 
     gyro->gyroADCRaw[0] = (int16_t)((buf[0] << 8) | buf[1]);
     gyro->gyroADCRaw[1] = (int16_t)((buf[2] << 8) | buf[3]);
@@ -135,9 +140,9 @@ static bool l3gd20GyroRead(gyroDev_t *gyro)
 // Page 9 in datasheet, So - Sensitivity, Full Scale = 2000, 70 mdps/digit
 #define L3GD20_GYRO_SCALE_FACTOR  0.07f
 
-uint8_t l3gd20Detect(const busDevice_t *bus)
+uint8_t l3gd20Detect(const extDevice_t *dev)
 {
-    UNUSED(bus);
+    UNUSED(dev);
 
     return L3GD20_SPI; // blindly assume it's present, for now.
 }

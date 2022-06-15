@@ -41,6 +41,7 @@ typedef enum {
 #ifdef USE_BLACKBOX
     TABLE_BLACKBOX_DEVICE,
     TABLE_BLACKBOX_MODE,
+    TABLE_BLACKBOX_SAMPLE_RATE,
 #endif
     TABLE_CURRENT_METER,
     TABLE_VOLTAGE_METER,
@@ -63,10 +64,8 @@ typedef enum {
 #endif
     TABLE_DEBUG,
     TABLE_MOTOR_PWM_PROTOCOL,
-    TABLE_RC_INTERPOLATION,
-    TABLE_RC_INTERPOLATION_CHANNELS,
-    TABLE_LOWPASS_TYPE,
-    TABLE_DTERM_LOWPASS_TYPE,
+    TABLE_GYRO_LPF_TYPE,
+    TABLE_DTERM_LPF_TYPE,
     TABLE_ANTI_GRAVITY_MODE,
     TABLE_FAILSAFE,
     TABLE_FAILSAFE_SWITCH_MODE,
@@ -109,10 +108,7 @@ typedef enum {
     TABLE_ACRO_TRAINER_DEBUG,
 #endif // USE_ACRO_TRAINER
 #ifdef USE_RC_SMOOTHING_FILTER
-    TABLE_RC_SMOOTHING_TYPE,
     TABLE_RC_SMOOTHING_DEBUG,
-    TABLE_RC_SMOOTHING_INPUT_TYPE,
-    TABLE_RC_SMOOTHING_DERIVATIVE_TYPE,
 #endif // USE_RC_SMOOTHING_FILTER
 #ifdef USE_VTX_COMMON
     TABLE_VTX_LOW_POWER_DISARM,
@@ -134,13 +130,21 @@ typedef enum {
     TABLE_GYRO_FILTER_DEBUG,
     TABLE_POSITION_ALT_SOURCE,
     TABLE_OFF_ON_AUTO,
-    TABLE_INTERPOLATED_SP,
+    TABLE_FEEDFORWARD_AVERAGING,
     TABLE_DSHOT_BITBANGED_TIMER,
     TABLE_OSD_DISPLAYPORT_DEVICE,
 #ifdef USE_OSD
     TABLE_OSD_LOGO_ON_ARMING,
 #endif
-
+    TABLE_MIXER_TYPE,
+    TABLE_SIMPLIFIED_TUNING_PIDS_MODE,
+#ifdef USE_OSD
+    TABLE_CMS_BACKGROUND,
+#endif
+#ifdef USE_RX_EXPRESSLRS
+    TABLE_FREQ_DOMAIN,
+    TABLE_SWITCH_MODE,
+#endif
     LOOKUP_TABLE_COUNT
 } lookupTableIndex_e;
 
@@ -257,4 +261,10 @@ extern const char * const lookupTableItermRelaxType[];
 
 extern const char * const lookupTableOsdDisplayPortDevice[];
 
-extern const char * const lookupTableInterpolatedSetpoint[];
+extern const char * const lookupTableFeedforwardAveraging[];
+
+extern const char * const lookupTableOffOn[];
+
+extern const char * const lookupTableSimplifiedTuningPidsMode[];
+
+extern const char * const lookupTableCMSMenuBackgroundType[];

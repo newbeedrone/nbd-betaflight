@@ -152,17 +152,29 @@ static bool allMotorsAreIdle(void)
     return true;
 }
 
-bool dshotCommandsAreEnabled(dshotCommandType_e commandType)
+bool dshotStreamingCommandsAreEnabled(void)
+{
+    return motorIsEnabled() && motorGetMotorEnableTimeMs() && millis() > motorGetMotorEnableTimeMs() + DSHOT_PROTOCOL_DETECTION_DELAY_MS;
+}
+
+static bool dshotCommandsAreEnabled(dshotCommandType_e commandType)
 {
     bool ret = false;
 
-    if (commandType == DSHOT_CMD_TYPE_BLOCKING) {
+    switch (commandType) {
+    case DSHOT_CMD_TYPE_BLOCKING:
         ret = !motorIsEnabled();
-    } else if (commandType == DSHOT_CMD_TYPE_INLINE) {
-        if (motorIsEnabled() && motorGetMotorEnableTimeMs() && millis() > motorGetMotorEnableTimeMs() + DSHOT_PROTOCOL_DETECTION_DELAY_MS) {
-            ret = true;
-        }
+
+        break;
+    case DSHOT_CMD_TYPE_INLINE:
+        ret = dshotStreamingCommandsAreEnabled();
+
+        break;
+    default:
+
+        break;
     }
+
     return ret;
 }
 
@@ -183,8 +195,6 @@ void dshotCommandWrite(uint8_t index, uint8_t motorCount, uint8_t command, dshot
     case DSHOT_CMD_SAVE_SETTINGS:
     case DSHOT_CMD_SPIN_DIRECTION_NORMAL:
     case DSHOT_CMD_SPIN_DIRECTION_REVERSED:
-    case DSHOT_CMD_SIGNAL_LINE_TELEMETRY_DISABLE:
-    case DSHOT_CMD_SIGNAL_LINE_CONTINUOUS_ERPM_TELEMETRY:
         repeats = 10;
         break;
     case DSHOT_CMD_BEACON1:
@@ -269,7 +279,7 @@ FAST_CODE_NOINLINE bool dshotCommandOutputIsEnabled(uint8_t motorCount)
     case DSHOT_COMMAND_STATE_STARTDELAY:
         if (command->nextCommandCycleDelay) {
             --command->nextCommandCycleDelay;
-            return false;  // Delay motor output until the start of the command seequence
+            return false;  // Delay motor output until the start of the command sequence
         }
         command->state = DSHOT_COMMAND_STATE_ACTIVE;
         command->nextCommandCycleDelay = 0;  // first iteration of the repeat happens now

@@ -374,6 +374,11 @@ void blackboxEraseAll(void)
 {
     switch (blackboxConfig()->device) {
     case BLACKBOX_DEVICE_FLASH:
+        /* Stop the recorder as if blackbox_mode = ALWAYS it will attempt to resume writing after
+         * the erase and leave a corrupted first log.
+         * Possible enhancement here is to restart logging after erase.
+         */
+        blackboxInit();
         flashfsEraseCompletely();
         break;
     default:
@@ -744,5 +749,22 @@ blackboxBufferReserveStatus_e blackboxDeviceReserveBufferSpace(int32_t bytes)
     default:
         return BLACKBOX_RESERVE_PERMANENT_FAILURE;
     }
+}
+
+int8_t blackboxGetLogFileNo(void)
+{   
+#ifdef USE_BLACKBOX
+#ifdef USE_SDCARD
+    // return current file number or -1 
+    if (blackboxSDCard.state == BLACKBOX_SDCARD_READY_TO_LOG) {
+        return blackboxSDCard.largestLogFileNumber;
+    } else {
+        return -1;
+    }
+#else
+    // will be implemented later for flash based storage
+    return -1;
+#endif
+#endif    
 }
 #endif // BLACKBOX

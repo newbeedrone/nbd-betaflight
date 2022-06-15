@@ -22,6 +22,9 @@
 
 #include "drivers/resource.h"
 
+#define CACHE_LINE_SIZE 32
+#define CACHE_LINE_MASK (CACHE_LINE_SIZE - 1)
+
 // dmaResource_t is a opaque data type which represents a single DMA engine,
 // called and implemented differently in different families of STM32s.
 // The opaque data type provides uniform handling of the engine in source code.
@@ -34,7 +37,8 @@ typedef struct dmaResource_s dmaResource_t;
 #if defined(STM32F4) || defined(STM32F7)
 #define DMA_ARCH_TYPE DMA_Stream_TypeDef
 #elif defined(STM32H7)
-#define DMA_ARCH_TYPE void
+// H7 has stream based DMA and channel based BDMA, but we ignore BDMA (for now).
+#define DMA_ARCH_TYPE DMA_Stream_TypeDef
 #else
 #define DMA_ARCH_TYPE DMA_Channel_TypeDef
 #endif
@@ -45,9 +49,10 @@ typedef void (*dmaCallbackHandlerFuncPtr)(struct dmaChannelDescriptor_s *channel
 typedef struct dmaChannelDescriptor_s {
     DMA_TypeDef*                dma;
     dmaResource_t               *ref;
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7)
     uint8_t                     stream;
 #endif
+    uint32_t                    channel;
     dmaCallbackHandlerFuncPtr   irqHandlerCallback;
     uint8_t                     flagsShift;
     IRQn_Type                   irqN;
@@ -106,7 +111,7 @@ typedef enum {
     .owner.resourceIndex = 0 \
     }
 
-#define DEFINE_DMA_IRQ_HANDLER(d, s, i) void DMA ## d ## _Stream ## s ## _IRQHandler(void) {\
+#define DEFINE_DMA_IRQ_HANDLER(d, s, i) FAST_IRQ_HANDLER void DMA ## d ## _Stream ## s ## _IRQHandler(void) {\
                                                                 const uint8_t index = DMA_IDENTIFIER_TO_INDEX(i); \
                                                                 dmaCallbackHandlerFuncPtr handler = dmaDescriptors[index].irqHandlerCallback; \
                                                                 if (handler) \
@@ -228,12 +233,21 @@ typedef enum {
 // HAL library has a macro for this, but it is extremely inefficient in that it compares
 // the address against all possible values.
 // Here, we just compare the address against regions of memory.
-// If it's not in D3 peripheral area, then it's DMA1/2 and it's stream based.
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
+// For H7A3, if it's lower than CD_AHB2PERIPH_BASE, then it's DMA1/2 and it's stream based.
+// If not, it's BDMA and it's channel based.
+#define IS_DMA_ENABLED(reg) \
+    ((uint32_t)(reg) < CD_AHB2PERIPH_BASE) ? \
+        (((DMA_Stream_TypeDef *)(reg))->CR & DMA_SxCR_EN) : \
+        (((BDMA_Channel_TypeDef *)(reg))->CCR & BDMA_CCR_EN)
+#else
+// For H743 and H750, if it's not in D3 peripheral area, then it's DMA1/2 and it's stream based.
 // If not, it's BDMA and it's channel based.
 #define IS_DMA_ENABLED(reg) \
     ((uint32_t)(reg) < D3_AHB1PERIPH_BASE) ? \
         (((DMA_Stream_TypeDef *)(reg))->CR & DMA_SxCR_EN) : \
         (((BDMA_Channel_TypeDef *)(reg))->CCR & BDMA_CCR_EN)
+#endif
 #elif defined(STM32G4)
 #define IS_DMA_ENABLED(reg) (((DMA_ARCH_TYPE *)(reg))->CCR & DMA_CCR_EN)
 // Missing __HAL_DMA_SET_COUNTER in FW library V1.0.0

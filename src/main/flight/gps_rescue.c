@@ -177,6 +177,7 @@ PG_RESET_TEMPLATE(gpsRescueConfig_t, gpsRescueConfig,
     .altitudeMode = MAX_ALT,
     .ascendRate = 500,
     .descendRate = 150,
+    .rescueAltitudeBufferM = 15,
 );
 
 static uint16_t rescueThrottle;
@@ -281,12 +282,10 @@ static void setBearing(int16_t desiredHeading)
 static void rescueAttainPosition()
 {
     // Speed and altitude controller internal variables
-    static float previousSpeedError = 0;
+    static int16_t previousSpeedError = 0;
     static int16_t speedIntegral = 0;
-    int zVelocityError;
     static int previousZVelocityError = 0;
     static float zVelocityIntegral = 0;
-    static float scalingRate = 0;
     static int16_t altitudeAdjustment = 0;
 
     if (rescueState.phase == RESCUE_INITIALIZE) {
@@ -323,7 +322,7 @@ static void rescueAttainPosition()
 
     gpsRescueAngle[AI_PITCH] = constrain(gpsRescueAngle[AI_PITCH] + MIN(angleAdjustment, 80), rescueState.intent.minAngleDeg * 100, rescueState.intent.maxAngleDeg * 100);
 
-    const float ct = cos(DECIDEGREES_TO_RADIANS(gpsRescueAngle[AI_PITCH] / 10));
+    const float ct = cosf(DECIDEGREES_TO_RADIANS(gpsRescueAngle[AI_PITCH] / 10));
 
     /**
         Altitude controller
@@ -331,12 +330,14 @@ static void rescueAttainPosition()
     const int16_t altitudeError = rescueState.intent.targetAltitudeCm - rescueState.sensor.currentAltitudeCm;
 
     // P component
+    float scalingRate;
     if (ABS(altitudeError) > 0 && ABS(altitudeError) < GPS_RESCUE_ZVELOCITY_THRESHOLD) {
         scalingRate = (float)altitudeError / GPS_RESCUE_ZVELOCITY_THRESHOLD;
     } else {
         scalingRate = 1;
     }
 
+    int zVelocityError;
     if (altitudeError > 0) {
         zVelocityError = gpsRescueConfig()->ascendRate * scalingRate - rescueState.sensor.zVelocity;
     } else if (altitudeError < 0) {
@@ -606,11 +607,11 @@ void updateGPSRescueState(void)
                 newAltitude = gpsRescueConfig()->initialAltitudeM * 100;
                 break;
             case CURRENT_ALT:
-                newAltitude = rescueState.sensor.currentAltitudeCm;
+                newAltitude = rescueState.sensor.currentAltitudeCm + gpsRescueConfig()->rescueAltitudeBufferM * 100;
                 break;
             case MAX_ALT:
             default:
-                newAltitude = MAX(gpsRescueConfig()->initialAltitudeM * 100, rescueState.sensor.maxAltitudeCm + 1500);
+                newAltitude = MAX(gpsRescueConfig()->initialAltitudeM * 100, rescueState.sensor.maxAltitudeCm + gpsRescueConfig()->rescueAltitudeBufferM * 100);
                 break;
         }
 
@@ -746,4 +747,3 @@ bool gpsRescueDisableMag(void)
 }
 #endif
 #endif
-

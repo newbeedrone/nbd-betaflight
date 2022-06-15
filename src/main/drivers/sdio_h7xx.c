@@ -38,6 +38,7 @@
 
 #include "drivers/io.h"
 #include "drivers/io_impl.h"
+#include "drivers/nvic.h"
 #include "drivers/sdio.h"
 
 typedef struct SD_Handle_s
@@ -52,7 +53,6 @@ typedef struct SD_Handle_s
 } SD_Handle_t;
 
 SD_HandleTypeDef hsd1;
-
 
 SD_CardInfo_t                      SD_CardInfo;
 SD_CardType_t                      SD_CardType;
@@ -201,7 +201,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef* hsd)
         IOConfigGPIOAF(d3, IOCFG_SDMMC, sdioPin[SDIO_PIN_D3].af);
     }
 
-    HAL_NVIC_SetPriority(sdioHardware->irqn, 0, 0);
+    HAL_NVIC_SetPriority(sdioHardware->irqn, NVIC_PRIORITY_BASE(NVIC_PRIO_SDIO_DMA), NVIC_PRIORITY_SUB(NVIC_PRIO_SDIO_DMA));
     HAL_NVIC_EnableIRQ(sdioHardware->irqn);
 }
 
@@ -265,16 +265,8 @@ bool SD_GetState(void)
     return (cardState == HAL_SD_CARD_TRANSFER);
 }
 
-/*
- * return FALSE for OK!
- * The F4/F7 code actually returns an SD_Error_t if the card is detected
- * SD_OK == 0, SD_* are non-zero and indicate errors.  e.g. SD_ERROR = 42
- */
-static bool SD_DoInit(void)
+static SD_Error_t SD_DoInit(void)
 {
-    bool failureResult = SD_ERROR; // FIXME fix the calling code, this false for success is bad.
-    bool successResult = false;
-
     HAL_StatusTypeDef status;
 
     memset(&hsd1, 0, sizeof(hsd1));
@@ -289,12 +281,15 @@ static bool SD_DoInit(void)
         hsd1.Init.BusWide = SDMMC_BUS_WIDE_1B; // FIXME untested
     }
     hsd1.Init.HardwareFlowControl = SDMMC_HARDWARE_FLOW_CONTROL_ENABLE;
+#if defined(STM32H730xx)
+    hsd1.Init.ClockDiv = 2; // 200Mhz / (2 * 2 ) = 50Mhz, used for "UltraHigh speed SD card" only, see   HAL_SD_ConfigWideBusOperation, SDMMC_HSpeed_CLK_DIV, SDMMC_NSpeed_CLK_DIV
+#else
     hsd1.Init.ClockDiv = 1; // 200Mhz / (2 * 1 ) = 100Mhz, used for "UltraHigh speed SD card" only, see   HAL_SD_ConfigWideBusOperation, SDMMC_HSpeed_CLK_DIV, SDMMC_NSpeed_CLK_DIV
-
+#endif
     status = HAL_SD_Init(&hsd1); // Will call HAL_SD_MspInit
 
     if (status != HAL_OK) {
-        return failureResult;
+        return SD_ERROR;
     }
 
     switch(hsd1.SdCard.CardType) {
@@ -307,7 +302,7 @@ static bool SD_DoInit(void)
             SD_CardType = SD_STD_CAPACITY_V2_0;
             break;
         default:
-            return failureResult;
+            return SD_ERROR;
         }
         break;
 
@@ -316,7 +311,7 @@ static bool SD_DoInit(void)
         break;
 
     default:
-        return failureResult;
+        return SD_ERROR;
     }
 
     STATIC_ASSERT(sizeof(SD_Handle.CSD) == sizeof(hsd1.CSD), hal-csd-size-error);
@@ -325,7 +320,7 @@ static bool SD_DoInit(void)
     STATIC_ASSERT(sizeof(SD_Handle.CID) == sizeof(hsd1.CID), hal-cid-size-error);
     memcpy(&SD_Handle.CID, &hsd1.CID, sizeof(SD_Handle.CID));
 
-    return successResult;
+    return SD_OK;
 }
 
 SD_Error_t SD_GetCardInfo(void)
@@ -529,7 +524,7 @@ SD_Error_t SD_GetCardInfo(void)
     return ErrorState;
 }
 
-bool SD_Init(void)
+SD_Error_t SD_Init(void)
 {
     static bool sdInitAttempted = false;
     static SD_Error_t result = SD_ERROR;
@@ -564,12 +559,12 @@ SD_Error_t SD_WriteBlocks_DMA(uint64_t WriteAddress, uint32_t *buffer, uint32_t 
         return SD_ERROR; // unsupported.
     }
 
-    /*
-     the SCB_CleanDCache_by_Addr() requires a 32-Byte aligned address
-     adjust the address and the D-Cache size to clean accordingly.
-     */
-    uint32_t alignedAddr = (uint32_t)buffer &  ~0x1F;
-    SCB_CleanDCache_by_Addr((uint32_t*)alignedAddr, NumberOfBlocks * BlockSize + ((uint32_t)buffer - alignedAddr));
+    if ((uint32_t)buffer & 0x1f) {
+        return SD_ADDR_MISALIGNED;
+    }
+
+    // Ensure the data is flushed to main memory
+    SCB_CleanDCache_by_Addr(buffer, NumberOfBlocks * BlockSize);
 
     HAL_StatusTypeDef status;
     if ((status = HAL_SD_WriteBlocks_DMA(&hsd1, (uint8_t *)buffer, WriteAddress, NumberOfBlocks)) != HAL_OK) {
@@ -595,12 +590,15 @@ SD_Error_t SD_ReadBlocks_DMA(uint64_t ReadAddress, uint32_t *buffer, uint32_t Bl
         return SD_ERROR; // unsupported.
     }
 
+    if ((uint32_t)buffer & 0x1f) {
+        return SD_ADDR_MISALIGNED;
+    }
+
     SD_Handle.RXCplt = 1;
 
     sdReadParameters.buffer = buffer;
     sdReadParameters.BlockSize = BlockSize;
     sdReadParameters.NumberOfBlocks = NumberOfBlocks;
-
 
     HAL_StatusTypeDef status;
     if ((status = HAL_SD_ReadBlocks_DMA(&hsd1, (uint8_t *)buffer, ReadAddress, NumberOfBlocks)) != HAL_OK) {

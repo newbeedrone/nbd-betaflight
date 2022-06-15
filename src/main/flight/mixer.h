@@ -60,6 +60,13 @@ typedef enum mixerMode
     MIXER_QUADX_1234 = 26
 } mixerMode_e;
 
+typedef enum mixerType
+{
+    MIXER_LEGACY = 0,
+    MIXER_LINEAR = 1,
+    MIXER_DYNAMIC = 2,
+} mixerType_e;
+
 // Custom mixer data per motor
 typedef struct motorMixer_s {
     float throttle;
@@ -82,6 +89,7 @@ typedef struct mixerConfig_s {
     bool yaw_motors_reversed;
     uint8_t crashflip_motor_percent;
     uint8_t crashflip_expo;
+    uint8_t mixer_type;
 } mixerConfig_t;
 
 PG_DECLARE(mixerConfig_t, mixerConfig);
@@ -91,7 +99,6 @@ PG_DECLARE(mixerConfig_t, mixerConfig);
 extern const mixer_t mixers[];
 extern float motor[MAX_SUPPORTED_MOTORS];
 extern float motor_disarmed[MAX_SUPPORTED_MOTORS];
-extern float motorOutputHigh, motorOutputLow;
 struct rxConfig_s;
 
 uint8_t getMotorCount(void);
@@ -103,10 +110,8 @@ void initEscEndpoints(void);
 void mixerInit(mixerMode_e mixerMode);
 void mixerInitProfile(void);
 
-void mixerConfigureOutput(void);
-
 void mixerResetDisarmedMotors(void);
-void mixTable(timeUs_t currentTimeUs, uint8_t vbatPidCompensation);
+void mixTable(timeUs_t currentTimeUs);
 void stopMotors(void);
 void writeMotors(void);
 
@@ -117,3 +122,6 @@ float mixerGetThrottle(void);
 mixerMode_e getMixerMode(void);
 bool mixerModeIsFixedWing(mixerMode_e mixerMode);
 bool isFixedWing(void);
+
+float getMotorOutputLow(void);
+float getMotorOutputHigh(void);

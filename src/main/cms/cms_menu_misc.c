@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
 
 #include "platform.h"
 
@@ -72,11 +73,25 @@ static const void *cmsx_menuRcConfirmBack(displayPort_t *pDisp, const OSD_Entry 
 {
     UNUSED(pDisp);
 
-    if (self && self->type == OME_Back) {
+    if (self && ((self->flags & OSD_MENU_ELEMENT_MASK) == OME_Back)) {
         return NULL;
     } else {
         return MENU_CHAIN_BACK;
     }
+}
+
+static int16_t rcDataInt[AUX4 + 1];
+
+static const void *cmsx_menuRcOnDisplayUpdate(displayPort_t *pDisp, const OSD_Entry *selected)
+{
+    UNUSED(pDisp);
+    UNUSED(selected);
+
+    for (int i = 0; i <= AUX4; i++) {
+        rcDataInt[i] = lroundf(rcData[i]);
+    }
+
+    return NULL;
 }
 
 //
@@ -84,20 +99,20 @@ static const void *cmsx_menuRcConfirmBack(displayPort_t *pDisp, const OSD_Entry 
 //
 static const OSD_Entry cmsx_menuRcEntries[] =
 {
-    { "-- RC PREV --", OME_Label, NULL, NULL, 0},
+    { "-- RC PREV --", OME_Label, NULL, NULL},
 
-    { "ROLL",  OME_INT16, NULL, &(OSD_INT16_t){ &rcData[ROLL],     1, 2500, 0 }, DYNAMIC },
-    { "PITCH", OME_INT16, NULL, &(OSD_INT16_t){ &rcData[PITCH],    1, 2500, 0 }, DYNAMIC },
-    { "THR",   OME_INT16, NULL, &(OSD_INT16_t){ &rcData[THROTTLE], 1, 2500, 0 }, DYNAMIC },
-    { "YAW",   OME_INT16, NULL, &(OSD_INT16_t){ &rcData[YAW],      1, 2500, 0 }, DYNAMIC },
+    { "ROLL",  OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[ROLL],     1, 2500, 0 } },
+    { "PITCH", OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[PITCH],    1, 2500, 0 } },
+    { "THR",   OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[THROTTLE], 1, 2500, 0 } },
+    { "YAW",   OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[YAW],      1, 2500, 0 } },
 
-    { "AUX1",  OME_INT16, NULL, &(OSD_INT16_t){ &rcData[AUX1],     1, 2500, 0 }, DYNAMIC },
-    { "AUX2",  OME_INT16, NULL, &(OSD_INT16_t){ &rcData[AUX2],     1, 2500, 0 }, DYNAMIC },
-    { "AUX3",  OME_INT16, NULL, &(OSD_INT16_t){ &rcData[AUX3],     1, 2500, 0 }, DYNAMIC },
-    { "AUX4",  OME_INT16, NULL, &(OSD_INT16_t){ &rcData[AUX4],     1, 2500, 0 }, DYNAMIC },
+    { "AUX1",  OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[AUX1],     1, 2500, 0 } },
+    { "AUX2",  OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[AUX2],     1, 2500, 0 } },
+    { "AUX3",  OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[AUX3],     1, 2500, 0 } },
+    { "AUX4",  OME_INT16 | DYNAMIC, NULL, &(OSD_INT16_t){ &rcDataInt[AUX4],     1, 2500, 0 } },
 
-    { "BACK",  OME_Back, NULL, NULL, 0},
-    {NULL, OME_END, NULL, NULL, 0}
+    { "BACK",  OME_Back, NULL, NULL},
+    {NULL, OME_END, NULL, NULL}
 };
 
 CMS_Menu cmsx_menuRcPreview = {
@@ -107,7 +122,7 @@ CMS_Menu cmsx_menuRcPreview = {
 #endif
     .onEnter = cmsx_menuRcOnEnter,
     .onExit = cmsx_menuRcConfirmBack,
-    .onDisplayUpdate = NULL,
+    .onDisplayUpdate = cmsx_menuRcOnDisplayUpdate,
     .entries = cmsx_menuRcEntries
 };
 
@@ -140,15 +155,15 @@ static const void *cmsx_menuMiscOnExit(displayPort_t *pDisp, const OSD_Entry *se
 
 static const OSD_Entry menuMiscEntries[]=
 {
-    { "-- MISC --", OME_Label, NULL, NULL, 0 },
+    { "-- MISC --", OME_Label, NULL, NULL },
 
-    { "MIN THR",       OME_UINT16,  NULL,          &(OSD_UINT16_t){ &motorConfig_minthrottle,            1000, 2000, 1 }, REBOOT_REQUIRED },
-    { "DIGITAL IDLE",  OME_UINT8,   NULL,          &(OSD_UINT8_t) { &motorConfig_digitalIdleOffsetValue,    0,  200, 1 }, REBOOT_REQUIRED },
-    { "FPV CAM ANGLE", OME_UINT8,   NULL,          &(OSD_UINT8_t) { &rxConfig_fpvCamAngleDegrees,           0,   90, 1 }, 0 },
-    { "RC PREV",       OME_Submenu, cmsMenuChange, &cmsx_menuRcPreview, 0},
+    { "MIN THR",       OME_UINT16 | REBOOT_REQUIRED,  NULL,          &(OSD_UINT16_t){ &motorConfig_minthrottle,            1000, 2000, 1 } },
+    { "DIGITAL IDLE",  OME_UINT8 | REBOOT_REQUIRED,   NULL,          &(OSD_UINT8_t) { &motorConfig_digitalIdleOffsetValue,    0,  200, 1 } },
+    { "FPV CAM ANGLE", OME_UINT8,   NULL,          &(OSD_UINT8_t) { &rxConfig_fpvCamAngleDegrees,           0,   90, 1 } },
+    { "RC PREV",       OME_Submenu, cmsMenuChange, &cmsx_menuRcPreview},
 
-    { "BACK", OME_Back, NULL, NULL, 0},
-    { NULL, OME_END, NULL, NULL, 0}
+    { "BACK", OME_Back, NULL, NULL},
+    { NULL, OME_END, NULL, NULL}
 };
 
 CMS_Menu cmsx_menuMisc = {
