@@ -35,7 +35,6 @@
 #include "drivers/dma.h"
 #include "drivers/io.h"
 #include "drivers/rcc.h"
-#include "drivers/time.h"
 
 #ifndef SPI2_SCK_PIN
 #define SPI2_NSS_PIN    PB12

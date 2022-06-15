@@ -36,7 +36,6 @@
 #include "drivers/exti.h"
 #include "drivers/io.h"
 #include "drivers/rcc.h"
-#include "drivers/time.h"
 
 static SPI_InitTypeDef defaultInit = {
     .SPI_Mode = SPI_Mode_Master,

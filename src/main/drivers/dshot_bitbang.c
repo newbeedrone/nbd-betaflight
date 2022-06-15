@@ -648,9 +648,6 @@ static void bbUpdateComplete(void)
         bbDMA_Cmd(bbPort, ENABLE);
     }
 
-        bbDMA_Cmd(bbPort, ENABLE);
-    }
-
     lastSendUs = micros();
     for (int i = 0; i < usedMotorPacers; i++) {
         bbPacer_t *bbPacer = &bbPacers[i];

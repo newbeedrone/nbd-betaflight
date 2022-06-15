@@ -36,8 +36,6 @@
 
 #include "displayport_crsf.h"
 
-#include "rx/rx.h"
-
 #define CRSF_DISPLAY_PORT_OPEN_DELAY_MS     400
 #define CRSF_DISPLAY_PORT_CLEAR_DELAY_MS    45
 

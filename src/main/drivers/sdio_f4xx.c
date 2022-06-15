@@ -1720,22 +1720,6 @@ SD_Error_t SD_Init(void)
     return result;
 }
 
-bool SD_Init(void)
-{
-    static bool sdInitAttempted = false;
-    static SD_Error_t result = SD_ERROR;
-
-    if (sdInitAttempted) {
-        return result;
-    }
-
-    sdInitAttempted = true;
-
-    result = SD_DoInit();
-
-    return result;
-}
-
 /** -----------------------------------------------------------------------------------------------------------------*/
 /**
   * @brief  This function handles SD card interrupt request.

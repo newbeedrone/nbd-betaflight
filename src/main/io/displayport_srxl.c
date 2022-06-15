@@ -28,11 +28,7 @@
 
 #include "cms/cms.h"
 
-#include "cms/cms.h"
-
 #include "common/utils.h"
-
-#include "config/feature.h"
 
 #include "drivers/display.h"
 
