@@ -87,12 +87,12 @@ typedef enum {
 
 #ifdef USE_VTX_BEESIGN
 // BeeSign "---", 25, 100, 200, 400, 800 mW
-#define VTX_BS_POWER_OFF         0
-#define VTX_BS_POWER_25          1
-#define VTX_BS_POWER_100         2
-#define VTX_BS_POWER_200         3
-#define VTX_BS_POWER_400         4
-#define VTX_BS_POWER_600         5
+#define VTX_BS_POWER_OFF          0
+#define VTX_BS_POWER_25           1
+#define VTX_BS_POWER_100          2
+#define VTX_BS_POWER_200          3
+#define VTX_BS_POWER_400          4
+#define VTX_BS_POWER_600          5
 #endif
 
 // VTX status flags

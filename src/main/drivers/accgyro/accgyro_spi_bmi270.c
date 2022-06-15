@@ -515,7 +515,6 @@ static bool bmi270GyroReadFifo(gyroDev_t *gyro)
 
 static bool bmi270GyroRead(gyroDev_t *gyro)
 {
-    spiSetDivisor(gyro->bus.busdev_u.spi.instance, BMI270_SPI_DIVISOR);
 #ifdef USE_GYRO_DLPF_EXPERIMENTAL
     if (gyro->hardware_lpf == GYRO_HARDWARE_LPF_EXPERIMENTAL) {
         // running in 6.4KHz FIFO mode
