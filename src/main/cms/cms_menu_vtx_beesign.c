@@ -171,10 +171,10 @@ static const void *bs_Vtx_onEnter(displayPort_t *pDisp)
 }
 
 static OSD_Entry bsCmsMenuModeEntries[] = {
-    {"--- BEESIGN MODE ---", OME_Label, NULL, NULL,            0},
-    {"MODE",                 OME_TAB,   NULL, &bsEntryVtxMode, 0},
-    {"BACK",                 OME_Back,  NULL, NULL,            0},
-    {NULL,                   OME_END,   NULL, NULL,            0}
+    {"--- BEESIGN MODE ---", OME_Label, NULL, NULL },
+    {"MODE",                 OME_TAB,   NULL, &bsEntryVtxMode },
+    {"BACK",                 OME_Back,  NULL, NULL },
+    {NULL,                   OME_END,   NULL, NULL }
 };
 
 CMS_Menu cmsx_menuVtxBsMode = {
@@ -188,34 +188,34 @@ CMS_Menu cmsx_menuVtxBsMode = {
 };
 
 static OSD_Entry bsCmsMenuRaceModeEntries[] = {
-    {"--- BEESIGN RACE---",   OME_Label,   NULL,                  NULL,                0},
-    {"BAND",                  OME_TAB,     bsCmsConfigBandByGvar, &bsEntryVtxBand,     0},
-    {"CHANNEL",               OME_TAB,     bsCmsConfigBandByGvar, &bsEntryVtxChannel,  0},
-    {"POWER",                 OME_TAB,     NULL,                  &bsEntryVtxPower,    0},
-    {"(FREQ)",                OME_UINT16,  bsCmsConfigBandByGvar, &bsShowVtxFreq,      DYNAMIC},
-    {"SAVE",                  OME_Funcall, bsCmsConfigRaceSave,   NULL,                0},
-    {"BACK",                  OME_Back,    NULL,                  NULL,                0},
-    {NULL,                    OME_END,     NULL,                  NULL,                0}
+    {"--- BEESIGN RACE---", OME_Label,            NULL,                  NULL },
+    {"BAND",                OME_TAB,              bsCmsConfigBandByGvar, &bsEntryVtxBand },
+    {"CHANNEL",             OME_TAB,              bsCmsConfigBandByGvar, &bsEntryVtxChannel },
+    {"POWER",               OME_TAB,              NULL,                  &bsEntryVtxPower },
+    {"(FREQ)",              OME_UINT16 | DYNAMIC, bsCmsConfigBandByGvar, &bsShowVtxFreq },
+    {"SAVE",                OME_Funcall,          bsCmsConfigRaceSave,   NULL },
+    {"BACK",                OME_Back,             NULL,                  NULL },
+    {NULL,                  OME_END,              NULL,                  NULL }
 };
 
 static OSD_Entry bsCmsMenuManualModeEntries[] = {
-    {"--- BEESIGN MAMUAL---", OME_Label,   NULL,                  NULL,                0},
-    {"MODE",                  OME_Submenu, cmsMenuChange,         &cmsx_menuVtxBsMode, 0},
-    {"FREQ",                  OME_UINT16,  NULL,                  &bsEntryVtxFreq,     0},
-    {"POWER",                 OME_TAB,     NULL,                  &bsEntryVtxPower,    0},
-    {"SAVE",                  OME_Funcall, bsCmsConfigManualSave, NULL,                0},
-    {"BACK",                  OME_Back,    NULL,                  NULL,                0},
-    {NULL,                    OME_END,     NULL,                  NULL,                0}
+    {"--- BEESIGN MAMUAL---", OME_Label,   NULL,                  NULL },
+    {"MODE",                  OME_Submenu, cmsMenuChange,         &cmsx_menuVtxBsMode },
+    {"FREQ",                  OME_UINT16,  NULL,                  &bsEntryVtxFreq },
+    {"POWER",                 OME_TAB,     NULL,                  &bsEntryVtxPower },
+    {"SAVE",                  OME_Funcall, bsCmsConfigManualSave, NULL },
+    {"BACK",                  OME_Back,    NULL,                  NULL },
+    {NULL,                    OME_END,     NULL,                  NULL }
 };
 
 static OSD_Entry bsCmsMenuPorModeEntries[] = {
-    {"--- BEESIGN POR---",    OME_Label,   NULL,                  NULL,                0},
-    {"MODE",                  OME_Submenu, cmsMenuChange,         &cmsx_menuVtxBsMode, 0},
-    {"(FREQ)",                OME_String,  NULL,                  &porModeFREQStr,     0},
-    {"(POWER)",               OME_String,  NULL,                  &porModeStr,         0},
-    {"SAVE",                  OME_Funcall, bsCmsConfigPorSave,    NULL,                0},
-    {"BACK",                  OME_Back,    NULL,                  NULL,                0},
-    {NULL,                    OME_END,     NULL,                  NULL,                0}
+    {"--- BEESIGN POR---",    OME_Label,   NULL,                  NULL },
+    {"MODE",                  OME_Submenu, cmsMenuChange,         &cmsx_menuVtxBsMode },
+    {"(FREQ)",                OME_String,  NULL,                  &porModeFREQStr },
+    {"(POWER)",               OME_String,  NULL,                  &porModeStr },
+    {"SAVE",                  OME_Funcall, bsCmsConfigPorSave,    NULL },
+    {"BACK",                  OME_Back,    NULL,                  NULL },
+    {NULL,                    OME_END,     NULL,                  NULL }
 };
 
 CMS_Menu cmsx_menuVtxBeesign = {

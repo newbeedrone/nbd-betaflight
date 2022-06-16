@@ -970,7 +970,7 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
             break;
         case OSD_DISPLAYPORT_DEVICE_BEESIGN:
             osdFlags |= OSD_FLAGS_OSD_HARDWARE_BEESIGN;
-            if (osdDisplayPort && displayIsReady(osdDisplayPort)) {
+            if (displayIsReady) {
                 osdFlags |= OSD_FLAGS_OSD_DEVICE_DETECTED;
             }
         default:
