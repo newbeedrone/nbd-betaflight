@@ -26,12 +26,19 @@
 #if defined(USE_CRSF_CMS_TELEMETRY)
 
 #include "cms/cms.h"
+
 #include "common/maths.h"
 #include "common/printf.h"
 #include "common/time.h"
+
+#include "config/feature.h"
+
 #include "drivers/display.h"
 #include "drivers/time.h"
+
 #include "io/displayport_crsf.h"
+
+#include "rx/rx.h"
 
 #define CRSF_DISPLAY_PORT_OPEN_DELAY_MS     400
 #define CRSF_DISPLAY_PORT_CLEAR_DELAY_MS    45
@@ -74,9 +81,10 @@ static int crsfScreenSize(const displayPort_t *displayPort)
 }
 
 
-static int crsfWriteString(displayPort_t *displayPort, uint8_t col, uint8_t row, const char *s)
+static int crsfWriteString(displayPort_t *displayPort, uint8_t col, uint8_t row, uint8_t attr, const char *s)
 {
     UNUSED(displayPort);
+    UNUSED(attr);
     if (row >= crsfScreen.rows || col >= crsfScreen.cols) {
         return 0;
     }
@@ -89,11 +97,11 @@ static int crsfWriteString(displayPort_t *displayPort, uint8_t col, uint8_t row,
     return 0;
 }
 
-static int crsfWriteChar(displayPort_t *displayPort, uint8_t col, uint8_t row, uint8_t c)
+static int crsfWriteChar(displayPort_t *displayPort, uint8_t col, uint8_t row, uint8_t attr, uint8_t c)
 {
     char s[1];
     tfp_sprintf(s, "%c", c);
-    return crsfWriteString(displayPort, col, row, s);
+    return crsfWriteString(displayPort, col, row, attr, s);
 }
 
 static bool crsfIsTransferInProgress(const displayPort_t *displayPort)
@@ -138,7 +146,10 @@ static const displayPortVTable_t crsfDisplayPortVTable = {
     .heartbeat = crsfHeartbeat,
     .resync = crsfResync,
     .isSynced = crsfIsSynced,
-    .txBytesFree = crsfTxBytesFree
+    .txBytesFree = crsfTxBytesFree,
+    .layerSupported = NULL,
+    .layerSelect = NULL,
+    .layerCopy = NULL,
 };
 
 crsfDisplayPortScreen_t *crsfDisplayPortScreen(void)
@@ -200,9 +211,16 @@ int crsfDisplayPortNextRow(void)
 
 displayPort_t *displayPortCrsfInit()
 {
-    crsfDisplayPortSetDimensions(CRSF_DISPLAY_PORT_ROWS_MAX, CRSF_DISPLAY_PORT_COLS_MAX);
-    displayInit(&crsfDisplayPort, &crsfDisplayPortVTable);
-    return &crsfDisplayPort;
+    if (featureIsEnabled(FEATURE_TELEMETRY)
+        && featureIsEnabled(FEATURE_RX_SERIAL)
+        && (rxConfig()->serialrx_provider == SERIALRX_CRSF)) {
+
+        crsfDisplayPortSetDimensions(CRSF_DISPLAY_PORT_ROWS_MAX, CRSF_DISPLAY_PORT_COLS_MAX);
+        displayInit(&crsfDisplayPort, &crsfDisplayPortVTable);
+        return &crsfDisplayPort;
+    } else {
+        return NULL;
+    }
 }
 
 #endif

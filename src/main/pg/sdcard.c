@@ -45,18 +45,24 @@ void pgResetFn_sdcardConfig(sdcardConfig_t *config)
     // On generic targets, SPI has precedence over SDIO; SDIO must be post-flash configured.
     config->useDma = false;
     config->device = SPI_DEV_TO_CFG(SPIINVALID);
-    config->mode = SDCARD_MODE_NONE;
 
-#ifdef USE_SDCARD_SDIO
+#ifdef CONFIG_IN_SDCARD
+    // CONFIG_ID_SDDCARD requires a default mode.
+#if defined(USE_SDCARD_SDIO)
     config->mode = SDCARD_MODE_SDIO;
-    config->useDma = true;
+#elif defined(USE_SDCARD_SPI)
+    config->mode = SDCARD_MODE_SPI;
+#endif
+#else
+    config->mode = SDCARD_MODE_NONE;
 #endif
 
 #ifdef USE_SDCARD_SPI
+    // These settings do not work for Unified Targets
+    // They are only left in place to support legacy targets
     SPIDevice spidevice = spiDeviceByInstance(SDCARD_SPI_INSTANCE);
     config->device = SPI_DEV_TO_CFG(spidevice);
     config->chipSelectTag = IO_TAG(SDCARD_SPI_CS_PIN);
-    config->useDma = false;
 
     if (spidevice != SPIINVALID && config->chipSelectTag) {
         config->mode = SDCARD_MODE_SPI;

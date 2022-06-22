@@ -27,10 +27,6 @@
 int16_t debug[DEBUG16_VALUE_COUNT];
 uint8_t debugMode;
 
-#ifdef DEBUG_SECTION_TIMES
-uint32_t sectionTimes[2][4];
-#endif
-
 // Please ensure that these names are aligned with the enum values defined in 'debug.h'
 const char * const debugModeNames[DEBUG_COUNT] = {
     "NONE",
@@ -93,4 +89,7 @@ const char * const debugModeNames[DEBUG_COUNT] = {
     "DYN_IDLE",
     "FF_LIMIT",
     "FF_INTERPOLATED",
+    "BLACKBOX_OUTPUT",
+    "GYRO_SAMPLE",
+    "RX_TIMING",
 };

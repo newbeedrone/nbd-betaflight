@@ -45,27 +45,36 @@
 #include "io/vtx.h"
 #include "io/vtx_beesign.h"
 
-#if defined(USE_CMS) || defined(USE_VTX_COMMON)
+#if (defined(USE_CMS) || defined(USE_VTX_COMMON)) && !defined(USE_VTX_TABLE)
 const uint16_t bsPowerTable[(uint8_t)BEESIGN_POWER_COUNT - BEESIGN_DEFAULT_POWER] = {
     25, 100, 200, 400, 600
 };
-
 const char *const bsPowerNames[] = {
     "OFF", "25", "100", "200", "400", "600", "PIT MODE"
 };
-
 const char *const bsModeNames[] = {
     "RACE", "MANUAL", "POR"
 };
-
 #endif
 
 #ifdef USE_VTX_COMMON
 static const vtxVTable_t bsVTable; // Forward
-
 static vtxDevice_t vtxBeesign = {
     .vTable = &bsVTable,
 };
+#endif
+
+bool vtxBeesignInit(void)
+{
+    if (!checkBeesignSerialPort()) {
+        return false;
+    }
+
+    vtxCommonSetDevice(&vtxBeesign);
+    bsSetVTxUnlock();
+
+    return true;
+}
 
 void vtxBSProcess(vtxDevice_t *vtxDevice, timeUs_t currentTimeUs)
 {
@@ -73,7 +82,9 @@ void vtxBSProcess(vtxDevice_t *vtxDevice, timeUs_t currentTimeUs)
     UNUSED(currentTimeUs);
 }
 
+#ifdef USE_VTX_COMMON
 // Interface to common VTX API
+
 vtxDevType_e vtxBSGetDeviceType(const vtxDevice_t *vtxDevice)
 {
     UNUSED(vtxDevice);
@@ -173,16 +184,13 @@ static bool vtxBSGetFreq(const vtxDevice_t *vtxDevice, uint16_t *pFreq)
     return true;
 }
 
-bool vtxBeesignInit(void)
+static uint8_t vtxBsGetPowerLevels(const vtxDevice_t *vtxDevice, uint16_t *levels, uint16_t *powers)
 {
-    if (!checkBeesignSerialPort()) {
-        return false;
-    }
+    UNUSED(vtxDevice);
+    UNUSED(levels);
+    UNUSED(powers);
 
-    vtxCommonSetDevice(&vtxBeesign);
-    bsSetVTxUnlock();
-
-    return true;
+    return 0;
 }
 
 static const vtxVTable_t bsVTable = {
@@ -197,6 +205,7 @@ static const vtxVTable_t bsVTable = {
     .getPowerIndex = vtxBSGetPowerIndex,
     .getStatus = vtxBSGetPitMode,
     .getFrequency = vtxBSGetFreq,
+    .getPowerLevels = vtxBsGetPowerLevels,
 };
 #endif // USE_VTX_COMMON
 

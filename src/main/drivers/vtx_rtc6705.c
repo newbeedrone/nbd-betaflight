@@ -107,9 +107,9 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
         IOInit(vtxPowerPin, OWNER_VTX_POWER, 0);
 
 #ifdef VTX_POWER_PIN_INVERTED
-        IOLo(vtxPowerPin);
-#else
         IOHi(vtxPowerPin);
+#else
+        IOLo(vtxPowerPin);
 #endif
 
         IOConfigGPIO(vtxPowerPin, IOCFG_OUT_PP);
@@ -221,10 +221,16 @@ void rtc6705DynamicPowerControl(uint8_t power)
 
 void rtc6705SetRFPower(uint8_t rf_power)
 {
+#if defined(RTC6705_EXPAND_POWER_CTRL) || defined(RTC6705_DYNAMIC_POWER_CTRL)
+    rf_power = constrain(rf_power, 0, VTX_RTC6705_POWER_COUNT);
+#else
+    rf_power = constrain(rf_power, 1, 2);
+#endif
+
 #if defined(RTC6705_EXPAND_POWER_CTRL)
     if (rf_power > 0) {
         rtc6705Enable();
-        rf_power = (rf_power > 1) ? (1) : (2); // Set output through PAOUT1
+        rf_power = (rf_power > 1) ? (1) : (2);
     } else {
         rtc6705Disable();
     }
@@ -239,8 +245,6 @@ void rtc6705SetRFPower(uint8_t rf_power)
         return;
     }
 #endif
-
-    rf_power = constrain(rf_power, VTX_RTC6705_MIN_POWER_VALUE, VTX_RTC6705_POWER_COUNT - 1);
 
     uint32_t val_hex = RTC6705_RW_CONTROL_BIT; // write
     val_hex |= RTC6705_ADDRESS; // address

@@ -42,6 +42,7 @@ typedef enum {
     FAILURE_SDCARD_READ_FAILED,
     FAILURE_SDCARD_WRITE_FAILED,
     FAILURE_SDCARD_INITIALISATION_FAILED,
+    FAILURE_SDCARD_REQUIRED,
 } failureMode_e;
 
 #define WARNING_FLASH_DURATION_MS 50
@@ -66,7 +67,7 @@ bool isMPUSoftReset(void);
 void cycleCounterInit(void);
 uint32_t clockCyclesToMicros(uint32_t clockCycles);
 uint32_t getCycleCounter(void);
-#if defined(STM32H7)
+#if defined(STM32H7) || defined(STM32G4)
 void systemCheckResetReason(void);
 #endif
 
@@ -83,3 +84,4 @@ typedef void extiCallbackHandlerFunc(void);
 
 void registerExtiCallbackHandler(IRQn_Type irqn, extiCallbackHandlerFunc *fn);void unregisterExtiCallbackHandler(IRQn_Type irqn, extiCallbackHandlerFunc *fn);
 
+void unusedPinsInit(void);

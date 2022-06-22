@@ -48,7 +48,7 @@
 #include "drivers/serial_usb_vcp.h"
 #endif
 
-#include "fc/config.h"
+#include "config/config.h"
 
 #include "io/serial.h"
 
@@ -93,6 +93,9 @@ const serialPortIdentifier_e serialPortIdentifiers[SERIAL_PORT_COUNT] = {
 #ifdef USE_UART8
     SERIAL_PORT_USART8,
 #endif
+#ifdef USE_UART9
+    SERIAL_PORT_LPUART1,
+#endif
 #ifdef USE_SOFTSERIAL1
     SERIAL_PORT_SOFTSERIAL1,
 #endif
@@ -108,7 +111,18 @@ const uint32_t baudRates[] = {0, 9600, 19200, 38400, 57600, 115200, 230400, 2500
 
 #define BAUD_RATE_COUNT (sizeof(baudRates) / sizeof(baudRates[0]))
 
-PG_REGISTER_WITH_RESET_FN(serialConfig_t, serialConfig, PG_SERIAL_CONFIG, 0);
+serialPortConfig_t *serialFindPortConfigurationMutable(serialPortIdentifier_e identifier)
+{
+    for (int index = 0; index < SERIAL_PORT_COUNT; index++) {
+        serialPortConfig_t *candidate = &serialConfigMutable()->portConfigs[index];
+        if (candidate->identifier == identifier) {
+            return candidate;
+        }
+    }
+    return NULL;
+}
+
+PG_REGISTER_WITH_RESET_FN(serialConfig_t, serialConfig, PG_SERIAL_CONFIG, 1);
 
 void pgResetFn_serialConfig(serialConfig_t *serialConfig)
 {
@@ -125,21 +139,21 @@ void pgResetFn_serialConfig(serialConfig_t *serialConfig)
     serialConfig->portConfigs[0].functionMask = FUNCTION_MSP;
 
 #ifdef SERIALRX_UART
-    serialPortConfig_t *serialRxUartConfig = serialFindPortConfiguration(SERIALRX_UART);
+    serialPortConfig_t *serialRxUartConfig = serialFindPortConfigurationMutable(SERIALRX_UART);
     if (serialRxUartConfig) {
         serialRxUartConfig->functionMask = FUNCTION_RX_SERIAL;
     }
 #endif
 
 #ifdef SBUS_TELEMETRY_UART
-    serialPortConfig_t *serialTlemetryUartConfig = serialFindPortConfiguration(SBUS_TELEMETRY_UART);
+    serialPortConfig_t *serialTlemetryUartConfig = serialFindPortConfigurationMutable(SBUS_TELEMETRY_UART);
     if (serialTlemetryUartConfig) {
         serialTlemetryUartConfig->functionMask = FUNCTION_TELEMETRY_SMARTPORT;
     }
 #endif
 
 #ifdef USE_BEESIGN
-    serialPortConfig_t *serialBeesignUartConfig = serialFindPortConfiguration(BEESIGN_UART);
+    serialPortConfig_t *serialBeesignUartConfig = serialFindPortConfigurationMutable(BEESIGN_UART);
     if (serialBeesignUartConfig) {
         serialBeesignUartConfig->functionMask = FUNCTION_BEESIGN;
     }
@@ -147,7 +161,7 @@ void pgResetFn_serialConfig(serialConfig_t *serialConfig)
 
 #if defined(USE_VCP) && defined(USE_MSP_UART)
     if (serialConfig->portConfigs[0].identifier == SERIAL_PORT_USB_VCP) {
-        serialPortConfig_t * uart1Config = serialFindPortConfiguration(SERIAL_PORT_USART1);
+        serialPortConfig_t * uart1Config = serialFindPortConfigurationMutable(SERIAL_PORT_USART1);
         if (uart1Config) {
             uart1Config->functionMask = FUNCTION_MSP;
         }
@@ -209,17 +223,17 @@ typedef struct findSerialPortConfigState_s {
 
 static findSerialPortConfigState_t findSerialPortConfigState;
 
-serialPortConfig_t *findSerialPortConfig(serialPortFunction_e function)
+const serialPortConfig_t *findSerialPortConfig(serialPortFunction_e function)
 {
     memset(&findSerialPortConfigState, 0, sizeof(findSerialPortConfigState));
 
     return findNextSerialPortConfig(function);
 }
 
-serialPortConfig_t *findNextSerialPortConfig(serialPortFunction_e function)
+const serialPortConfig_t *findNextSerialPortConfig(serialPortFunction_e function)
 {
     while (findSerialPortConfigState.lastIndex < SERIAL_PORT_COUNT) {
-        serialPortConfig_t *candidate = &serialConfigMutable()->portConfigs[findSerialPortConfigState.lastIndex++];
+        const serialPortConfig_t *candidate = &serialConfig()->portConfigs[findSerialPortConfigState.lastIndex++];
 
         if (candidate->functionMask & function) {
             return candidate;
@@ -313,10 +327,10 @@ bool isSerialConfigValid(const serialConfig_t *serialConfigToCheck)
     return true;
 }
 
-serialPortConfig_t *serialFindPortConfiguration(serialPortIdentifier_e identifier)
+const serialPortConfig_t *serialFindPortConfiguration(serialPortIdentifier_e identifier)
 {
     for (int index = 0; index < SERIAL_PORT_COUNT; index++) {
-        serialPortConfig_t *candidate = &serialConfigMutable()->portConfigs[index];
+        const serialPortConfig_t *candidate = &serialConfig()->portConfigs[index];
         if (candidate->identifier == identifier) {
             return candidate;
         }
@@ -326,7 +340,7 @@ serialPortConfig_t *serialFindPortConfiguration(serialPortIdentifier_e identifie
 
 bool doesConfigurationUsePort(serialPortIdentifier_e identifier)
 {
-    serialPortConfig_t *candidate = serialFindPortConfiguration(identifier);
+    const serialPortConfig_t *candidate = serialFindPortConfiguration(identifier);
     return candidate != NULL && candidate->functionMask;
 }
 
@@ -386,6 +400,9 @@ serialPort_t *openSerialPort(
 #endif
 #ifdef USE_UART8
         case SERIAL_PORT_USART8:
+#endif
+#ifdef USE_UART9
+        case SERIAL_PORT_LPUART1:
 #endif
 #if defined(SIMULATOR_BUILD)
             // emulate serial ports over TCP

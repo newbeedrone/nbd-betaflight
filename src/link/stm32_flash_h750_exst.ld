@@ -52,7 +52,7 @@ possible.
 */
 
 /* see .exst section below */
-_exst_hash_size = 64; 
+_exst_hash_size = 64;
 
 /* Specify the memory areas */
 MEMORY

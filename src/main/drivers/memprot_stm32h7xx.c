@@ -33,7 +33,7 @@ mpuRegion_t mpuRegions[] = {
 #ifdef USE_ITCM_RAM
     {
         //  Mark ITCM-RAM as read-only
-        // "For Cortex®-M7, TCMs memories always behave as Non-cacheable, Non-shared normal memories, irrespectiveof the memory type attributes defined in the MPU for a memory region containing addresses held in the TCM"
+        // "For Cortex®-M7, TCMs memories always behave as Non-cacheable, Non-shared normal memories, irrespective of the memory type attributes defined in the MPU for a memory region containing addresses held in the TCM"
         // See AN4838
         .start      = 0x00000000,
         .end        = 0, // Size defined by "size"
@@ -45,6 +45,7 @@ mpuRegion_t mpuRegions[] = {
         .bufferable = MPU_ACCESS_BUFFERABLE,
     },
 #endif
+#ifdef USE_DMA_RAM
     {
         // DMA transmit buffer in D2 SRAM1
         // Reading needs cache coherence operation
@@ -57,7 +58,6 @@ mpuRegion_t mpuRegions[] = {
         .cacheable  = MPU_ACCESS_CACHEABLE,
         .bufferable = MPU_ACCESS_NOT_BUFFERABLE,
     },
-#ifdef USE_SDCARD_SDIO
     {
         // A region in AXI RAM accessible from SDIO internal DMA
         .start      = (uint32_t)&dmarwaxi_start,

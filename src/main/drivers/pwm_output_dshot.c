@@ -120,7 +120,12 @@ FAST_CODE void pwmDshotSetDirectionOutput(
 
 
 #ifdef USE_DSHOT_TELEMETRY
-FAST_CODE static void pwmDshotSetDirectionInput(
+#if defined(STM32F3)
+CCM_CODE
+#else
+FAST_CODE
+#endif
+static void pwmDshotSetDirectionInput(
     motorDmaOutput_t * const motor
 )
 {
@@ -183,6 +188,11 @@ void pwmCompleteDshotMotorUpdate(void)
     }
 }
 
+#if defined(STM32F3)
+CCM_CODE
+#else
+FAST_CODE
+#endif
 static void motor_DMA_IRQHandler(dmaChannelDescriptor_t *descriptor)
 {
     if (DMA_GET_FLAG_STATUS(descriptor, DMA_IT_TCIF)) {
@@ -257,6 +267,25 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
 
     if (dmaRef == NULL) {
         return false;
+    }
+
+    dmaIdentifier_e dmaIdentifier = dmaGetIdentifier(dmaRef);
+
+    bool dmaIsConfigured = false;
+#ifdef USE_DSHOT_DMAR
+    if (useBurstDshot) {
+        const resourceOwner_t *owner = dmaGetOwner(dmaIdentifier);
+        if (owner->owner == OWNER_TIMUP && owner->resourceIndex == timerGetTIMNumber(timerHardware->tim)) {
+            dmaIsConfigured = true;
+        } else if (!dmaAllocate(dmaIdentifier, OWNER_TIMUP, timerGetTIMNumber(timerHardware->tim))) {
+            return false;
+        }
+    } else
+#endif
+    {
+        if (!dmaAllocate(dmaIdentifier, OWNER_MOTOR, RESOURCE_INDEX(motorIndex))) {
+            return false;
+        }
     }
 
     motorDmaOutput_t * const motor = &dmaMotors[motorIndex];
@@ -336,12 +365,14 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
 
     xDMA_Cmd(dmaRef, DISABLE);
     xDMA_DeInit(dmaRef);
-    DMA_StructInit(&DMAINIT);
 
+    if (!dmaIsConfigured) {
+        dmaEnable(dmaIdentifier);
+    }
+
+    DMA_StructInit(&DMAINIT);
 #ifdef USE_DSHOT_DMAR
     if (useBurstDshot) {
-        dmaInit(timerHardware->dmaTimUPIrqHandler, OWNER_TIMUP, timerGetTIMNumber(timerHardware->tim));
-
         motor->timer->dmaBurstBuffer = &dshotBurstDmaBuffer[timerIndex][0];
 
 #if defined(STM32F3)
@@ -367,8 +398,6 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
     } else
 #endif
     {
-        dmaInit(dmaGetIdentifier(dmaRef), OWNER_MOTOR, RESOURCE_INDEX(motorIndex));
-
         motor->dmaBuffer = &dshotDmaBuffer[motorIndex][0];
 
 #if defined(STM32F3)
@@ -405,13 +434,16 @@ bool pwmDshotMotorHardwareConfig(const timerHardware_t *timerHardware, uint8_t m
 #else
     pwmDshotSetDirectionOutput(motor, &OCINIT, &DMAINIT);
 #endif
+
 #ifdef USE_DSHOT_DMAR
     if (useBurstDshot) {
-        dmaSetHandler(timerHardware->dmaTimUPIrqHandler, motor_DMA_IRQHandler, NVIC_PRIO_DSHOT_DMA, motor->index);
+        if (!dmaIsConfigured) {
+            dmaSetHandler(dmaIdentifier, motor_DMA_IRQHandler, NVIC_PRIO_DSHOT_DMA, motor->index);
+        }
     } else
 #endif
     {
-        dmaSetHandler(dmaGetIdentifier(dmaRef), motor_DMA_IRQHandler, NVIC_PRIO_DSHOT_DMA, motor->index);
+        dmaSetHandler(dmaIdentifier, motor_DMA_IRQHandler, NVIC_PRIO_DSHOT_DMA, motor->index);
     }
 
     TIM_Cmd(timer, ENABLE);

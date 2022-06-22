@@ -30,7 +30,7 @@
 #include "pg/pg.h"
 #include "pg/pg_ids.h"
 
-#include "fc/config.h"
+#include "config/config.h"
 #include "fc/controlrate_profile.h"
 #include "fc/rc.h"
 #include "fc/rc_controls.h"
@@ -46,7 +46,7 @@ void pgResetFn_controlRateProfiles(controlRateConfig_t *controlRateConfig)
             .thrMid8 = 50,
             .thrExpo8 = 0,
             .dynThrPID = 65,
-            .tpa_breakpoint = 1250,
+            .tpa_breakpoint = 1350,
             .rates_type = RATES_TYPE_BETAFLIGHT,
             .rcRates[FD_ROLL] = 100,
             .rcRates[FD_PITCH] = 100,
@@ -87,6 +87,6 @@ void copyControlRateProfile(const uint8_t dstControlRateProfileIndex, const uint
     if ((dstControlRateProfileIndex < CONTROL_RATE_PROFILE_COUNT && srcControlRateProfileIndex < CONTROL_RATE_PROFILE_COUNT)
         && dstControlRateProfileIndex != srcControlRateProfileIndex
     ) {
-        memcpy(controlRateProfilesMutable(dstControlRateProfileIndex), controlRateProfilesMutable(srcControlRateProfileIndex), sizeof(controlRateConfig_t));
+        memcpy(controlRateProfilesMutable(dstControlRateProfileIndex), controlRateProfiles(srcControlRateProfileIndex), sizeof(controlRateConfig_t));
     }
 }
