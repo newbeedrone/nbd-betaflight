@@ -432,8 +432,10 @@ max7456InitStatus_e max7456Init(const max7456Config_t *max7456Config, const vcdP
     // Wait for 200us before polling for completion of reset
     delayMicroseconds(200);
 
+#ifndef USE_NBD7456
     // Wait for reset to complete
     while ((spiReadRegMsk(dev, MAX7456ADD_VM0) & MAX7456_RESET) != 0x00);
+#endif
 
     // Setup values to write to registers
     videoSignalCfg = pVcdProfile->video_system;
