@@ -144,9 +144,7 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC1_INSTANCE                   ADC1
-#define ADC2_INSTANCE                   ADC2
-#define ADC3_INSTANCE                   ADC3
+#define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    8
 #define ADC2_DMA_OPT                    9
 #define ADC3_DMA_OPT                    10
@@ -162,7 +160,8 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)

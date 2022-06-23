@@ -57,11 +57,9 @@
 #define SPI3_MISO_PIN                   PB4
 #define SPI3_MOSI_PIN                   PB5
 
-/* ======== GYRO & ACC ======== */
-#define USE_ACC
+/* ======== GYRO ======== */
 #define USE_GYRO
-#define USE_SPI_GYRO
-#define USE_ACCGYRO_BMI270
+#define USE_GYRO_SPI_MPU6000
 
 #define USE_EXTI
 #define USE_GYRO_EXTI
@@ -71,7 +69,11 @@
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
-#define GYRO_1_ALIGN                    CW90_DEG
+#define GYRO_1_ALIGN                    CW180_DEG
+
+/* ======== ACC ======== */
+#define USE_ACC
+#define USE_ACC_SPI_MPU6000
 
 /* ======== OSD ======== */
 #define USE_MAX7456
@@ -119,7 +121,8 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC1_INSTANCE                   ADC1
+#define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
 
 #define VBAT_ADC_PIN                    PB1
 #define CURRENT_METER_ADC_PIN           PA5
@@ -132,7 +135,8 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)

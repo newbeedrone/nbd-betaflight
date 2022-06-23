@@ -116,7 +116,8 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC1_INSTANCE                   ADC1
+#define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
 
 #define VBAT_ADC_PIN                    PC4
 #define CURRENT_METER_ADC_PIN           PC3
@@ -127,7 +128,8 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== PINIO ======== */
 #define PINIO1_PIN                      PC1
