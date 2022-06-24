@@ -627,7 +627,9 @@ void init(void)
 #endif
         // There's no more initialisation to be done, so enable DMA where possible for SPI
 #ifdef USE_SPI
+#ifndef USE_NBD7456
         spiInitBusDMA();
+#endif
 #endif
         if (mscStart() == 0) {
              mscWaitForButton();
@@ -1002,7 +1004,9 @@ void init(void)
 #if defined(STM32F4) || defined(STM32F7)
 #ifdef USE_SPI
     // Attempt to enable DMA on all SPI busses
+#ifndef USE_NBD7456
     spiInitBusDMA();
+#endif
 #endif
 #endif
 
@@ -1015,7 +1019,9 @@ void init(void)
 #if defined(STM32H7) || defined(STM32G4)
 #ifdef USE_SPI
     // Attempt to enable DMA on all SPI busses
+#ifndef USE_NBD7456
     spiInitBusDMA();
+#endif
 #endif
 #endif
 

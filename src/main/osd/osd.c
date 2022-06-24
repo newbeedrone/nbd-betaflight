@@ -1282,10 +1282,12 @@ void osdUpdate(timeUs_t currentTimeUs)
         break;
 
     case OSD_STATE_UPDATE_HEARTBEAT:
+#ifndef USE_NBD7456
         if (displayHeartbeat(osdDisplayPort)) {
             // Extraordinary action was taken, so return without allowing osdStateDurationFractionUs table to be updated
             return;
         }
+#endif
 
         osdState = OSD_STATE_PROCESS_STATS1;
         break;
