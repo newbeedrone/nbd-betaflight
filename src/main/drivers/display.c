@@ -34,11 +34,7 @@
 
 void displayClearScreen(displayPort_t *instance, displayClearOption_e options)
 {
-#ifdef USE_OSD_BEESIGN
-    bsCleanScreen();
-#else
     instance->vTable->clearScreen(instance, options);
-#endif
     instance->cleared = true;
     instance->cursorRow = -1;
 }
@@ -211,7 +207,8 @@ bool displaySupportsOsdSymbols(displayPort_t *instance)
     // Assume device types that support OSD display will support the OSD symbols (since the OSD logic will use them)
     if ((instance->deviceType == DISPLAYPORT_DEVICE_TYPE_MAX7456)
         || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_MSP)
-        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_FRSKYOSD)) {
+        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_FRSKYOSD)
+        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_BEESIGN)) {
         return true;
     } else {
         return false;

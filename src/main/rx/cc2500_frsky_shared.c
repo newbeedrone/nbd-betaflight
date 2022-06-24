@@ -448,9 +448,9 @@ rx_spi_received_e frSkySpiDataReceived(uint8_t *packet)
 #ifdef CC2500_BLINK_BIND
     switch (protocolState) {
         case STATE_BIND:
-        case STATE_BIND_TUNING:
-        case STATE_BIND_BINDING1:
-        case STATE_BIND_BINDING2:
+        case STATE_BIND_TUNING_LOW:
+        case STATE_BIND_TUNING_HIGH:
+        case STATE_BIND_BINDING:
             rxSpiLedBlinkBind();
 
             break;

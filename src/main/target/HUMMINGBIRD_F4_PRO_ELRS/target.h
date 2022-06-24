@@ -119,10 +119,9 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define USE_ADC_INTERNAL
 
+#define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    0
-#define ADC1_INSTANCE                   ADC1
 
 #define VBAT_ADC_PIN                    PA1
 #define CURRENT_METER_ADC_PIN           PB0
