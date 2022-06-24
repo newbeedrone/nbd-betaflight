@@ -555,8 +555,14 @@ void spiInitBusDMA()
      */
     const bool dshotBitbangActive = isDshotBitbangActive(&motorConfig()->dev);
 #endif
-
     for (device = 0; device < SPIDEV_COUNT; device++) {
+#ifdef USE_NBD7456
+        if ((device == 0 && MAX7456_SPI_INSTANCE == SPI1) ||
+            (device == 1 && MAX7456_SPI_INSTANCE == SPI2) ||
+            (device == 2 && MAX7456_SPI_INSTANCE == SPI3)) {
+            continue;
+        }
+#endif
         busDevice_t *bus = &spiBusDevice[device];
 
         if (bus->busType != BUS_TYPE_SPI) {
