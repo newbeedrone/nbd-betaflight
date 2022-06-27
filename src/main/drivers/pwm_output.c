@@ -38,7 +38,7 @@
 FAST_DATA_ZERO_INIT pwmOutputPort_t motors[MAX_SUPPORTED_MOTORS];
 
 #ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
-FAST_RAM_ZERO_INIT IO_t ioBrushedReverse;
+FAST_DATA_ZERO_INIT IO_t ioBrushedReverse;
 #endif
 
 static void pwmOCConfig(TIM_TypeDef *tim, uint8_t channel, uint16_t value, uint8_t output)
