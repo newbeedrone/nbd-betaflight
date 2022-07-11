@@ -30,7 +30,8 @@
 #include "config_helper.h"
 
 static targetSerialPortFunction_t targetSerialPortFunction[] = {
-    { SERIAL_PORT_UART5,       FUNCTION_ESC_SENSOR }
+    { SERIAL_PORT_UART5,       FUNCTION_ESC_SENSOR },
+    { SERIAL_PORT_USART6,      FUNCTION_MSP }
 };
 
 void targetConfiguration(void)
