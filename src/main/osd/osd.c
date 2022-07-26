@@ -895,8 +895,7 @@ static uint8_t osdShowStats(int statsRowCount)
         top = (availableRows - displayRows) / 2;  // center the stats vertically
     }
 
-    if (displayLabel)
-    {
+    if (displayLabel) {
 #ifdef USE_OSD_BEESIGN
         displayWrite(osdDisplayPort, 0, top++, DISPLAYPORT_ATTR_NONE, "  --- STATS ---");
 #else
