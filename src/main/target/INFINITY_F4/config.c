@@ -107,7 +107,7 @@ void targetConfiguration(void)
     osdConfigMutable()->enabledWarnings &= ~(1 << OSD_WARNING_CORE_TEMPERATURE);
     
     // RX
-    rxConfigMutable()->rc_smoothing_type = RC_SMOOTHING_TYPE_FILTER;
+    rxConfigMutable()->rc_smoothing_mode = 1;
     rxConfigMutable()->fpvCamAngleDegrees = 0;
 
     // Switches / Modes
