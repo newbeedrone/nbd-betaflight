@@ -137,7 +137,8 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC1_INSTANCE                   ADC1
+#define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
 
 #define VBAT_ADC_PIN                    PC4
 #define CURRENT_METER_ADC_PIN           PC3
@@ -150,7 +151,8 @@
 /* ======== ESC ======== */
 #define USE_ESCSERIAL
 #define ESCSERIAL_TIMER_TX_PIN          PD2
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== PINIO ======== */
 #if defined(INFINITY305_BASE)
