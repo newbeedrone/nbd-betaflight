@@ -147,8 +147,7 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
-#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== PINIO ======== */
 #define PINIO1_PIN                      PB2

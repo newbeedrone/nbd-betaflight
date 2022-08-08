@@ -123,7 +123,7 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 #define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== OTHER ======== */
