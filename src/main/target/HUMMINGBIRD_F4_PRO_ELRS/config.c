@@ -174,7 +174,7 @@ void targetConfiguration(void)
     // Motor & ESC
     motorConfigMutable()->digitalIdleOffsetValue = 1000;
     motorConfigMutable()->dev.useBurstDshot = DSHOT_DMAR_AUTO;
-    motorConfigMutable()->dev.useDshotTelemetry = false;
+    motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->motorPoleCount = 12;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
 

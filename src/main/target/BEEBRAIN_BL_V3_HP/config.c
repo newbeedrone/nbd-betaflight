@@ -171,9 +171,9 @@ void targetConfiguration(void)
     // Motor & ESC
     motorConfigMutable()->digitalIdleOffsetValue = 1000;
     motorConfigMutable()->dev.useBurstDshot = true;
-    motorConfigMutable()->dev.useDshotTelemetry = false;
+    motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->motorPoleCount = 12;
-    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
+    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
 
     mixerConfigMutable()->yaw_motors_reversed = false;
     mixerConfigMutable()->crashflip_motor_percent = 0;
