@@ -131,8 +131,7 @@
 
 /* ======== ESC ======== */
 #define USE_ESCSERIAL
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
-#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 
 /* ======== OTHER ======== */
