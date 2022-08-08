@@ -211,6 +211,53 @@ void targetConfiguration(void)
 
 #if defined(BEEBRAIN_BL_V3_BASE)
     strcpy(pilotConfigMutable()->name, "BeeBrain BLV3");
+
+#elif defined (BEEBRAIN_BL_V3_MQT)
+    strcpy(pilotConfigMutable()->name, "BBBL V3 MQT");
+
+    gyroConfigMutable()->gyro_lpf1_static_hz = 300;
+    gyroConfigMutable()->gyro_lpf2_static_hz = 600;
+    gyroConfigMutable()->gyro_lpf1_dyn_min_hz = 300;
+    gyroConfigMutable()->gyro_lpf1_dyn_max_hz = 600;
+    gyroConfigMutable()->simplified_gyro_filter_multiplier = 120;
+
+    dynNotchConfigMutable()->dyn_notch_count = 1;
+    dynNotchConfigMutable()->dyn_notch_q = 500;
+
+    motorConfigMutable()->digitalIdleOffsetValue = 400;
+
+    mixerConfigMutable()->yaw_motors_reversed = true;
+
+  //Pid Profile 2
+    pidProfilesMutable(1)->pid[PID_PITCH].P = 64;
+    pidProfilesMutable(1)->pid[PID_PITCH].I = 34;
+    pidProfilesMutable(1)->pid[PID_PITCH].D = 86;
+    pidProfilesMutable(1)->pid[PID_PITCH].F = 50;
+    pidProfilesMutable(1)->pid[PID_ROLL].P  = 49;
+    pidProfilesMutable(1)->pid[PID_ROLL].I  = 26;
+    pidProfilesMutable(1)->pid[PID_ROLL].D  = 60;
+    pidProfilesMutable(1)->pid[PID_ROLL].F  = 28;
+    pidProfilesMutable(1)->pid[PID_YAW].P   = 60;
+    pidProfilesMutable(1)->pid[PID_YAW].I   = 30;
+    pidProfilesMutable(1)->pid[PID_YAW].D   = 10;
+    pidProfilesMutable(1)->pid[PID_YAW].F   = 50;
+    pidProfilesMutable(1)->d_min[FD_ROLL]   = 46;
+    pidProfilesMutable(1)->d_min[FD_PITCH]  = 65;
+    pidProfilesMutable(1)->d_min[FD_YAW]    = 10;
+    pidProfilesMutable(1)->simplified_pids_mode = 0;
+    pidProfilesMutable(1)->simplified_master_multiplier = 110;
+    pidProfilesMutable(1)->simplified_i_gain = 30;
+    pidProfilesMutable(1)->simplified_d_gain = 140;
+    pidProfilesMutable(1)->simplified_dmin_ratio = 90;
+    pidProfilesMutable(1)->simplified_feedforward_gain = 60;
+    pidProfilesMutable(1)->simplified_roll_pitch_ratio = 125;
+    pidProfilesMutable(1)->simplified_pitch_pi_gain = 125;
+    pidProfilesMutable(1)->auto_profile_cell_count = 2;
+
+  //Rate Profile 1
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 100;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 100;
+
 #endif
 }
 #endif
