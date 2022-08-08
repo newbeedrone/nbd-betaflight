@@ -504,8 +504,17 @@ beebrain_bl_v3: $(GROUP_BBBL_V3_TARGETS)
 ## hummingbird_f4_pro : build hummingbird f4 pro targets
 hummingbird_f4_pro: $(GROUP_HUMMINGBIRD_F4_PRO_TARGETS)
 
+## hive16 : build hive16 targets
+hive16: $(GROUP_HIVE16_TARGETS)
+
+## cricket_v2_f7    : build cricket v2 targets
+cricket_v2_f7: $(GROUP_CRICKET_V2_F7_TARGETS)
+
 ## infinity_f4 : build infinity f4 targets
 infinity_f4: $(GROUP_INFINITY_F4_TARGETS)
+
+## infinity_v2_pro_f7 : build infinity v2 pro f7 targets
+infinity_v2_pro_f7: $(GROUP_INFINITY_AIO_V2_PRO_TARGETS)
 
 ## release            : build a release group
 release: $(GROUP_RELEASE)
