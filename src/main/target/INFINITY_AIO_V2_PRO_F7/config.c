@@ -73,6 +73,7 @@
 #include "sensors/gyro.h"
 #include "sensors/barometer.h"
 #include "sensors/acceleration.h"
+#include "sensors/compass.h"
 
 #include "telemetry/telemetry.h"
 
@@ -82,6 +83,19 @@ void targetConfiguration(void)
 {
 
 // BASE Defaults
+
+    //compass
+    compassConfigMutable()->mag_busType = BUS_TYPE_I2C;
+    compassConfigMutable()->mag_i2c_device = 1;
+
+    //Barometer
+    barometerConfigMutable()->baro_hardware = BARO_NONE;
+
+    //Motor
+    mixerConfigMutable()->yaw_motors_reversed = true;
+
+    //Others
+    imuConfigMutable()->small_angle = 180;
 
     //Dusking's dual BMI270 filter settings
     {
@@ -150,7 +164,7 @@ void targetConfiguration(void)
     }
 
 #if defined INFINITY_AIO_V2_PRO_BASE
-    strcpy(pilotConfigMutable()->name, "INFINITY AIO V2PRO");
+    strcpy(pilotConfigMutable()->name, "InfinityAIOv2Pro");
 #endif
 }
 #endif
