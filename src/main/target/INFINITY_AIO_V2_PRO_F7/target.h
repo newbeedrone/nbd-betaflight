@@ -103,12 +103,6 @@
 #define I2C1_SCL                        PB8
 #define I2C1_SDA                        PB9
 
-#define USE_I2C_DEVICE_2
-
-#define USE_I2C_DEVICE_3
-
-#define USE_I2C_DEVICE_4
-
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
@@ -252,7 +246,7 @@
 
 /* ======== ESC ======== */
 #define USE_ESCSERIAL
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
 
 /* ======== OTHER ======== */
 #define USE_TRANSPONDER
