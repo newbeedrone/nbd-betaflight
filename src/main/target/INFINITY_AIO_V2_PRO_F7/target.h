@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Infinity AIO V2.1"
-#define USBD_PRODUCT_STRING             "Infinity AIO V2.1"
+#define TARGET_BOARD_IDENTIFIER         "Infinity AIO V2 PRO"
+#define USBD_PRODUCT_STRING             "Infinity AIO V2 PRO"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC0
