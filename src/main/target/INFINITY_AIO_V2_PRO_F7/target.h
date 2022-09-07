@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Infinity AIO V2 PRO"
-#define USBD_PRODUCT_STRING             "Infinity AIO V2 PRO"
+#define TARGET_BOARD_IDENTIFIER         "Infinity AIO V2 Pro"
+#define USBD_PRODUCT_STRING             "Infinity AIO V2 Pro"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC0
@@ -145,7 +145,8 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC1_INSTANCE                   ADC1
+#define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
 
 #define VBAT_ADC_PIN                    PC1
 #define CURRENT_METER_ADC_PIN           PC2
@@ -158,6 +159,7 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
+#define USE_ESCSERIAL
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
@@ -168,6 +170,7 @@
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
+#define TARGET_IO_PORTF                 0xffff
 
 #define USABLE_TIMER_CHANNEL_COUNT      6
 #define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(4) )

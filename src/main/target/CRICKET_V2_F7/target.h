@@ -133,7 +133,6 @@
 #define USE_ESCSERIAL
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
-
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_ESC_SENSOR | FEATURE_OSD)
 
@@ -142,6 +141,7 @@
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
+#define TARGET_IO_PORTF                 0xffff
 
 #define USABLE_TIMER_CHANNEL_COUNT      5
 #define USED_TIMERS                     ( TIM_N(1) | TIM_N(2) | TIM_N(3) )
