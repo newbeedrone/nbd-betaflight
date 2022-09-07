@@ -635,7 +635,6 @@ uint8_t  usbd_cdc_DataIn (void *pdev, uint8_t epnum)
       else 
       {
         USB_Tx_length = APP_Rx_length;
-        
         if(USB_Tx_length == CDC_DATA_IN_PACKET_SIZE)
         {
           USB_Tx_State = USB_CDC_ZLP;
@@ -738,17 +737,15 @@ static void Handle_USBAsynchXfer (void *pdev)
       return;
     }
     
-    if(APP_Rx_ptr_out > APP_Rx_ptr_in) /* rollback */
+    if(APP_Rx_ptr_out > APP_Rx_ptr_in) 
     { 
       // Transfer bytes up to the end of the ring buffer
       APP_Rx_length = APP_RX_DATA_SIZE - APP_Rx_ptr_out;
-      
     }
     else 
     {
       // Transfer all bytes in ring buffer
       APP_Rx_length = APP_Rx_ptr_in - APP_Rx_ptr_out;
-      
     }
 #ifdef USB_OTG_HS_INTERNAL_DMA_ENABLED
     // Only transfer whole 32 bit words of data
