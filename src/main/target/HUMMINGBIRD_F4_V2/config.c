@@ -96,7 +96,7 @@ void targetConfiguration(void)
     rxConfigMutable()->fpvCamAngleDegrees = 0;
 
     // VTX, US Regulations
-#ifndef HUMMINGBIRD_F4_PRO_ELRS_BASE_NOBEESIGN
+#if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
     vtxSettingsConfigMutable()->power = 1;
@@ -196,10 +196,10 @@ void targetConfiguration(void)
 
     //BNF Configurations
 
-#if defined HUMMINGBIRD_F4_V2_BASE || HUMMINGBIRD_F4_V2_BASE_NOBEESIGN
+#if defined(HUMMINGBIRD_F4_V2_BASE) || defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN)
     strcpy(pilotConfigMutable()->name, "HMB F4 V2");
 
-#elif defined (HUMMINGBIRD_F4_V2_65)
+#elif defined(HUMMINGBIRD_F4_V2_65) || defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
     strcpy(pilotConfigMutable()->name, "HMB F4 V2 65");
 
     gyroConfigMutable()->gyro_lpf1_static_hz = 375;

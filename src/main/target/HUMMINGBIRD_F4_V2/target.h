@@ -83,7 +83,7 @@
 #define MAX7456_SPI_INSTANCE            SPI2
 
 /* ======== VTX ======== */
-#ifndef HUMMINGBIRD_F4_PRO_ELRS_BASE_NOBEESIGN
+#if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
 #define USE_BEESIGN
 #define USE_VTX_BEESIGN
 
