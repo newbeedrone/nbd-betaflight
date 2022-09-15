@@ -54,13 +54,11 @@
 #define SPI2_SCK_PIN                    PB13
 #define SPI2_MISO_PIN                   PB14
 #define SPI2_MOSI_PIN                   PB15
-// #define SPI2_NSS_PIN                    PB12
 
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_MISO_PIN                   PB4
 #define SPI3_MOSI_PIN                   PB5
-// #define SPI3_NSS_PIN                    PA15
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
