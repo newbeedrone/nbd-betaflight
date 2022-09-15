@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird F4 Pro Rev_C"
+#define TARGET_BOARD_IDENTIFIER         "HummingBird F4 Pro"
 #define USBD_PRODUCT_STRING             "HummingBird F4 Pro"
 
 /* ======== LED ======== */
@@ -81,7 +81,7 @@
 #define MAX7456_SPI_INSTANCE            SPI3
 
 /* ======== VTX ======== */
-#ifndef HUMMINGBIRD_F4_PRO_BASE_NOBEESIGN
+#if !defined(HUMMINGBIRD_F4_PRO_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_PRO_65_NOBEESIGN)
 #define USE_BEESIGN
 #define USE_VTX_BEESIGN
 
