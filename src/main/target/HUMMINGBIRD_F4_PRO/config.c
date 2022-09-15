@@ -96,7 +96,7 @@ void targetConfiguration(void)
     rxConfigMutable()->fpvCamAngleDegrees = 0;
 
     // VTX, US Regulations
-#if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
+#if !defined(HUMMINGBIRD_F4_PRO_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_PRO_65_NOBEESIGN)
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
     vtxSettingsConfigMutable()->power = 1;
@@ -141,8 +141,7 @@ void targetConfiguration(void)
     vtxTableConfigMutable()->powerLevels = 2;
     vtxTableConfigMutable()->powerValues[0] = 0;
     vtxTableConfigMutable()->powerValues[1] = 1;
-    strcpy(vtxTableConfigMutable()->powerLabels[0], "5  ");
-    strcpy(vtxTableConfigMutable()->powerLabels[1], "25 ");
+    strcpy(vtxTableConfigMutable()->powerLabels[0], "25 ");
 #endif
 
     // Switches / Modes

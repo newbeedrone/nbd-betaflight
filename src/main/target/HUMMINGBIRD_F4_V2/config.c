@@ -141,8 +141,7 @@ void targetConfiguration(void)
     vtxTableConfigMutable()->powerLevels = 2;
     vtxTableConfigMutable()->powerValues[0] = 0;
     vtxTableConfigMutable()->powerValues[1] = 1;
-    strcpy(vtxTableConfigMutable()->powerLabels[0], "5  ");
-    strcpy(vtxTableConfigMutable()->powerLabels[1], "25 ");
+    strcpy(vtxTableConfigMutable()->powerLabels[0], "25 ");
 #endif
 
     // Switches / Modes
