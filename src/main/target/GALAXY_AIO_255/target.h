@@ -51,6 +51,10 @@
 #define UART3_RX_PIN                    PD9
 #define UART3_TX_PIN                    PD8
 
+#define USE_UART4
+#define UART4_RX_PIN                    PB8
+#define UART4_TX_PIN                    PB9
+
 #define USE_UART6
 #define UART6_RX_PIN                    PC7
 #define UART6_TX_PIN                    PC6
@@ -63,7 +67,7 @@
 #define UART8_RX_PIN                    PE0
 #define UART8_TX_PIN                    PE1
 
-#define SERIAL_PORT_COUNT               7
+#define SERIAL_PORT_COUNT               8
 
 /* ======== SPI ======== */
 #define USE_SPI
@@ -177,7 +181,7 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_ESC_SENSOR)
+#define DEFAULT_FEATURES                (FEATURE_TELEMETRY | FEATURE_OSD | FEATURE_ESC_SENSOR)
 
 #define TARGET_IO_PORTA         0xffff
 #define TARGET_IO_PORTB         0xffff

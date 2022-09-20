@@ -79,6 +79,9 @@
 #include "config_helper.h"
 
 static targetSerialPortFunction_t targetSerialPortFunction[] = {
+    { SERIAL_PORT_USART2, FUNCTION_GPS },
+    { SERIAL_PORT_USART3, FUNCTION_NONE },
+    { SERIAL_PORT_UART4,  FUNCTION_VTX_TRAMP },
     { SERIAL_PORT_USART8, FUNCTION_ESC_SENSOR },
 };
 
@@ -88,6 +91,31 @@ void targetConfiguration(void)
 // BASE Defaults
 
     targetSerialPortFunctionConfig(targetSerialPortFunction, ARRAYLEN(targetSerialPortFunction));
+
+    // OSD
+    osdElementConfigMutable()->item_pos[OSD_CRAFT_NAME]        = OSD_POS(8, 10) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_AVG_CELL_VOLTAGE]  = OSD_POS(23, 9) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_ITEM_TIMER_2]      = OSD_POS(2,  9) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_FLYMODE]           = OSD_POS(17, 9) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_VTX_CHANNEL]       = OSD_POS(9,  9) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_WARNINGS]          = OSD_POS(9, 10);
+    osdElementConfigMutable()->item_pos[OSD_CURRENT_DRAW]      = OSD_POS(22,10) | OSD_PROFILE_1_FLAG;
+    osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]        = OSD_POS(2, 10) | OSD_PROFILE_1_FLAG;
+
+    osdConfigMutable()->enabledWarnings &= ~(1 << OSD_WARNING_CORE_TEMPERATURE);
+    //osdConfigMutable()->cap_alarm = 2200;
+
+    // LEDS
+    ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 6, 11, 0, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 7, 11, 0, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 8, 11, 0, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    ledStripStatusModeConfigMutable()->ledConfigs[3] = DEFINE_LED( 9, 11, 0, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+
+    // Motor & ESC
+    mixerConfigMutable()->yaw_motors_reversed = true;
+
+    // Others
+    imuConfigMutable()->small_angle = 180;
 
     //Dusking's dual BMI270 filter settings
     {
@@ -155,8 +183,10 @@ void targetConfiguration(void)
         pidProfilesMutable(0)->yaw_lowpass_hz = 100;
     }
 
+    //BNF Configurations
+
 #if defined GALAXY_AIO_255_BASE
-    strcpy(pilotConfigMutable()->name, "GALAXY AIO 255");
+    strcpy(pilotConfigMutable()->name, "GalaxyAIO255");
 #endif
 }
 #endif
