@@ -129,7 +129,6 @@
 
 /* ======== ESC ======== */
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
-#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== PINIO ======== */
 #define PINIO1_PIN                      PC1
