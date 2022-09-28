@@ -91,7 +91,6 @@ static uint8_t jetiExBusChannelFrame[EXBUS_MAX_CHANNEL_FRAME_SIZE];
 uint8_t jetiExBusRequestFrame[EXBUS_MAX_REQUEST_FRAME_SIZE];
 
 static uint16_t jetiExBusChannelData[JETIEXBUS_CHANNEL_COUNT];
-static timeUs_t lastRcFrameTimeUs = 0;
 
 // Jeti Ex Bus CRC calculations for a frame
 uint16_t jetiExBusCalcCRC16(uint8_t *pt, uint8_t msgLen)
@@ -229,7 +228,7 @@ static uint8_t jetiExBusFrameStatus(rxRuntimeState_t *rxRuntimeState)
         if (jetiExBusCalcCRC16(jetiExBusChannelFrame, jetiExBusChannelFrame[EXBUS_HEADER_MSG_LEN]) == 0) {
             jetiExBusDecodeChannelFrame(jetiExBusChannelFrame);
             frameStatus = RX_FRAME_COMPLETE;
-            lastRcFrameTimeUs = jetiTimeStampRequest;
+            rxRuntimeState->lastRcFrameTimeUs = jetiTimeStampRequest;
         }
         jetiExBusFrameState = EXBUS_STATE_ZERO;
     }
@@ -237,17 +236,12 @@ static uint8_t jetiExBusFrameStatus(rxRuntimeState_t *rxRuntimeState)
     return frameStatus;
 }
 
-static uint16_t jetiExBusReadRawRC(const rxRuntimeState_t *rxRuntimeState, uint8_t chan)
+static float jetiExBusReadRawRC(const rxRuntimeState_t *rxRuntimeState, uint8_t chan)
 {
     if (chan >= rxRuntimeState->channelCount)
         return 0;
 
     return (jetiExBusChannelData[chan]);
-}
-
-static timeUs_t jetiExBusFrameTimeUsFn(void)
-{
-    return lastRcFrameTimeUs;
 }
 
 bool jetiExBusInit(const rxConfig_t *rxConfig, rxRuntimeState_t *rxRuntimeState)
@@ -259,7 +253,7 @@ bool jetiExBusInit(const rxConfig_t *rxConfig, rxRuntimeState_t *rxRuntimeState)
 
     rxRuntimeState->rcReadRawFn = jetiExBusReadRawRC;
     rxRuntimeState->rcFrameStatusFn = jetiExBusFrameStatus;
-    rxRuntimeState->rcFrameTimeUsFn = jetiExBusFrameTimeUsFn;
+    rxRuntimeState->rcFrameTimeUsFn = rxFrameTimeUs;
 
     jetiExBusFrameReset();
 

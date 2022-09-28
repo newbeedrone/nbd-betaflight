@@ -42,7 +42,7 @@
 
 #include "motor.h"
 
-static FAST_RAM_ZERO_INIT motorDevice_t *motorDevice;
+static FAST_DATA_ZERO_INIT motorDevice_t *motorDevice;
 
 static bool motorProtocolEnabled = false;
 static bool motorProtocolDshot = false;
@@ -333,9 +333,20 @@ timeMs_t motorGetMotorEnableTimeMs(void)
 #endif
 
 #ifdef USE_DSHOT_BITBANG
-bool isDshotBitbangActive(const motorDevConfig_t *motorDevConfig) {
+bool isDshotBitbangActive(const motorDevConfig_t *motorDevConfig)
+{
+#ifdef STM32F4
     return motorDevConfig->useDshotBitbang == DSHOT_BITBANG_ON ||
         (motorDevConfig->useDshotBitbang == DSHOT_BITBANG_AUTO && motorDevConfig->useDshotTelemetry && motorDevConfig->motorPwmProtocol != PWM_TYPE_PROSHOT1000);
+#else
+    return motorDevConfig->useDshotBitbang == DSHOT_BITBANG_ON ||
+        (motorDevConfig->useDshotBitbang == DSHOT_BITBANG_AUTO && motorDevConfig->motorPwmProtocol != PWM_TYPE_PROSHOT1000);
+#endif
 }
 #endif
+
+float getDigitalIdleOffset(const motorConfig_t *motorConfig)
+{
+    return CONVERT_PARAMETER_TO_PERCENT(motorConfig->digitalIdleOffsetValue * 0.01f);
+}
 #endif // USE_MOTOR

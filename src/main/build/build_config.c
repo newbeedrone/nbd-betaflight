@@ -61,6 +61,8 @@ mcuTypeId_e getMcuTypeId(void)
     return MCU_TYPE_F765;
 #elif defined(STM32H750xx)
     return MCU_TYPE_H750;
+#elif defined(STM32H730xx)
+    return MCU_TYPE_H730;
 #elif defined(STM32H743xx)
     switch (HAL_GetREVID()) {
     case REV_ID_Y:
@@ -72,6 +74,12 @@ mcuTypeId_e getMcuTypeId(void)
     default:
         return MCU_TYPE_H743_REV_UNKNOWN;
     }
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
+    return MCU_TYPE_H7A3;
+#elif defined(STM32H723xx) || defined(STM32H725xx)
+    return MCU_TYPE_H723_725;
+#elif defined(STM32G474xx)
+    return MCU_TYPE_G474;
 #else
     return MCU_TYPE_UNKNOWN;
 #endif

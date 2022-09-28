@@ -23,7 +23,7 @@
 #define DSHOT_MAX_COMMAND 47
 
 /*
-  DshotSettingRequest (KISS24). Spin direction, 3d and save Settings reqire 10 requests.. and the TLM Byte must always be high if 1-47 are used to send settings
+  DshotSettingRequest (KISS24). Spin direction, 3d and save Settings require 10 requests.. and the TLM Byte must always be high if 1-47 are used to send settings
 
   3D Mode:
   0 = stop
@@ -57,8 +57,6 @@ typedef enum {
     DSHOT_CMD_LED3_OFF, // BLHeli32 only
     DSHOT_CMD_AUDIO_STREAM_MODE_ON_OFF = 30, // KISS audio Stream mode on/Off
     DSHOT_CMD_SILENT_MODE_ON_OFF = 31, // KISS silent Mode on/Off
-    DSHOT_CMD_SIGNAL_LINE_TELEMETRY_DISABLE = 32,
-    DSHOT_CMD_SIGNAL_LINE_CONTINUOUS_ERPM_TELEMETRY = 33,
     DSHOT_CMD_MAX = 47
 } dshotCommands_e;
 
@@ -73,4 +71,4 @@ bool dshotCommandQueueEmpty(void);
 bool dshotCommandIsProcessing(void);
 uint8_t dshotCommandGetCurrent(uint8_t index);
 bool dshotCommandOutputIsEnabled(uint8_t motorCount);
-bool dshotCommandsAreEnabled(dshotCommandType_e commandType);
+bool dshotStreamingCommandsAreEnabled(void);

@@ -53,11 +53,11 @@ Configure min/max cell voltages using the following CLI setting:
 
 `vbat_scale` - Adjust this to match actual measured battery voltage to reported value (which may be displayed via the `status` command)
 
-`vbat_max_cell_voltage` - Maximum voltage per cell, used for auto-detecting battery voltage in 0.1V units, i.e. 43 = 4.3V
+`vbat_max_cell_voltage` - Maximum voltage per cell, used for auto-detecting battery voltage in 0.01V units, i.e. 430 = 4.3V
 
-`vbat_min_cell_voltage` - Minimum voltage per cell; this triggers battery-critical alarms, in 0.1V units, i.e. 33 = 3.3V
+`vbat_min_cell_voltage` - Minimum voltage per cell; this triggers battery-critical alarms, in 0.01V units, i.e. 330 = 3.3V
 
-`vbat_warning_cell_voltage` - Warning voltage per cell; this triggers battery-warning alarms, in 0.1V units, i.e. 34 = 3.4V
+`vbat_warning_cell_voltage` - Warning voltage per cell; this triggers battery-warning alarms, in 0.01V units, i.e. 340 = 3.4V
 
 `vbat_hysteresis` - Sets the hysteresis value for low-battery alarms, in 0.01V units, i.e. 10 = 0.10V
 
@@ -68,9 +68,9 @@ Configure min/max cell voltages using the following CLI setting:
 e.g.
 ```
 set vbat_scale = 110
-set vbat_max_cell_voltage = 43
-set vbat_min_cell_voltage = 33
-set vbat_warning_cell_voltage = 34
+set vbat_max_cell_voltage = 430
+set vbat_min_cell_voltage = 330
+set vbat_warning_cell_voltage = 340
 set vbat_hysteresis = 1
 set vbat_duration_for_warning = 60
 set vbat_duration_for_critical = 20
@@ -101,7 +101,7 @@ Configure the current meter type using the `amperage_meter_type` settings here:
 | ADC     | ADC/hardware sensor    |
 | VIRTUAL | Virtual sensor         |
 
-Configure capacity using the `battery_capacity` setting, in mAh units.
+Configure capacity using the `bat_capacity` setting, in mAh units.
 
 If you're using an OSD that expects the multiwii current meter output value, then set `multiwii_amperage_meter_output` to `ON` (this multiplies amperage sent to MSP by 10 and truncates negative values)).
 
@@ -135,7 +135,7 @@ This is in the mathematical form of y = x/m + b and with a few measurements alon
 
 To calibrate your flight controller with a current meter follow these steps.
 
-1. Make a copy of [this google sheet](https://docs.google.com/spreadsheets/d/1lkL-X_FT9x2oqrwQEctDsEUhgdY19upNGc78M6FfJXY/). It will do all of the maths for you.
+1. Make a copy of [this google sheet](https://docs.google.com/spreadsheets/d/1lkL-X_FT9x2oqrwQEctDsEUhgdY19upNGc78M6FfJXY/). It will do all the math for you.
 2. Hook your ammeter up in series with your drone and a charged battery. I suggest an XT60 extender with one lead cut. Now your ammeter will be displaying the true current draw of your system.
 3. Connect to your flight controller through the configurator and check your current calibrations. Change them in the google sheet if needed.
 4. Use the motor tab to increase the throttle and change the current draw of the drone to around 1 A on the ammeter (it does not matter if it is not exact).
@@ -172,6 +172,16 @@ For example, assuming a maximum current of 34.2A, a minimum current of 2.8A, and
 ```
 amperage_meter_scale = (Imax - Imin) * 100000 / (Tmax + (Tmax * Tmax / 50))
                     = (34.2 - 2.8) * 100000 / (850 + (850 * 850 / 50))
+                    = 205
+amperage_meter_offset = Imin * 100 = 280
+```
+Measuring Imax requires a battery and an ESC that can both deliver and support max current for the duration of the measurement, so it's prone to big inaccuracies. Alternatively, current can be measured at a much lower throttle position and be taken into account in the calculations.
+
+Following the previous example, if we measured an Ibench current of 6A at 30% of throttle (1255 in the motors tab because (0.3*(max_throttle-1000))+1000))
+```
+Tbench = Tmax * bench_throttle = 850 * 0.3 = 255
+amperage_meter_scale = (Ibench - Imin) * 100000 / (Tbench + (Tbench * Tbench / 50))
+                    = (6 - 2.8) * 100000 / (255 + (255 * 255 / 50))
                     = 205
 amperage_meter_offset = Imin * 100 = 280
 ```

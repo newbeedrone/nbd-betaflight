@@ -32,12 +32,15 @@
 #include "common/utils.h"
 
 #include "drivers/display.h"
+#include "drivers/osd.h"
 
 #include "io/displayport_msp.h"
 
 #include "msp/msp.h"
 #include "msp/msp_protocol.h"
 #include "msp/msp_serial.h"
+
+#include "pg/vcd.h"
 
 static displayPort_t mspDisplayPort;
 
@@ -61,7 +64,9 @@ static int heartbeat(displayPort_t *displayPort)
     // heartbeat is used to:
     // a) ensure display is not released by MW OSD software
     // b) prevent OSD Slave boards from displaying a 'disconnected' status.
-    return output(displayPort, MSP_DISPLAYPORT, subcmd, sizeof(subcmd));
+    output(displayPort, MSP_DISPLAYPORT, subcmd, sizeof(subcmd));
+
+    return 0;
 }
 
 static int grab(displayPort_t *displayPort)
@@ -76,17 +81,21 @@ static int release(displayPort_t *displayPort)
     return output(displayPort, MSP_DISPLAYPORT, subcmd, sizeof(subcmd));
 }
 
-static int clearScreen(displayPort_t *displayPort)
+static int clearScreen(displayPort_t *displayPort, displayClearOption_e options)
 {
+    UNUSED(options);
+
     uint8_t subcmd[] = { 2 };
 
     return output(displayPort, MSP_DISPLAYPORT, subcmd, sizeof(subcmd));
 }
 
-static int drawScreen(displayPort_t *displayPort)
+static bool drawScreen(displayPort_t *displayPort)
 {
     uint8_t subcmd[] = { 4 };
-    return output(displayPort, MSP_DISPLAYPORT, subcmd, sizeof(subcmd));
+    output(displayPort, MSP_DISPLAYPORT, subcmd, sizeof(subcmd));
+
+    return 0;
 }
 
 static int screenSize(const displayPort_t *displayPort)
@@ -139,9 +148,10 @@ static bool isSynced(const displayPort_t *displayPort)
     return true;
 }
 
-static void resync(displayPort_t *displayPort)
+static void redraw(displayPort_t *displayPort)
 {
-    displayPort->rows = 13 + displayPortProfileMsp()->rowAdjust; // XXX Will reflect NTSC/PAL in the future
+    const uint8_t displayRows = (vcdProfile()->video_system == VIDEO_SYSTEM_PAL) ? 16 : 13;
+    displayPort->rows = displayRows + displayPortProfileMsp()->rowAdjust;
     displayPort->cols = 30 + displayPortProfileMsp()->colAdjust;
     drawScreen(displayPort);
 }
@@ -162,7 +172,7 @@ static const displayPortVTable_t mspDisplayPortVTable = {
     .writeChar = writeChar,
     .isTransferInProgress = isTransferInProgress,
     .heartbeat = heartbeat,
-    .resync = resync,
+    .redraw = redraw,
     .isSynced = isSynced,
     .txBytesFree = txBytesFree,
     .layerSupported = NULL,
@@ -172,13 +182,13 @@ static const displayPortVTable_t mspDisplayPortVTable = {
 
 displayPort_t *displayPortMspInit(void)
 {
-    displayInit(&mspDisplayPort, &mspDisplayPortVTable);
+    displayInit(&mspDisplayPort, &mspDisplayPortVTable, DISPLAYPORT_DEVICE_TYPE_MSP);
 
     if (displayPortProfileMsp()->useDeviceBlink) {
         mspDisplayPort.useDeviceBlink = true;
     }
 
-    resync(&mspDisplayPort);
+    redraw(&mspDisplayPort);
     return &mspDisplayPort;
 }
 #endif // USE_MSP_DISPLAYPORT

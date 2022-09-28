@@ -68,6 +68,8 @@
 
 #include "rx/rx.h"
 
+#include "scheduler/scheduler.h"
+
 #include "sensors/acceleration.h"
 #include "sensors/barometer.h"
 #include "sensors/battery.h"
@@ -113,7 +115,7 @@ const hsvColor_t hsv[] = {
 // macro to save typing on default colors
 #define HSV(color) (hsv[COLOR_ ## color])
 
-PG_REGISTER_WITH_RESET_FN(ledStripConfig_t, ledStripConfig, PG_LED_STRIP_CONFIG, 1);
+PG_REGISTER_WITH_RESET_FN(ledStripConfig_t, ledStripConfig, PG_LED_STRIP_CONFIG, 2);
 
 void pgResetFn_ledStripConfig(ledStripConfig_t *ledStripConfig)
 {
@@ -129,6 +131,7 @@ void pgResetFn_ledStripConfig(ledStripConfig_t *ledStripConfig)
     ledStripConfig->ledstrip_beacon_percent = 50;       // 50% duty cycle
     ledStripConfig->ledstrip_beacon_armed_only = false; // blink always
     ledStripConfig->ledstrip_visual_beeper_color = VISUAL_BEEPER_COLOR;
+    ledStripConfig->ledstrip_brightness = 100;
 #ifndef UNIT_TEST
     ledStripConfig->ioTag = timerioTagGetByUsage(TIM_USE_LED, 0);
 #endif
@@ -1063,8 +1066,11 @@ static void applyStatusProfile(timeUs_t now) {
         }
     }
 
-    if (!timActive)
+    if (!timActive) {
+        // Call schedulerIgnoreTaskExecTime() unless data is being processed
+        schedulerIgnoreTaskExecTime();
         return;          // no change this update, keep old state
+    }
 
     applyLedFixedLayers();
     for (timId_e timId = 0; timId < ARRAYLEN(layerTable); timId++) {
@@ -1072,7 +1078,7 @@ static void applyStatusProfile(timeUs_t now) {
         bool updateNow = timActive & (1 << timId);
         (*layerTable[timId])(updateNow, timer);
     }
-    ws2811UpdateStrip((ledStripFormatRGB_e) ledStripConfig()->ledstrip_grb_rgb);
+    ws2811UpdateStrip((ledStripFormatRGB_e) ledStripConfig()->ledstrip_grb_rgb, ledStripConfig()->ledstrip_brightness);
 }
 
 bool parseColor(int index, const char *colorConfig)
@@ -1161,7 +1167,7 @@ void ledStripDisable(void)
     previousProfileColorIndex = COLOR_UNDEFINED;
 
     setStripColor(&HSV(BLACK));
-    ws2811UpdateStrip((ledStripFormatRGB_e)ledStripConfig()->ledstrip_grb_rgb);
+    ws2811UpdateStrip((ledStripFormatRGB_e)ledStripConfig()->ledstrip_grb_rgb, ledStripConfig()->ledstrip_brightness);
 }
 
 void ledStripInit(void)
@@ -1235,7 +1241,7 @@ static void applySimpleProfile(timeUs_t currentTimeUs)
 
     if ((colorIndex != previousProfileColorIndex) || (currentTimeUs >= colorUpdateTimeUs)) {
         setStripColor(&hsv[colorIndex]);
-        ws2811UpdateStrip((ledStripFormatRGB_e)ledStripConfig()->ledstrip_grb_rgb);
+        ws2811UpdateStrip((ledStripFormatRGB_e)ledStripConfig()->ledstrip_grb_rgb, ledStripConfig()->ledstrip_brightness);
         previousProfileColorIndex = colorIndex;
         colorUpdateTimeUs = currentTimeUs + PROFILE_COLOR_UPDATE_INTERVAL_US;
     }
@@ -1243,11 +1249,11 @@ static void applySimpleProfile(timeUs_t currentTimeUs)
 
 void ledStripUpdate(timeUs_t currentTimeUs)
 {
-#ifndef USE_LED_STRIP_STATUS_MODE
     UNUSED(currentTimeUs);
-#endif
 
     if (!isWS2811LedStripReady()) {
+        // Call schedulerIgnoreTaskExecTime() unless data is being processed
+        schedulerIgnoreTaskExecTime();
         return;
     }
 
@@ -1274,6 +1280,9 @@ void ledStripUpdate(timeUs_t currentTimeUs)
             default:
                 break;
         }
+    } else {
+        // Call schedulerIgnoreTaskExecTime() unless data is being processed
+        schedulerIgnoreTaskExecTime();
     }
 }
 

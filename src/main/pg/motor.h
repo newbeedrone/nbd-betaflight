@@ -45,12 +45,13 @@ typedef struct motorDevConfig_s {
     uint8_t  useBurstDshot;
     uint8_t  useDshotTelemetry;
     ioTag_t  ioTags[MAX_SUPPORTED_MOTORS];
-    uint8_t  motorTransportProtocol;
-    uint8_t  useDshotBitbang;
-    uint8_t  useDshotBitbangedTimer;
 #ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
     ioTag_t  reverseTag;
 #endif
+    uint8_t  motorTransportProtocol;
+    uint8_t  useDshotBitbang;
+    uint8_t  useDshotBitbangedTimer;
+    uint8_t  motorOutputReordering[MAX_SUPPORTED_MOTORS]; // Reindexing motors for "remap motors" feature in Configurator
 } motorDevConfig_t;
 
 typedef struct motorConfig_s {

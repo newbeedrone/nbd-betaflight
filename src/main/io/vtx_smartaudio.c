@@ -500,6 +500,9 @@ static void saSendFrame(uint8_t *buf, int len)
         switch (smartAudioSerialPort->identifier) {
         case SERIAL_PORT_SOFTSERIAL1:
         case SERIAL_PORT_SOFTSERIAL2:
+            if (vtxSettingsConfig()->softserialAlt) {
+                serialWrite(smartAudioSerialPort, 0x00); // Generate 1st start bit
+            }
             break;
         default:
             serialWrite(smartAudioSerialPort, 0x00); // Generate 1st start bit
@@ -1036,7 +1039,7 @@ static uint8_t vtxSAGetPowerLevels(const vtxDevice_t *vtxDevice, uint16_t *level
 
     for (uint8_t i = 0; i < saSupportedNumPowerLevels; i++) {
         levels[i] = saSupportedPowerValues[i];
-        uint16_t power = (uint16_t)pow(10.0,levels[i]/10.0);
+        uint16_t power = (uint16_t)powf(10.0f, levels[i] / 10.0f);
 
         if (levels[i] > 14) {
             // For powers greater than 25mW round up to a multiple of 50 to match expectations
@@ -1048,6 +1051,20 @@ static uint8_t vtxSAGetPowerLevels(const vtxDevice_t *vtxDevice, uint16_t *level
 
     return saSupportedNumPowerLevels;
 }
+
+#define VTX_CUSTOM_DEVICE_STATUS_SIZE 5
+
+static void vtxSASerializeCustomDeviceStatus(const vtxDevice_t *vtxDevice, sbuf_t *dst)
+{
+    UNUSED(vtxDevice);
+    sbufWriteU8(dst, VTX_CUSTOM_DEVICE_STATUS_SIZE);
+    sbufWriteU8(dst, saDevice.version);
+    sbufWriteU8(dst, saDevice.mode);
+    sbufWriteU16(dst, saDevice.orfreq); // pit frequency
+    sbufWriteU8(dst, saDevice.willBootIntoPitMode);
+}
+
+#undef VTX_CUSTOM_DEVICE_STATUS_SIZE
 
 static const vtxVTable_t saVTable = {
     .process = vtxSAProcess,
@@ -1062,6 +1079,7 @@ static const vtxVTable_t saVTable = {
     .getFrequency = vtxSAGetFreq,
     .getStatus = vtxSAGetStatus,
     .getPowerLevels = vtxSAGetPowerLevels,
+    .serializeCustomDeviceStatus = vtxSASerializeCustomDeviceStatus,
 };
 #endif // VTX_COMMON
 

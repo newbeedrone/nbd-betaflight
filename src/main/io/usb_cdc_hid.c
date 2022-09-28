@@ -18,6 +18,9 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+#include <stdbool.h>
+
 #include "platform.h"
 
 #ifdef USE_USB_CDC_HID
@@ -28,11 +31,15 @@
 
 #include "rx/rx.h"
 
+#include "pg/usb.h"
+
+#include "sensors/battery.h"
+
 //TODO: Make it platform independent in the future
 #if defined(STM32F4)
 #include "vcpf4/usbd_cdc_vcp.h"
 #include "usbd_hid_core.h"
-#elif defined(STM32F7) || defined(STM32H7)
+#elif defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
 #include "drivers/serial_usb_vcp.h"
 #include "usbd_hid.h"
 #include "vcp_hal/usbd_cdc_interface.h"
@@ -89,10 +96,15 @@ void sendRcDataToHid(void)
     }
 #if defined(STM32F4)
     USBD_HID_SendReport(&USB_OTG_dev, (uint8_t*)report, sizeof(report));
-#elif defined(STM32F7) || defined(STM32H7)
+#elif defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
     USBD_HID_SendReport(&USBD_Device, (uint8_t*)report, sizeof(report));
 #else
 # error "MCU does not support USB HID."
 #endif
+}
+
+bool cdcDeviceIsMayBeActive()
+{
+    return usbDevConfig()->type == COMPOSITE && usbIsConnected() && (getBatteryState() == BATTERY_NOT_PRESENT || batteryConfig()->voltageMeterSource == VOLTAGE_METER_NONE);
 }
 #endif

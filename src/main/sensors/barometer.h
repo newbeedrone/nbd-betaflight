@@ -32,13 +32,13 @@ typedef enum {
     BARO_LPS = 5,
     BARO_QMP6988 = 6,
     BARO_BMP388 = 7,
-    BARO_DPS310 = 8
+    BARO_DPS310 = 8,
 } baroSensor_e;
 
 #define BARO_SAMPLE_COUNT_MAX   48
 
 typedef struct barometerConfig_s {
-    uint8_t baro_bustype;
+    uint8_t baro_busType;
     uint8_t baro_spi_device;
     ioTag_t baro_spi_csn;                   // Also used as XCLR (positive logic) for BMP085
     uint8_t baro_i2c_device;
@@ -67,7 +67,7 @@ bool baroDetect(baroDev_t *dev, baroSensor_e baroHardwareToUse);
 bool baroIsCalibrationComplete(void);
 void baroStartCalibration(void);
 void baroSetGroundLevel(void);
-uint32_t baroUpdate(void);
+uint32_t baroUpdate(timeUs_t currentTimeUs);
 bool isBaroReady(void);
 int32_t baroCalculateAltitude(void);
 void performBaroCalibrationCycle(void);

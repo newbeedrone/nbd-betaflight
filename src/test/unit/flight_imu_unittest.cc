@@ -72,7 +72,7 @@ extern "C" {
 #include "unittest_macros.h"
 #include "gtest/gtest.h"
 
-const float sqrt2over2 = sqrt(2) / 2.0f;
+const float sqrt2over2 = sqrtf(2) / 2.0f;
 
 TEST(FlightImuTest, TestCalculateRotationMatrix)
 {
@@ -204,7 +204,7 @@ TEST(FlightImuTest, TestSmallAngle)
 extern "C" {
 boxBitmask_t rcModeActivationMask;
 float rcCommand[4];
-int16_t rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];
+float rcData[MAX_SUPPORTED_RC_CHANNEL_COUNT];
 
 gyro_t gyro;
 acc_t acc;
@@ -249,4 +249,9 @@ bool accGetAccumulationAverage(float *) { return false; }
 void mixerSetThrottleAngleCorrection(int) {};
 bool gpsRescueIsRunning(void) { return false; }
 bool isFixedWing(void) { return false; }
+void pinioBoxTaskControl(void) {}
+void schedulerIgnoreTaskExecTime(void) {}
+void schedulerIgnoreTaskStateTime(void) {}
+void schedulerSetNextStateTime(timeDelta_t) {}
+bool schedulerGetIgnoreTaskExecTime() { return false; }
 }

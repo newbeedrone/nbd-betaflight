@@ -21,6 +21,7 @@
 #pragma once
 
 #include "common/time.h"
+#include "common/unit.h"
 
 #include "drivers/display.h"
 
@@ -48,10 +49,14 @@ extern const char * const osdTimerSourceNames[OSD_NUM_TIMER_TYPES];
 #define OSD_CAMERA_FRAME_MIN_HEIGHT 2
 #define OSD_CAMERA_FRAME_MAX_HEIGHT 16    // Rows supported by MAX7456 (PAL)
 
+#define OSD_FRAMERATE_MIN_HZ 1
+#define OSD_FRAMERATE_MAX_HZ 60
+#define OSD_FRAMERATE_DEFAULT_HZ 12
+
 #define OSD_PROFILE_BITS_POS 11
 #define OSD_PROFILE_MASK    (((1 << OSD_PROFILE_COUNT) - 1) << OSD_PROFILE_BITS_POS)
 #define OSD_POS_MAX   0x3FF
-#define OSD_POSCFG_MAX   (OSD_PROFILE_MASK | 0x3FF) // For CLI values
+#define OSD_POSCFG_MAX UINT16_MAX  // element positions now use all 16 bits
 #define OSD_PROFILE_FLAG(x)  (1 << ((x) - 1 + OSD_PROFILE_BITS_POS))
 #define OSD_PROFILE_1_FLAG  OSD_PROFILE_FLAG(1)
 
@@ -68,9 +73,11 @@ extern const char * const osdTimerSourceNames[OSD_NUM_TIMER_TYPES];
 // Character coordinate
 #define OSD_POSITION_BITS 5 // 5 bits gives a range 0-31
 #define OSD_POSITION_XY_MASK ((1 << OSD_POSITION_BITS) - 1)
+#define OSD_TYPE_MASK 0xC000   // bits 14-15
 #define OSD_POS(x,y)  ((x & OSD_POSITION_XY_MASK) | ((y & OSD_POSITION_XY_MASK) << OSD_POSITION_BITS))
 #define OSD_X(x)      (x & OSD_POSITION_XY_MASK)
 #define OSD_Y(x)      ((x >> OSD_POSITION_BITS) & OSD_POSITION_XY_MASK)
+#define OSD_TYPE(x)   ((x & OSD_TYPE_MASK) >> 14)
 
 // Timer configuration
 // Stored as 15[alarm:8][precision:4][source:4]0
@@ -78,6 +85,13 @@ extern const char * const osdTimerSourceNames[OSD_NUM_TIMER_TYPES];
 #define OSD_TIMER_SRC(timer)        (timer & 0x0F)
 #define OSD_TIMER_PRECISION(timer)  ((timer >> 4) & 0x0F)
 #define OSD_TIMER_ALARM(timer)      ((timer >> 8) & 0xFF)
+
+#ifdef USE_MAX7456
+#define OSD_DRAW_FREQ_DENOM 5
+#else
+// MWOSD @ 115200 baud
+#define OSD_DRAW_FREQ_DENOM 10
+#endif
 
 // NB: to ensure backwards compatibility, new enum values must be appended at the end but before the OSD_XXXX_COUNT entry.
 
@@ -144,6 +158,9 @@ typedef enum {
     OSD_RC_CHANNELS,
     OSD_CAMERA_FRAME,
     OSD_EFFICIENCY,
+    OSD_TOTAL_FLIGHTS,
+    OSD_UP_DOWN_REFERENCE,
+    OSD_TX_UPLINK_POWER,
     OSD_ITEM_COUNT // MUST BE LAST
 } osd_items_e;
 
@@ -188,11 +205,6 @@ typedef enum {
 
 // Make sure the number of stats do not exceed the available 32bit storage
 STATIC_ASSERT(OSD_STAT_COUNT <= 32, osdstats_overflow);
-
-typedef enum {
-    OSD_UNIT_IMPERIAL,
-    OSD_UNIT_METRIC
-} osd_unit_e;
 
 typedef enum {
     OSD_TIMER_1,
@@ -263,7 +275,7 @@ typedef struct osdConfig_s {
     uint16_t alt_alarm;
     uint8_t rssi_alarm;
 
-    osd_unit_e units;
+    uint8_t units;
 
     uint16_t timers[OSD_TIMER_COUNT];
     uint32_t enabledWarnings;
@@ -289,6 +301,9 @@ typedef struct osdConfig_s {
     uint8_t logo_on_arming_duration;          // display duration in 0.1s units
     uint8_t camera_frame_width;               // The width of the box for the camera frame element
     uint8_t camera_frame_height;              // The height of the box for the camera frame element
+    uint16_t framerate_hz;
+    uint8_t cms_background_type;              // For supporting devices, determines whether the CMS background is transparent or opaque
+    uint8_t stat_show_cell_value;
 } osdConfig_t;
 
 PG_DECLARE(osdConfig_t, osdConfig);
@@ -325,19 +340,22 @@ extern escSensorData_t *osdEscDataCombined;
 #endif
 
 void osdInit(displayPort_t *osdDisplayPort, osdDisplayPortDevice_e displayPortDevice);
-bool osdInitialized(void);
+bool osdUpdateCheck(timeUs_t currentTimeUs, timeDelta_t currentDeltaTimeUs);
 void osdUpdate(timeUs_t currentTimeUs);
+
 void osdStatSetState(uint8_t statIndex, bool enabled);
 bool osdStatGetState(uint8_t statIndex);
+void osdSuppressStats(bool flag);
+void osdAnalyzeActiveElements(void);
+void changeOsdProfileIndex(uint8_t profileIndex);
+uint8_t getCurrentOsdProfileIndex(void);
+displayPort_t *osdGetDisplayPort(osdDisplayPortDevice_e *displayPortDevice);
+
 void osdWarnSetState(uint8_t warningIndex, bool enabled);
 bool osdWarnGetState(uint8_t warningIndex);
-void osdSuppressStats(bool flag);
-
-void osdAnalyzeActiveElements(void);
-uint8_t getCurrentOsdProfileIndex(void);
-void changeOsdProfileIndex(uint8_t profileIndex);
 bool osdElementVisible(uint16_t value);
 bool osdGetVisualBeeperState(void);
+void osdSetVisualBeeperState(bool state);
 statistic_t *osdGetStats(void);
 bool osdNeedsAccelerometer(void);
-displayPort_t *osdGetDisplayPort(osdDisplayPortDevice_e *displayPortDevice);
+int osdPrintFloat(char *buffer, char leadingSymbol, float value, char *formatString, unsigned decimalPlaces, bool round, char trailingSymbol);

@@ -393,10 +393,10 @@ static int mspSerialEncode(mspPort_t *msp, mspPacket_t *packet, mspVersion_e msp
 
 static mspPostProcessFnPtr mspSerialProcessReceivedCommand(mspPort_t *msp, mspProcessCommandFnPtr mspProcessCommandFn)
 {
-    static uint8_t outBuf[MSP_PORT_OUTBUF_SIZE];
+    static uint8_t mspSerialOutBuf[MSP_PORT_OUTBUF_SIZE];
 
     mspPacket_t reply = {
-        .buf = { .ptr = outBuf, .end = ARRAYEND(outBuf), },
+        .buf = { .ptr = mspSerialOutBuf, .end = ARRAYEND(mspSerialOutBuf), },
         .cmd = -1,
         .flags = 0,
         .result = 0,
@@ -562,7 +562,10 @@ int mspSerialPush(serialPortIdentifier_e port, uint8_t cmd, uint8_t *data, int d
         mspPort_t * const mspPort = &mspPorts[portIndex];
 
         // XXX Kludge!!! Avoid zombie VCP port (avoid VCP entirely for now)
-        if (!mspPort->port || mspPort->port->identifier == SERIAL_PORT_USB_VCP
+        if (!mspPort->port
+#ifndef USE_MSP_PUSH_OVER_VCP
+            || mspPort->port->identifier == SERIAL_PORT_USB_VCP
+#endif
             || (port != SERIAL_PORT_ALL && mspPort->port->identifier != port)) {
             continue;
         }

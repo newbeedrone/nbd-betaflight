@@ -51,13 +51,11 @@ atomic_unittest_SRC := \
 		$(USER_DIR)/build/atomic.c \
 		$(TEST_DIR)/atomic_unittest_c.c
 
-# This test is disabled due to build errors.
-# Its source code is archived in unit/baro_bmp085_unittest.cc.txt
-#
-#baro_bmp085_unittest_SRC := \
-#		$(USER_DIR)/drivers/barometer/barometer_bmp085.c \
-#		$(USER_DIR)/drivers/io.c
+baro_bmp085_unittest_SRC := \
+		$(USER_DIR)/drivers/barometer/barometer_bmp085.c
 
+baro_bmp085_unittest_DEFINES := \
+                USE_BARO_BMP085=
 
 baro_bmp280_unittest_SRC := \
 		$(USER_DIR)/drivers/barometer/barometer_bmp280.c
@@ -108,7 +106,9 @@ blackbox_encoding_unittest_SRC :=  \
 
 cli_unittest_SRC := \
 		$(USER_DIR)/cli/cli.c \
+		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/printf.c \
+		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/config/feature.c \
 		$(USER_DIR)/pg/pg.c \
 		$(USER_DIR)/common/typeconversion.c
@@ -174,21 +174,27 @@ ledstrip_unittest_SRC := \
 		$(USER_DIR)/io/ledstrip.c
 
 ledstrip_unittest_DEFINES := \
-        USE_LED_STRIP=
-       
-       
+		USE_LED_STRIP=
+
+
 maths_unittest_SRC := \
 		$(USER_DIR)/common/maths.c
+
+
+motor_output_unittest_SRC := \
+		$(USER_DIR)/drivers/dshot.c
 
 
 osd_unittest_SRC := \
 		$(USER_DIR)/osd/osd.c \
 		$(USER_DIR)/osd/osd_elements.c \
+		$(USER_DIR)/osd/osd_warnings.c \
 		$(USER_DIR)/common/typeconversion.c \
 		$(USER_DIR)/drivers/display.c \
 		$(USER_DIR)/common/maths.c \
 		$(USER_DIR)/common/printf.c \
 		$(USER_DIR)/common/time.c \
+		$(USER_DIR)/common/filter.c \
 		$(USER_DIR)/fc/runtime_config.c
 
 osd_unittest_DEFINES := \
@@ -200,6 +206,7 @@ osd_unittest_DEFINES := \
 link_quality_unittest_SRC := \
 		$(USER_DIR)/osd/osd.c \
 		$(USER_DIR)/osd/osd_elements.c \
+		$(USER_DIR)/osd/osd_warnings.c \
 		$(USER_DIR)/common/typeconversion.c \
 		$(USER_DIR)/drivers/display.c \
 		$(USER_DIR)/drivers/serial.c \
@@ -222,6 +229,8 @@ link_quality_unittest_DEFINES := \
 		USE_RX_LINK_QUALITY_INFO=
 
 pg_unittest_SRC := \
+		$(USER_DIR)/common/crc.c \
+		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/pg/pg.c
 
 
@@ -229,7 +238,9 @@ rc_controls_unittest_SRC := \
 		$(USER_DIR)/fc/rc_controls.c \
 		$(USER_DIR)/pg/pg.c \
 		$(USER_DIR)/common/bitarray.c \
+		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/maths.c \
+		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/fc/rc_adjustments.c \
 		$(USER_DIR)/fc/rc_modes.c
 
@@ -249,7 +260,9 @@ rx_ibus_unittest_SRC := \
 
 rx_ranges_unittest_SRC := \
 		$(USER_DIR)/common/bitarray.c \
+		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/maths.c \
+		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/fc/rc_modes.c \
 		$(USER_DIR)/rx/rx.c \
 		$(USER_DIR)/pg/pg.c \
@@ -274,13 +287,17 @@ scheduler_unittest_SRC := \
 		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/streambuf.c
 
+scheduler_unittest_DEFINES := \
+		USE_OSD= 
 
 sensor_gyro_unittest_SRC := \
 		$(USER_DIR)/sensors/gyro.c \
 		$(USER_DIR)/sensors/gyro_init.c \
 		$(USER_DIR)/sensors/boardalignment.c \
 		$(USER_DIR)/common/filter.c \
+		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/maths.c \
+		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/common/sensor_alignment.c \
 		$(USER_DIR)/drivers/accgyro/accgyro_fake.c \
 		$(USER_DIR)/drivers/accgyro/gyro_sync.c \
@@ -371,18 +388,23 @@ rcdevice_unittest_SRC := \
 		$(USER_DIR)/pg/pg.c \
 
 pid_unittest_SRC :=  \
+		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/filter.c \
 		$(USER_DIR)/common/maths.c \
+		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/drivers/accgyro/gyro_sync.c \
+		$(USER_DIR)/fc/controlrate_profile.c \
 		$(USER_DIR)/fc/runtime_config.c \
 		$(USER_DIR)/flight/pid.c \
+		$(USER_DIR)/flight/pid_init.c \
 		$(USER_DIR)/pg/pg.c
 
 pid_unittest_DEFINES := \
 		USE_ITERM_RELAX= \
 		USE_RC_SMOOTHING_FILTER= \
 		USE_ABSOLUTE_CONTROL= \
-		USE_LAUNCH_CONTROL=
+		USE_LAUNCH_CONTROL= \
+		USE_FEEDFORWARD=
 
 rcdevice_unittest_DEFINES := \
 		USE_RCDEVICE=
@@ -408,8 +430,38 @@ rx_spi_spektrum_unittest_SRC := \
 		$(USER_DIR)/rx/cyrf6936_spektrum.c
 
 rx_spi_spektrum_unittest_DEFINES := \
-		USE_RX_SPI \
-		USE_RX_SPEKTRUM
+		USE_RX_SPI= \
+		USE_RX_SPEKTRUM=
+
+rx_spi_expresslrs_unittest_SRC := \
+        $(USER_DIR)/pg/rx_spi_expresslrs.c \
+		$(USER_DIR)/rx/expresslrs_common.c \
+		$(USER_DIR)/rx/expresslrs.c \
+		$(USER_DIR)/build/atomic.c \
+
+rx_spi_expresslrs_unittest_DEFINES := \
+		USE_RX_SPI= \
+		USE_RX_EXPRESSLRS= \
+		USE_RX_SX1280= \
+		USE_RX_SX127X= \
+
+rx_spi_expresslrs_telemetry_unittest_SRC := \
+		$(USER_DIR)/rx/crsf.c \
+		$(USER_DIR)/telemetry/crsf.c \
+		$(USER_DIR)/common/crc.c \
+		$(USER_DIR)/common/maths.c \
+		$(USER_DIR)/common/streambuf.c \
+		$(USER_DIR)/common/gps_conversion.c \
+		$(USER_DIR)/common/printf.c \
+		$(USER_DIR)/common/typeconversion.c \
+		$(USER_DIR)/rx/expresslrs_telemetry.c \
+		$(USER_DIR)/build/atomic.c \
+		$(USER_DIR)/telemetry/msp_shared.c \
+
+rx_spi_expresslrs_telemetry_unittest_DEFINES := \
+		USE_RX_EXPRESSLRS= \
+		USE_GPS= \
+		USE_MSP_OVER_TELEMETRY= \
 
 # Please tweak the following variable definitions as needed by your
 # project, except GTEST_HEADERS, which you can use in your own targets
@@ -432,9 +484,9 @@ endif
 #CC  := gcc
 #CXX := g++
 
-# These flags are needed for clang 10 (maybe even clang 9) to make test work
-#	-Wno-c99-extensions \
-#	-Wno-reorder
+# These flags are needed for clang 10 (linux / MacOS) to make test work:
+# -Wno-c99-extensions
+# -Wno-reorder
 
 COMMON_FLAGS = \
 	-g \
@@ -453,29 +505,21 @@ COMMON_FLAGS = \
 CC_VERSION = $(shell $(CC) -dumpversion)
 CXX_VERSION = $(shell $(CXX) -dumpversion)
 
-# Please revisit versions when new clang version arrive. Supported versions: { Linux: 7 - 10; OSX: 7- 12 }
-# Travis reports CC_VERSION of 4.2.1
-CC_VERSION_MAJOR := $(firstword $(subst ., ,$(CC_VERSION)))
-CC_VERSION_CHECK_MIN := 4
-CC_VERSION_CHECK_MAX := 10
-ifdef MACOSX
-CC_VERSION_CHECK_MAX := 12
-endif
-ifeq ($(shell expr $(CC_VERSION_MAJOR) \< $(CC_VERSION_CHECK_MIN) \| $(CC_VERSION_MAJOR) \> $(CC_VERSION_CHECK_MAX)),1)
-    $(error $(CC) $(CC_VERSION) is not supported. On most systems the correct compiler will be available as 'clang-10' and 'clang++-10, but Betaflight invokes 'clang' and 'clang++' to accommodate some operating systems that do not have proper clang compilers available. Please modify your system so that an appropriate version of clang is invoked as 'clang' and 'clang++'.)
-endif
-
 ifeq ($(shell $(CC) -v 2>&1 | grep -q "clang version" && echo "clang"),clang)
 
-# Please revisit versions when new clang version arrive. Supported versions: { Linux: 7 - 10; OSX: 7- 12 }
+# Please revisit versions when new clang version arrive. Supported versions: { Linux / OSX: 7 - 13 }
 # Travis reports CC_VERSION of 4.2.1
 CC_VERSION_MAJOR := $(firstword $(subst ., ,$(CC_VERSION)))
 CC_VERSION_CHECK_MIN := 7
-CC_VERSION_CHECK_MAX := 10
-ifeq ($(OSFAMILY), macosx)
-# MacOS comes with Apple's own flavour of clang that does not adhere to the official versioning
-CC_VERSION_CHECK_MAX := 12
+CC_VERSION_CHECK_MAX := 13
+
+# Added flags for clang 11 - 13 are not backwards compatible
+ifeq ($(shell expr $(CC_VERSION_MAJOR) \> 10 \& $(CC_VERSION_MAJOR) \< 14), 1)
+COMMON_FLAGS += \
+	-fcommon \
+	-Wno-void-pointer-to-int-cast
 endif
+
 ifeq ($(shell expr $(CC_VERSION_MAJOR) \< $(CC_VERSION_CHECK_MIN) \| $(CC_VERSION_MAJOR) \> $(CC_VERSION_CHECK_MAX)),1)
 $(error $(CC) $(CC_VERSION) is not supported. The officially supported version of clang is 'clang-10'. If this is not found, 'clang' is used as a fallback. The version of the compiler must be between $(CC_VERSION_CHECK_MIN) and $(CC_VERSION_CHECK_MAX).)
 endif

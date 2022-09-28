@@ -87,6 +87,18 @@
 #ifndef UART8_RX_DMA_STREAM
 #define UART8_RX_DMA_STREAM NULL
 #endif
+#ifndef UART9_TX_DMA_STREAM
+#define UART9_TX_DMA_STREAM NULL
+#endif
+#ifndef UART9_RX_DMA_STREAM
+#define UART9_RX_DMA_STREAM NULL
+#endif
+#ifndef UART10_TX_DMA_STREAM
+#define UART10_TX_DMA_STREAM NULL
+#endif
+#ifndef UART10_RX_DMA_STREAM
+#define UART10_RX_DMA_STREAM NULL
+#endif
 
 const uartHardware_t uartHardware[UARTDEV_COUNT] = {
 #ifdef USE_UART1
@@ -101,12 +113,12 @@ const uartHardware_t uartHardware[UARTDEV_COUNT] = {
 #endif
         .rxPins = {
             { DEFIO_TAG_E(PA10), GPIO_AF7_USART1 },
-            { DEFIO_TAG_E(PB7),  GPIO_AF4_USART1 },
+            { DEFIO_TAG_E(PB7),  GPIO_AF7_USART1 },
             { DEFIO_TAG_E(PB15), GPIO_AF4_USART1 },
         },
         .txPins = {
             { DEFIO_TAG_E(PA9),  GPIO_AF7_USART1 },
-            { DEFIO_TAG_E(PB6),  GPIO_AF4_USART1 },
+            { DEFIO_TAG_E(PB6),  GPIO_AF7_USART1 },
             { DEFIO_TAG_E(PB14), GPIO_AF4_USART1 },
         },
         .rcc = RCC_APB2(USART1),
@@ -336,9 +348,62 @@ const uartHardware_t uartHardware[UARTDEV_COUNT] = {
 #endif
 
 #ifdef USE_UART9
-    // On H7, UART9 is implemented with LPUART1
     {
         .device = UARTDEV_9,
+        .reg = UART9,
+#ifdef USE_DMA
+        .rxDMAChannel = DMA_REQUEST_UART9_RX,
+        .rxDMAResource = (dmaResource_t *)UART9_RX_DMA_STREAM,
+        .txDMAChannel = DMA_REQUEST_UART9_TX,
+        .txDMAResource = (dmaResource_t *)UART9_TX_DMA_STREAM,
+#endif
+        .rxPins = {
+            { DEFIO_TAG_E(PD14), GPIO_AF11_UART9 }
+        },
+        .txPins = {
+            { DEFIO_TAG_E(PD15), GPIO_AF11_UART9 }
+        },
+        .rcc = RCC_APB2(UART9),
+        .rxIrq = UART9_IRQn,
+        .txPriority = NVIC_PRIO_SERIALUART9_TXDMA,
+        .rxPriority = NVIC_PRIO_SERIALUART9,
+        .txBuffer = uart9TxBuffer,
+        .rxBuffer = uart9RxBuffer,
+        .txBufferSize = sizeof(uart9TxBuffer),
+        .rxBufferSize = sizeof(uart9RxBuffer),
+    },
+#endif
+
+#ifdef USE_UART10
+    {
+        .device = UARTDEV_10,
+        .reg = USART10,
+#ifdef USE_DMA
+        .rxDMAChannel = DMA_REQUEST_USART10_RX,
+        .rxDMAResource = (dmaResource_t *)UART10_RX_DMA_STREAM,
+        .txDMAChannel = DMA_REQUEST_USART10_TX,
+        .txDMAResource = (dmaResource_t *)UART10_TX_DMA_STREAM,
+#endif
+        .rxPins = {
+            { DEFIO_TAG_E(PE2), GPIO_AF11_USART10 }
+        },
+        .txPins = {
+            { DEFIO_TAG_E(PE3), GPIO_AF11_USART10 }
+        },
+        .rcc = RCC_APB2(USART10),
+        .rxIrq = USART10_IRQn,
+        .txPriority = NVIC_PRIO_SERIALUART10_TXDMA,
+        .rxPriority = NVIC_PRIO_SERIALUART10,
+        .txBuffer = uart10TxBuffer,
+        .rxBuffer = uart10RxBuffer,
+        .txBufferSize = sizeof(uart10TxBuffer),
+        .rxBufferSize = sizeof(uart10RxBuffer),
+    },
+#endif
+
+#ifdef USE_LPUART1
+    {
+        .device = LPUARTDEV_1,
         .reg = LPUART1,
 #ifdef USE_DMA
         .rxDMAChannel = BDMA_REQUEST_LPUART1_RX,
@@ -356,14 +421,15 @@ const uartHardware_t uartHardware[UARTDEV_COUNT] = {
         },
         .rcc = RCC_APB4(LPUART1),
         .rxIrq = LPUART1_IRQn,
-        .txPriority = NVIC_PRIO_SERIALUART8_TXDMA, // Not used until DMA is supported
-        .rxPriority = NVIC_PRIO_SERIALUART8,       // Not used until DMA is supported
-        .txBuffer = uart9TxBuffer,
-        .rxBuffer = uart9RxBuffer,
-        .txBufferSize = sizeof(uart9TxBuffer),
-        .rxBufferSize = sizeof(uart9RxBuffer),
+        .txPriority = NVIC_PRIO_SERIALLPUART1_TXDMA, // Not used until DMA is supported
+        .rxPriority = NVIC_PRIO_SERIALLPUART1,       // Not used until DMA is supported
+        .txBuffer = lpuart1TxBuffer,
+        .rxBuffer = lpuart1RxBuffer,
+        .txBufferSize = sizeof(lpuart1TxBuffer),
+        .rxBufferSize = sizeof(lpuart1RxBuffer),
     },
 #endif
+
 };
 
 // XXX Should serialUART be consolidated?
@@ -405,7 +471,7 @@ uartPort_t *serialUART(UARTDevice_e device, uint32_t baudRate, portMode_e mode, 
 
     if ((options & SERIAL_BIDIR) && txIO) {
         ioConfig_t ioCfg = IO_CONFIG(
-            ((options & SERIAL_INVERTED) || ((options & SERIAL_BIDIR_PP) || (options & SERIAL_BIDIR_PP_PD))) ? GPIO_MODE_AF_PP : GPIO_MODE_AF_OD,
+            ((options & SERIAL_INVERTED) || (options & SERIAL_BIDIR_PP) || (options & SERIAL_BIDIR_PP_PD)) ? GPIO_MODE_AF_PP : GPIO_MODE_AF_OD,
             GPIO_SPEED_FREQ_HIGH,
             ((options & SERIAL_INVERTED) || (options & SERIAL_BIDIR_PP_PD)) ? GPIO_PULLDOWN : GPIO_PULLUP
         );

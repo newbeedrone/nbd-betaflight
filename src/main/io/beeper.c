@@ -47,7 +47,13 @@
 #include "io/gps.h"
 #endif
 
+#ifdef USE_OSD
+#include "osd/osd.h"
+#endif
+
 #include "pg/beeper.h"
+
+#include "scheduler/scheduler.h"
 
 #include "sensors/battery.h"
 #include "sensors/sensors.h"
@@ -241,7 +247,7 @@ void beeper(beeperMode_e mode)
         mode == BEEPER_SILENCE || (
             (beeperConfig()->beeper_off_flags & BEEPER_GET_FLAG(BEEPER_USB))
             && getBatteryState() == BATTERY_NOT_PRESENT
-        )
+        ) || IS_RC_MODE_ACTIVE(BOXBEEPERMUTE)
     ) {
         beeperSilence();
         return;
@@ -390,6 +396,7 @@ void beeperUpdate(timeUs_t currentTimeUs)
     }
 
     if (beeperNextToggleTime > currentTimeUs) {
+        schedulerIgnoreTaskExecTime();
         return;
     }
 
@@ -432,6 +439,14 @@ void beeperUpdate(timeUs_t currentTimeUs)
         }
     }
 
+#if defined(USE_OSD)
+    static bool beeperWasOn = false;
+    if (beeperIsOn && !beeperWasOn) {
+        osdSetVisualBeeperState(true);
+    }
+    beeperWasOn = beeperIsOn;
+#endif
+    
     beeperProcessCommand(currentTimeUs);
 }
 

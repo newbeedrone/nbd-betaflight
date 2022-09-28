@@ -38,8 +38,8 @@ const timerDef_t timerDefinitions[HARDWARE_TIMER_DEFINITION_COUNT] = {
     { .TIMx = TIM3,  .rcc = RCC_APB1L(TIM3),  .inputIrq = TIM3_IRQn},
     { .TIMx = TIM4,  .rcc = RCC_APB1L(TIM4),  .inputIrq = TIM4_IRQn},
     { .TIMx = TIM5,  .rcc = RCC_APB1L(TIM5),  .inputIrq = TIM5_IRQn},
-    { .TIMx = TIM6,  .rcc = RCC_APB1L(TIM6),  .inputIrq = 0},
-    { .TIMx = TIM7,  .rcc = RCC_APB1L(TIM7),  .inputIrq = 0},
+    { .TIMx = TIM6,  .rcc = RCC_APB1L(TIM6),  .inputIrq = TIM6_DAC_IRQn},
+    { .TIMx = TIM7,  .rcc = RCC_APB1L(TIM7),  .inputIrq = TIM7_IRQn},
     { .TIMx = TIM8,  .rcc = RCC_APB2(TIM8),   .inputIrq = TIM8_CC_IRQn},
     { .TIMx = TIM12, .rcc = RCC_APB1L(TIM12), .inputIrq = TIM8_BRK_TIM12_IRQn},
     { .TIMx = TIM13, .rcc = RCC_APB1L(TIM13), .inputIrq = TIM8_UP_TIM13_IRQn},
@@ -80,7 +80,7 @@ const timerHardware_t fullTimerHardware[FULL_TIMER_CHANNEL_COUNT] = {
 
     DEF_TIM(TIM15, CH1N, PA1, TIM_USE_ANY, 0, 0, 0),
     DEF_TIM(TIM15, CH1, PA2, TIM_USE_ANY, 0, 0, 0),
-    DEF_TIM(TIM15, CH2, PA2, TIM_USE_ANY, 0, 0, 0),
+    DEF_TIM(TIM15, CH2, PA3, TIM_USE_ANY, 0, 0, 0),
 
 // Port B
     DEF_TIM(TIM1, CH2N, PB0, TIM_USE_ANY, 0, 0, 0),
@@ -160,6 +160,7 @@ const timerHardware_t fullTimerHardware[FULL_TIMER_CHANNEL_COUNT] = {
 };
 #endif
 
+
 uint32_t timerClock(TIM_TypeDef *tim)
 {
     int timpre;
@@ -167,27 +168,40 @@ uint32_t timerClock(TIM_TypeDef *tim)
     uint32_t ppre;
 
     // Implement the table:
-    // RM0433 "Table 48. Ratio between clock timer and pclk"
+    // RM0433 (Rev 6) Table 52.
+    // RM0455 (Rev 3) Table 55.
+    // "Ratio between clock timer and pclk"
+    // (Tables are the same, just D2 or CD difference)
+
+#if defined(STM32H743xx) || defined(STM32H750xx) || defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H730xx)
+#define PERIPH_PRESCALER(bus) ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE ## bus) >> RCC_D2CFGR_D2PPRE ## bus ## _Pos)
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
+#define PERIPH_PRESCALER(bus) ((RCC->CDCFGR2 & RCC_CDCFGR2_CDPPRE ## bus) >> RCC_CDCFGR2_CDPPRE ## bus ## _Pos)
+#else
+#error Unknown MCU type
+#endif
 
     if (tim == TIM1 || tim == TIM8 || tim == TIM15 || tim == TIM16 || tim == TIM17) {
         // Timers on APB2
         pclk = HAL_RCC_GetPCLK2Freq();
-        ppre = (RCC->D2CFGR & RCC_D2CFGR_D2PPRE2) >> RCC_D2CFGR_D2PPRE2_Pos;
+        ppre = PERIPH_PRESCALER(2);
     } else {
         // Timers on APB1
         pclk = HAL_RCC_GetPCLK1Freq();
-        ppre = (RCC->D2CFGR & RCC_D2CFGR_D2PPRE1) >> RCC_D2CFGR_D2PPRE1_Pos;
+        ppre = PERIPH_PRESCALER(1);
     }
 
     timpre = (RCC->CFGR & RCC_CFGR_TIMPRE) ? 1 : 0;
 
     int index = (timpre << 3) | ppre;
 
-    static uint8_t periphToKernel[16] = { // The mutiplier table
+    static uint8_t periphToKernel[16] = { // The multiplier table
         1, 1, 1, 1, 2, 2, 2, 2, // TIMPRE = 0
         1, 1, 1, 1, 2, 4, 4, 4  // TIMPRE = 1
     };
 
     return pclk * periphToKernel[index];
+
+#undef PERIPH_PRESCALER
 }
 #endif

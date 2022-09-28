@@ -31,7 +31,7 @@
 
 displayPort_t hottDisplayPort;
 
-static int hottDrawScreen(displayPort_t *displayPort)
+static bool hottDrawScreen(displayPort_t *displayPort)
 {
     UNUSED(displayPort);
     return 0;
@@ -61,8 +61,10 @@ static int hottWriteString(displayPort_t *displayPort, uint8_t col, uint8_t row,
     return 0;
 }
 
-static int hottClearScreen(displayPort_t *displayPort)
+static int hottClearScreen(displayPort_t *displayPort, displayClearOption_e options)
 {
+    UNUSED(options);
+
     for (int row = 0; row < displayPort->rows; row++) {
         for (int col= 0; col < displayPort->cols; col++) {
             hottWriteChar(displayPort, col, row, DISPLAYPORT_ATTR_NONE, ' ');
@@ -86,7 +88,7 @@ static int hottHeartbeat(displayPort_t *displayPort)
     return 0;
 }
 
-static void hottResync(displayPort_t *displayPort)
+static void hottRedraw(displayPort_t *displayPort)
 {
     UNUSED(displayPort);
 }
@@ -106,7 +108,7 @@ static int hottGrab(displayPort_t *displayPort)
 static int hottRelease(displayPort_t *displayPort)
 {
     int cnt = displayPort->grabCount = 0;
-    hottClearScreen(displayPort);
+    hottClearScreen(displayPort, DISPLAY_CLEAR_WAIT);
     hottTextmodeExit();
     return cnt;
 }
@@ -121,17 +123,17 @@ static const displayPortVTable_t hottVTable = {
     .writeChar = hottWriteChar,
     .isTransferInProgress = hottIsTransferInProgress,
     .heartbeat = hottHeartbeat,
-    .resync = hottResync,
+    .redraw = hottRedraw,
     .txBytesFree = hottTxBytesFree,
     .layerSupported = NULL,
     .layerSelect = NULL,
     .layerCopy = NULL,
 };
 
-displayPort_t *displayPortHottInit()
+static displayPort_t *displayPortHottInit()
 {
     hottDisplayPort.device = NULL;
-    displayInit(&hottDisplayPort, &hottVTable);
+    displayInit(&hottDisplayPort, &hottVTable, DISPLAYPORT_DEVICE_TYPE_HOTT);
     hottDisplayPort.useFullscreen = true;
     hottDisplayPort.rows = HOTT_TEXTMODE_DISPLAY_ROWS;
     hottDisplayPort.cols = HOTT_TEXTMODE_DISPLAY_COLUMNS;

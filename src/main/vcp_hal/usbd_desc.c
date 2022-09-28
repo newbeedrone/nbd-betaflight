@@ -64,8 +64,15 @@
 #define USBD_PID                      0x5740
 #define USBD_LANGID_STRING            0x409
 #define USBD_MANUFACTURER_STRING      FC_FIRMWARE_NAME
+
+#ifdef USBD_PRODUCT_STRING
+#define USBD_PRODUCT_HS_STRING          USBD_PRODUCT_STRING
+#define USBD_PRODUCT_FS_STRING          USBD_PRODUCT_STRING
+#else
 #define USBD_PRODUCT_HS_STRING        "STM32 Virtual ComPort in HS Mode"
 #define USBD_PRODUCT_FS_STRING        "STM32 Virtual ComPort in FS Mode"
+#endif
+
 #define USBD_CONFIGURATION_HS_STRING  "VCP Config"
 #define USBD_INTERFACE_HS_STRING      "VCP Interface"
 #define USBD_CONFIGURATION_FS_STRING  "VCP Config"
@@ -187,7 +194,7 @@ uint8_t *USBD_VCP_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
   (void)speed;
 #ifdef USE_USB_MSC
-  if (mscCheckBoot()) {
+  if (mscCheckBootAndReset()) {
     *length = sizeof(USBD_MSC_DeviceDesc);
     return USBD_MSC_DeviceDesc;
   }
