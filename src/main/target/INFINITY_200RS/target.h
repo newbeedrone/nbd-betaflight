@@ -45,7 +45,15 @@
 #define USE_UART5
 #define UART5_RX_PIN                    PD2
 
-#define SERIAL_PORT_COUNT               5
+#define USE_UART7
+#define UART7_RX_PIN                    PE7
+#define UART7_TX_PIN                    PE8
+
+#define USE_UART8
+#define UART8_RX_PIN                    PE0
+#define UART8_TX_PIN                    PE1
+
+#define SERIAL_PORT_COUNT               7
 
 /* ======== SPI ======== */
 #define USE_SPI
@@ -55,6 +63,12 @@
 #define SPI1_MISO_PIN                   PA6
 #define SPI1_MOSI_PIN                   PA7
 #define SPI1_NSS_PIN                    PB0
+
+#define USE_SPI_DEVICE_2
+#define SPI2_SCK_PIN                    PB13
+#define SPI2_MISO_PIN                   PB14
+#define SPI2_MOSI_PIN                   PB15
+#define SPI2_NSS_PIN                    PB12
 
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
@@ -67,6 +81,13 @@
 #define SPI4_MISO_PIN                   PE13
 #define SPI4_MOSI_PIN                   PE14
 #define SPI4_NSS_PIN                    PE11
+
+/* ======== I2C ======== */
+#define USE_I2C
+#define USE_I2C_DEVICE_1
+#define I2C_DEVICE                      (I2CDEV_1)
+#define I2C1_SCL                        PB8
+#define I2C1_SDA                        PB9
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
@@ -83,13 +104,13 @@
 #define GYRO_2_EXTI_PIN                 PE9
 #define USE_MPU_DATA_READY_SIGNAL
 
-#define GYRO_1_CS_PIN                   PE11
+#define GYRO_1_CS_PIN                   SPI4_NSS_PIN
 #define GYRO_1_SPI_INSTANCE             SPI4
 
-#define GYRO_2_CS_PIN                   PE10
-#define GYRO_2_SPI_INSTANCE             SPI4
+#define GYRO_2_CS_PIN                   SPI2_NSS_PIN
+#define GYRO_2_SPI_INSTANCE             SPI2
 
-#define GYRO_1_ALIGN                    CW180_DEG
+#define GYRO_1_ALIGN                    CW90_DEG
 
 #define GYRO_CONFIG_USE_GYRO_DEFAULT    GYRO_CONFIG_USE_GYRO_BOTH
 
@@ -115,7 +136,8 @@
 
 /* ======== ADC ======== */
 #define USE_ADC
-#define ADC1_INSTANCE                   ADC1
+#define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
 
 #define VBAT_ADC_PIN                    PC1
 #define CURRENT_METER_ADC_PIN           PC2
@@ -128,6 +150,7 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
+#define USE_ESCSERIAL
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
@@ -139,5 +162,7 @@
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
 
-#define USABLE_TIMER_CHANNEL_COUNT      5
-#define USED_TIMERS                     ( TIM_N(1) | TIM_N(3))
+#define USABLE_TIMER_CHANNEL_COUNT      6
+#define USED_TIMERS                     ( TIM_N(1) | TIM_N(2) | TIM_N(3))
+
+#define USE_TARGET_CONFIG
