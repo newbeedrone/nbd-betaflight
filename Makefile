@@ -519,6 +519,9 @@ infinity_f4: $(GROUP_INFINITY_F4_TARGETS)
 ## infinity_v2_pro_f7 : build infinity v2 pro f7 targets
 infinity_v2_pro_f7: $(GROUP_INFINITY_AIO_V2_PRO_TARGETS)
 
+## galaxy_aio_255 : build galaxy aio 255 targets
+galaxy_aio_255: $(GROUP_GALAXY_AIO_255_TARGETS)
+
 ## release            : build a release group
 release: $(GROUP_RELEASE)
 
