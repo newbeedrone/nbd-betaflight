@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V3 HP TBS Rev_B"
-#define USBD_PRODUCT_STRING             "BeeBrain BL V3 HP TBS"
+#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V4 TBS"
+#define USBD_PRODUCT_STRING             "BeeBrain BL V4 TBS"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC13
