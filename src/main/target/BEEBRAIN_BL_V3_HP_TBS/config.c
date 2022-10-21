@@ -193,7 +193,7 @@ void targetConfiguration(void)
 
     //BNF Configurations
 
-#if defined (BEEBRAIN_BL_V3_65_CRSF)
+#if defined (BEEBRAIN_BL_V3_HP_CRSF_BASE)
     osdElementConfigMutable()->item_pos[OSD_LINK_QUALITY]      = OSD_POS(2, 10) | OSD_PROFILE_1_FLAG;
 
     rxConfigMutable()->mincheck = 1050;
@@ -211,7 +211,7 @@ void targetConfiguration(void)
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]        = OSD_POS(2, 10) | OSD_PROFILE_1_FLAG;
 #endif
 
-#if defined(BEEBRAIN_BL_V3_HP_TBS_BASE)
+#if defined(BEEBRAIN_BL_V3_HP_CRSF_BASE)
     strcpy(pilotConfigMutable()->name, "BBBL V3HP CRSF");
 
 #endif
