@@ -144,7 +144,8 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_NONE
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== OTHER ======== */
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)

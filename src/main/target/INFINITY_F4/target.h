@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Infinity F4 Rev_E"
+#define TARGET_BOARD_IDENTIFIER         "Infinity F4"
 #define USBD_PRODUCT_STRING             "Infinity F4"
 
 /* ======== LED ======== */
@@ -39,6 +39,7 @@
 
 #define USE_UART1
 #define UART1_RX_PIN                    PA10
+#define UART1_TX_PIN                    PA9
 
 #define USE_UART2
 #define UART2_RX_PIN                    PA3
@@ -77,6 +78,14 @@
 #define SPI2_MOSI_PIN                   PB15
 #define SPI2_NSS_PIN                    PB12
 
+#if defined(INFINITY305_BASE)
+#define USE_SPI_DEVICE_3
+#define SPI3_SCK_PIN                    PB3
+#define SPI3_MISO_PIN                   PB4
+#define SPI3_MOSI_PIN                   PB5
+#define SPI3_NSS_PIN                    PA15
+#endif
+
 /* ======== I2C ======== */
 /*!< UART3 pin (for speedybee module) on [FC305 Rev_F] conflicts with I2C2 >!*/
 // #define USE_I2C
@@ -110,9 +119,21 @@
 #define MAX7456_SPI_INSTANCE            SPI1
 
 /* ======== RX ======== */
-#define SERIALRX_UART                   SERIAL_PORT_USART1
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
+
+#define SERIALRX_UART                   SERIAL_PORT_USART1
 #define SERIALRX_PROVIDER               SERIALRX_SBUS
+
+/* ======== FLASH ======== */
+#if defined(INFINITY305_BASE)
+#define ENABLE_BLACKBOX_LOGGING_ON_SPIFLASH_BY_DEFAULT
+#define USE_FLASHFS
+#define USE_FLASH_M25P16
+#define USE_FLASH_W25M
+#define USE_FLASH_W25N01G
+#define FLASH_CS_PIN                    SPI3_NSS_PIN
+#define FLASH_SPI_INSTANCE              SPI3
+#endif
 
 /* ======== ADC ======== */
 #define USE_ADC
@@ -128,18 +149,25 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define USE_ESCSERIAL
+#define ESCSERIAL_TIMER_TX_PIN          PD2
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== PINIO ======== */
+#if defined(INFINITY305_BASE)
 #define PINIO1_PIN                      PC1
+#endif
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
+#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_TELEMETRY)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 (BIT(2))
 
-#define USABLE_TIMER_CHANNEL_COUNT      6
-#define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(4) | TIM_N(8) )
+#define USABLE_TIMER_CHANNEL_COUNT      7
+#define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(4) | TIM_N(8) | TIM_N(11) )
+
+#define USE_TARGET_CONFIG
