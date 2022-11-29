@@ -27,7 +27,6 @@
 
 #include "usbd_cdc_vcp.h"
 #include "stm32f4xx_conf.h"
-#include "stdbool.h"
 #include "drivers/nvic.h"
 #include "drivers/time.h"
 
@@ -207,8 +206,6 @@ static uint16_t VCP_DataTx(const uint8_t* Buf, uint32_t Len)
         could just check for: USB_CDC_ZLP, but better to be safe
         and wait for any existing transmission to complete.
     */
-    while (USB_Tx_State != 0);
-
     for (uint32_t i = 0; i < Len; i++) {
         // Stall if the ring buffer is full
         while (((APP_Rx_ptr_in + 1) % APP_RX_DATA_SIZE) == APP_Rx_ptr_out) {

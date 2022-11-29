@@ -138,9 +138,8 @@ void targetConfiguration(void)
     strcpy(vtxTableConfigMutable()->channelNames[5], "6");
     strcpy(vtxTableConfigMutable()->channelNames[6], "7");
     strcpy(vtxTableConfigMutable()->channelNames[7], "8");
-    vtxTableConfigMutable()->powerLevels = 2;
+    vtxTableConfigMutable()->powerLevels = 1;
     vtxTableConfigMutable()->powerValues[0] = 0;
-    vtxTableConfigMutable()->powerValues[1] = 1;
     strcpy(vtxTableConfigMutable()->powerLabels[0], "25 ");
 #endif
 
