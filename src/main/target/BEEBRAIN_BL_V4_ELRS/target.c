@@ -18,30 +18,24 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
 #include <stdint.h>
 
-#include "drivers/io_types.h"
+#include "platform.h"
+#include "drivers/io.h"
 
-#include "pg/pg.h"
+#include "drivers/dma.h"
+#include "drivers/timer.h"
+#include "drivers/timer_def.h"
 
-typedef struct vtxIOConfig_s {
-    // common settings for both hardware and software SPI
-    ioTag_t csTag;
-    ioTag_t powerTag;
+const timerHardware_t timerHardware[USABLE_TIMER_CHANNEL_COUNT] = {
 
-    // settings for software SPI only
-    ioTag_t dataTag;
-    ioTag_t clockTag;
+    DEF_TIM(TIM4, CH4, PB9,  TIM_USE_MOTOR,         0, 0), // M1
+    DEF_TIM(TIM4, CH2, PB7,  TIM_USE_MOTOR,         0, 0), // M2
+    DEF_TIM(TIM4, CH1, PB6,  TIM_USE_MOTOR,         0, 0), // M3
+    DEF_TIM(TIM4, CH3, PB8,  TIM_USE_MOTOR,         0, 0), // M4
 
-    // setting for dynamic VTx power control
-#ifdef RTC6705_DYNAMIC_POWER_CTRL
-    ioTag_t exPowerTag[2];
-#endif
+    DEF_TIM(TIM3, CH1, PA6,  TIM_USE_NONE,          0, 0), // Soft Serial TX/RX for NBD7456 Update
 
-    // settings for hardware SPI only
-    uint8_t spiDevice;
-} vtxIOConfig_t;
-
-PG_DECLARE(vtxIOConfig_t, vtxIOConfig);
+    DEF_TIM(TIM5, CH1, PA0,  TIM_USE_LED,           0, 0), // LED Strip
+    DEF_TIM(TIM2, CH3, PB10, TIM_USE_BEEPER,        0, 0), // Beeper
+};

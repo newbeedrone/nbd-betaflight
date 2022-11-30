@@ -93,7 +93,7 @@ bool vtxRTC6705CanUpdate(void)
     return true;
 }
 
-#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL)
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL) && !defined(RTC6705_DYNAMIC_POWER_CTRL)
 static void vtxRTC6705Configure(vtxDevice_t *vtxDevice)
 {
     uint16_t newPowerValue = 0;
@@ -158,7 +158,7 @@ static void vtxRTC6705SetPowerByIndex(vtxDevice_t *vtxDevice, uint8_t index)
 static void vtxRTC6705SetPitMode(vtxDevice_t *vtxDevice, uint8_t onoff)
 {
     UNUSED(vtxDevice);
-#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL)
+#if defined(RTC6705_POWER_PIN) && !defined(RTC6705_EXPAND_POWER_CTRL) && !defined(RTC6705_DYNAMIC_POWER_CTRL)
     if (onoff == 2) {
         // power device off
         if (!rtc6705PitModeActive) {
