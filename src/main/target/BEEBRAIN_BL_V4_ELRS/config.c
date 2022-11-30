@@ -98,7 +98,7 @@ void targetConfiguration(void)
     // VTX, US Regulations
     vtxSettingsConfigMutable()->band = 5;
     vtxSettingsConfigMutable()->channel = 8;
-    vtxSettingsConfigMutable()->power = 3;
+    vtxSettingsConfigMutable()->power = 2;
     vtxSettingsConfigMutable()->lowPowerDisarm = 1;
 
     uint16_t vtxTableFrequency[6][8] = {
@@ -138,7 +138,7 @@ void targetConfiguration(void)
     strcpy(vtxTableConfigMutable()->channelNames[5], "6");
     strcpy(vtxTableConfigMutable()->channelNames[6], "7");
     strcpy(vtxTableConfigMutable()->channelNames[7], "8");
-    vtxTableConfigMutable()->powerLevels = 2;
+    vtxTableConfigMutable()->powerLevels = 3;
     vtxTableConfigMutable()->powerValues[0] = 0;
     vtxTableConfigMutable()->powerValues[1] = 1;
     vtxTableConfigMutable()->powerValues[2] = 2;
