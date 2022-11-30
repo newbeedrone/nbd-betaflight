@@ -34,5 +34,8 @@ const timerHardware_t timerHardware[USABLE_TIMER_CHANNEL_COUNT] = {
     DEF_TIM(TIM4, CH1, PB6,  TIM_USE_MOTOR,         0, 0), // M3
     DEF_TIM(TIM4, CH3, PB8,  TIM_USE_MOTOR,         0, 0), // M4
 
+    DEF_TIM(TIM3, CH1, PA6,  TIM_USE_NONE,          0, 0), // Soft Serial TX/RX for NBD7456 Update
+
     DEF_TIM(TIM5, CH1, PA0,  TIM_USE_LED,           0, 0), // LED Strip
+    DEF_TIM(TIM2, CH3, PB10, TIM_USE_BEEPER,        0, 0), // Beeper
 };
