@@ -20,11 +20,18 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V4 ELRS Rev_A"
+#define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V4 ELRS"
 #define USBD_PRODUCT_STRING             "BeeBrain BL V4 ELRS"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC13
+#define LED1_PIN                        PC14
+
+/* ======== BUZZER ======== */
+#define USE_BEEPER
+#define BEEPER_PIN                      PB10
+#define BEEPER_PWM_HZ                   5400
+#define BEEPER_INVERTED
 
 /* ======== UART ======== */
 #define USE_UART
@@ -45,12 +52,6 @@
 /* ======== SPI ======== */
 #define USE_SPI
 
-#define USE_SPI_DEVICE_2
-#define SPI2_SCK_PIN                    PB13
-#define SPI2_MISO_PIN                   PB14
-#define SPI2_MOSI_PIN                   PB15
-#define SPI2_NSS_PIN                    PB12
-
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_MISO_PIN                   PB4
@@ -70,35 +71,34 @@
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
-#define GYRO_1_ALIGN                    CW180_DEG
+#define GYRO_1_ALIGN                    CW90_DEG
 
-#define ENSURE_MPU_DATA_READY_IS_LOW
+/* ======== OSD ======== */
+#define USE_MAX7456
+
+#define MAX7456_SPI_CS_PIN              PA15
+#define MAX7456_SPI_INSTANCE            SPI3
+
+/* ======== VTX ======== */
+#define USE_VTX_RTC6705
+
+#undef USE_VTX_SMARTAUDIO
+#undef USE_VTX_TRAMP
+
+#define RTC6705_CS_PIN                  PA14
+#define RTC6705_SPI_INSTANCE            SPI3
+#define RTC6705_POWER_PIN               PB2
+
+#define RTC6705_EX_POWER_1_PIN          PA8 // External VTx Power LSB
+#define RTC6705_EX_POWER_2_PIN          PA1 // External VTx Power MSB
+
+#define RTC6705_DYNAMIC_POWER_CTRL // For External VTx Power Controller
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
 
 /* ======== RX ======== */
-#define USE_RX_SPI
-
-#define RX_SPI_INSTANCE                 SPI2
-#define RX_SPI_LED_INVERTED
-#define RX_NSS_PIN                      SPI2_NSS_PIN
-#define RX_SPI_LED_PIN                  PC14
-#define RX_SPI_EXTI_PIN                 PB2
-#define RX_SPI_BIND_PIN                 PC15
-#define RX_EXPRESSLRS_SPI_RESET_PIN     PA6
-#define RX_EXPRESSLRS_SPI_BUSY_PIN      PA7
-#define RX_EXPRESSLRS_TIMER_INSTANCE    TIM3
-
-#define USE_RX_EXPRESSLRS
-#define USE_RX_SX1280
-
-#define DEFAULT_RX_FEATURE              FEATURE_RX_SPI
-#define RX_SPI_DEFAULT_PROTOCOL         RX_SPI_EXPRESSLRS
-
-/* ======== FLASH ======== */
-// #define ENABLE_BLACKBOX_LOGGING_ON_SPIFLASH_BY_DEFAULT
-// #define USE_FLASHFS
-// #define USE_FLASH_M25P16
-// #define FLASH_CS_PIN                    PA15
-// #define FLASH_SPI_INSTANCE              SPI2
+#define SERIALRX_UART                   SERIAL_PORT_USART2
+#define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
+#define SERIALRX_PROVIDER               SERIALRX_CRSF
 
 /* ======== ADC ======== */
 #define USE_ADC
@@ -108,24 +108,25 @@
 #define VBAT_ADC_PIN                    PB1
 #define CURRENT_METER_ADC_PIN           PA5
 
-#define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     415
-#define CURRENT_METER_OFFSET_DEFAULT    0
+#define VBAT_SCALE_DEFAULT              114
+#define CURRENT_METER_SCALE_DEFAULT     410
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define USE_ESCSERIAL
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_AUTO
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_TELEMETRY)
+#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 (BIT(2))
 
-#define USABLE_TIMER_CHANNEL_COUNT      5
-#define USED_TIMERS                     ( TIM_N(4) | TIM_N(5) )
+#define USABLE_TIMER_CHANNEL_COUNT      7
+#define USED_TIMERS                     ( TIM_N(2) | TIM_N(3) | TIM_N(4) | TIM_N(5) )
+
+#define USE_TARGET_CONFIG

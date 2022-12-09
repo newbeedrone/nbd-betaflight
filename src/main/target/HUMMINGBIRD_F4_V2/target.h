@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird F4 Pro ELRS"
-#define USBD_PRODUCT_STRING             "HummingBird F4 Pro"
+#define TARGET_BOARD_IDENTIFIER         "HummingBird F4 V2"
+#define USBD_PRODUCT_STRING             "HummingBird F4 V2"
 
 /* ======== LED ======== */
 #define LED0_PIN                        PC14
@@ -140,6 +140,8 @@
 #define TARGET_IO_PORTB                 0xffff
 #define TARGET_IO_PORTC                 0xffff
 #define TARGET_IO_PORTD                 (BIT(2))
+
+#define USE_BEEPER
 
 #define USABLE_TIMER_CHANNEL_COUNT      5
 #define USED_TIMERS                     ( TIM_N(2) | TIM_N(3) | TIM_N(4) )

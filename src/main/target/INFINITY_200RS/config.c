@@ -18,24 +18,23 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "platform.h"
-#include "drivers/io.h"
 
-#include "drivers/dma.h"
-#include "drivers/timer.h"
-#include "drivers/timer_def.h"
+#ifdef USE_TARGET_CONFIG
 
-const timerHardware_t timerHardware[USABLE_TIMER_CHANNEL_COUNT] = {
+#include "io/serial.h"
 
-    DEF_TIM(TIM4, CH4, PB9,  TIM_USE_MOTOR,         0, 0), // M1
-    DEF_TIM(TIM4, CH2, PB7,  TIM_USE_MOTOR,         0, 0), // M2
-    DEF_TIM(TIM4, CH1, PB6,  TIM_USE_MOTOR,         0, 0), // M3
-    DEF_TIM(TIM4, CH3, PB8,  TIM_USE_MOTOR,         0, 0), // M4
+#include "config_helper.h"
 
-    DEF_TIM(TIM3, CH1, PA6,  TIM_USE_NONE,          0, 0), // Soft Serial TX/RX for NBD7456 Update
-
-    DEF_TIM(TIM5, CH1, PA0,  TIM_USE_LED,           0, 0), // LED Strip
-    DEF_TIM(TIM2, CH3, PB10, TIM_USE_BEEPER,        0, 0), // Beeper
+static targetSerialPortFunction_t targetSerialPortFunction[] = {
+    { SERIAL_PORT_UART5,       FUNCTION_ESC_SENSOR }
 };
+
+void targetConfiguration(void)
+{
+    targetSerialPortFunctionConfig(targetSerialPortFunction, ARRAYLEN(targetSerialPortFunction));
+}
+#endif
