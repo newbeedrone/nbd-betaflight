@@ -21,6 +21,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+#include <stdbool.h>
+
 #include "platform.h"
 
 #include "build/atomic.h"

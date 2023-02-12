@@ -146,7 +146,7 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
 #endif
     }
 
-    return false;;
+    return false;
 }
 
 /**
