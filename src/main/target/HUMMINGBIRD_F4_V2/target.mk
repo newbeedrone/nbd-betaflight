@@ -11,3 +11,4 @@ TARGET_SRC = \
             rx/expresslrs_telemetry.c \
             rx/expresslrs_common.c \
             rx/expresslrs.c
+CFLAGS += -DCLOUD_BUILD

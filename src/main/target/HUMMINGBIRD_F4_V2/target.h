@@ -24,12 +24,15 @@
 #define USBD_PRODUCT_STRING             "HummingBird F4 V2"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
 #define LED0_PIN                        PC14
 
 /* ======== UART ======== */
 #define USE_UART
 
 #define USE_VCP
+#define USE_MSP_UART
 
 #define USE_UART1
 #define UART1_RX_PIN                    PA10
@@ -77,6 +80,16 @@
 #define GYRO_1_ALIGN                    CW180_DEG
 
 /* ======== OSD ======== */
+#define USE_OSD
+#define USE_CANVAS
+#define USE_CMS
+#define USE_CMS_FAILSAFE_MENU
+#define USE_EXTENDED_CMS_MENUS
+#define USE_MSP_DISPLAYPORT
+#define USE_OSD_OVER_MSP_DISPLAYPORT
+#define USE_OSD_ADJUSTMENTS
+#define USE_OSD_PROFILES
+#define USE_OSD_STICK_OVERLAY
 #define USE_MAX7456
 
 #define MAX7456_SPI_CS_PIN              PB12
@@ -84,11 +97,13 @@
 
 /* ======== VTX ======== */
 #if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
+#define USE_VTX
+#define USE_VTX_COMMON
+#define USE_VTX_CONTROL
+#define USE_VTX_MSP
+#define USE_VTX_TABLE
 #define USE_BEESIGN
 #define USE_VTX_BEESIGN
-
-#undef USE_VTX_SMARTAUDIO
-#undef USE_VTX_TRAMP
 
 #define BEESIGN_UART                    SERIAL_PORT_USART1
 #endif
@@ -108,6 +123,7 @@
 #define RX_EXPRESSLRS_SPI_BUSY_PIN      PA13
 #define RX_EXPRESSLRS_TIMER_INSTANCE    TIM5
 
+#define USE_TELEMETRY
 #define USE_RX_EXPRESSLRS
 #define USE_RX_EXPRESSLRS_TELEMETRY
 #define USE_RX_SX1280
@@ -132,9 +148,18 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
+#define USE_DSHOT
+#define USE_DSHOT_DMAR
+#define USE_DSHOT_BITBANG
+#define USE_DSHOT_TELEMETRY
+#define USE_DSHOT_TELEMETRY_STATS
+#define USE_BRUSHED_ESC_AUTODETECT  // Detect if brushed motors are connected and set defaults appropriately to avoid motors spinning on boot
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
+#define USE_SERVOS
+#define USE_PINIO
+#define USE_PINIOBOX
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
