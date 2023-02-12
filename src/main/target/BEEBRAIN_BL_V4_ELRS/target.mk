@@ -6,3 +6,5 @@ TARGET_SRC = \
             drivers/vtx_rtc6705.c \
             $(ROOT)/lib/main/BoschSensortec/BMI270-Sensor-API/bmi270_maximum_fifo.c \
             drivers/accgyro/accgyro_spi_bmi270.c \
+
+CFLAGS += -DCLOUD_BUILD
