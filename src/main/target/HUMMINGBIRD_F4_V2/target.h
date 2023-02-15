@@ -32,7 +32,6 @@
 #define USE_UART
 
 #define USE_VCP
-#define USE_MSP_UART
 
 #define USE_UART1
 #define UART1_RX_PIN                    PA10
@@ -125,7 +124,6 @@
 
 #define USE_TELEMETRY
 #define USE_RX_EXPRESSLRS
-#define USE_RX_EXPRESSLRS_TELEMETRY
 #define USE_RX_SX1280
 
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SPI
