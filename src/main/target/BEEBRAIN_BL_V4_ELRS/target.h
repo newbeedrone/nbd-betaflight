@@ -183,6 +183,7 @@
 #define USE_SERVOS
 #define USE_PINIO
 #define USE_PINIOBOX
+#define PINIO1_PIN                      PC15
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
