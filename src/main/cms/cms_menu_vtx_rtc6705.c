@@ -64,7 +64,7 @@ static void cmsx_Vtx_ConfigRead(void)
 {
     cmsx_vtxBand = vtxSettingsConfigMutable()->band;
     cmsx_vtxChannel = vtxSettingsConfigMutable()->channel;
-    vtxCommonGetPowerIndex(vtxCommonDevice(), &cmsx_vtxPower);
+    cmsx_vtxPower = vtxSettingsConfigMutable()->power;
 
 #ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
     lastVtxBand = cmsx_vtxBand;
