@@ -97,8 +97,8 @@ void targetConfiguration(void)
 
     // VTX, US Regulations
 #if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
-    vtxSettingsConfigMutable()->band = 5;
-    vtxSettingsConfigMutable()->channel = 8;
+    vtxSettingsConfigMutable()->band = 4;
+    vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;
 
     uint16_t vtxTableFrequency[6][8] = {
@@ -194,80 +194,38 @@ void targetConfiguration(void)
 
     //BNF Configurations
 
-#if defined(HUMMINGBIRD_F4_V2_BASE) || defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN)
-    strcpy(pilotConfigMutable()->name, "HMB F4 V2");
+    //BNF Configurations
 
-#elif defined(HUMMINGBIRD_F4_V2_65) || defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
-    strcpy(pilotConfigMutable()->name, "HMB F4 V2 65");
+    strcpy(pilotConfigMutable()->craftName, TARGET_BOARD_IDENTIFIER);
 
-    gyroConfigMutable()->gyro_lpf1_static_hz = 375;
-    gyroConfigMutable()->gyro_lpf2_static_hz = 750;
-    gyroConfigMutable()->gyro_lpf1_dyn_min_hz = 375;
-    gyroConfigMutable()->gyro_lpf1_dyn_max_hz = 750;
-    gyroConfigMutable()->simplified_gyro_filter_multiplier = 150;
-
-    dynNotchConfigMutable()->dyn_notch_min_hz = 100;
-    dynNotchConfigMutable()->dyn_notch_max_hz = 1000;
-
-    rxConfigMutable()->rc_smoothing_auto_factor_rpy = 52;
-
-    motorConfigMutable()->digitalIdleOffsetValue = 550;
-
-    failsafeConfigMutable()->failsafe_delay = 10;
-
-  //Pid Profile 1
-    pidProfilesMutable(0)->vbat_sag_compensation = 100;
-    pidProfilesMutable(0)->itermAcceleratorGain = 10000;
-    pidProfilesMutable(0)->iterm_relax_cutoff = 10;
-    pidProfilesMutable(0)->pid[PID_PITCH].P = 75;
-    pidProfilesMutable(0)->pid[PID_PITCH].I = 134;
-    pidProfilesMutable(0)->pid[PID_PITCH].D = 76;
-    pidProfilesMutable(0)->pid[PID_PITCH].F = 199;
-    pidProfilesMutable(0)->pid[PID_ROLL].P  = 71;
-    pidProfilesMutable(0)->pid[PID_ROLL].I  = 127;
-    pidProfilesMutable(0)->pid[PID_ROLL].D  = 67;
-    pidProfilesMutable(0)->pid[PID_ROLL].F  = 191;
-    pidProfilesMutable(0)->pid[PID_YAW].P   = 71;
-    pidProfilesMutable(0)->pid[PID_YAW].I   = 127;
-    pidProfilesMutable(0)->pid[PID_YAW].F   = 191;
-    pidProfilesMutable(0)->d_min[FD_ROLL]   = 67;
-    pidProfilesMutable(0)->d_min[FD_PITCH]  = 76;
-    pidProfilesMutable(0)->thrustLinearization  = 20;
-    pidProfilesMutable(0)->feedforward_averaging  = FEEDFORWARD_AVERAGING_2_POINT;
-    pidProfilesMutable(0)->feedforward_smooth_factor  = 45;
-    pidProfilesMutable(0)->feedforward_jitter_factor  = 8;
-    pidProfilesMutable(0)->simplified_master_multiplier = 160;
-    pidProfilesMutable(0)->simplified_d_gain = 140;
+    pidProfilesMutable(0)->pid[PID_PITCH].P     = 58;
+    pidProfilesMutable(0)->pid[PID_PITCH].I     = 120;
+    pidProfilesMutable(0)->pid[PID_PITCH].D     = 58;
+    pidProfilesMutable(0)->pid[PID_PITCH].F     = 176;
+    pidProfilesMutable(0)->pid[PID_ROLL].P      = 51;
+    pidProfilesMutable(0)->pid[PID_ROLL].I      = 110;
+    pidProfilesMutable(0)->pid[PID_ROLL].D      = 48;
+    pidProfilesMutable(0)->pid[PID_ROLL].F      = 171;
+    pidProfilesMutable(0)->pid[PID_YAW].P       = 60;
+    pidProfilesMutable(0)->pid[PID_YAW].I       = 110;
+    pidProfilesMutable(0)->pid[PID_YAW].F       = 171;
+    pidProfilesMutable(0)->d_min[FD_ROLL]       = 48;
+    pidProfilesMutable(0)->d_min[FD_PITCH]      = 58;
+    pidProfilesMutable(0)->motor_output_limit   = 80;
+    pidProfilesMutable(0)->simplified_pids_mode = 0;
+    pidProfilesMutable(0)->simplified_i_gain    = 0;
     pidProfilesMutable(0)->simplified_dmin_ratio = 0;
-
-//   //Pid Profile 2
-    pidProfilesMutable(1)->pid[PID_PITCH].P = 77;
-    pidProfilesMutable(1)->pid[PID_PITCH].I = 55;
-    pidProfilesMutable(1)->pid[PID_PITCH].D = 142;
-    pidProfilesMutable(1)->pid[PID_PITCH].F = 72;
-    pidProfilesMutable(1)->pid[PID_ROLL].P  = 67;
-    pidProfilesMutable(1)->pid[PID_ROLL].I  = 47;
-    pidProfilesMutable(1)->pid[PID_ROLL].D  = 112;
-    pidProfilesMutable(1)->pid[PID_ROLL].F  = 62;
-    pidProfilesMutable(1)->pid[PID_YAW].P   = 67;
-    pidProfilesMutable(1)->pid[PID_YAW].I   = 47;
-    pidProfilesMutable(1)->pid[PID_YAW].F   = 62;
-    pidProfilesMutable(1)->d_min[FD_ROLL]   = 85;
-    pidProfilesMutable(1)->d_min[FD_PITCH]  = 106;
-    pidProfilesMutable(1)->simplified_master_multiplier = 150;
-    pidProfilesMutable(1)->simplified_i_gain = 40;
-    pidProfilesMutable(1)->simplified_d_gain = 190;
-    pidProfilesMutable(1)->simplified_dmin_ratio = 95;
-    pidProfilesMutable(1)->simplified_feedforward_gain = 35;
-    pidProfilesMutable(1)->simplified_roll_pitch_ratio = 110;
-    pidProfilesMutable(1)->simplified_pitch_pi_gain = 110;
-
+    pidProfilesMutable(0)->simplified_feedforward_gain = 0;
+   
   //Rate Profile 1
     controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 30;
     controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 30;
-    controlRateProfilesMutable(0)->rates[FD_ROLL] = 100;
-    controlRateProfilesMutable(0)->rates[FD_PITCH] = 100;
-
-#endif
+    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 25;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 45;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 45;
+    controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 35;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 75;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 75;
+    controlRateProfilesMutable(0)->rates[FD_YAW] = 68;
 }
 #endif
