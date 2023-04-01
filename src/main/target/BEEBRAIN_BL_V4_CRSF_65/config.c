@@ -210,14 +210,14 @@ void targetConfiguration(void)
     pidProfilesMutable(0)->pid[PID_PITCH].P     = 58;
     pidProfilesMutable(0)->pid[PID_PITCH].I     = 120;
     pidProfilesMutable(0)->pid[PID_PITCH].D     = 58;
-    pidProfilesMutable(0)->pid[PID_PITCH].F     = 176;
+    pidProfilesMutable(0)->pid[PID_PITCH].F     = 131;
     pidProfilesMutable(0)->pid[PID_ROLL].P      = 51;
     pidProfilesMutable(0)->pid[PID_ROLL].I      = 110;
     pidProfilesMutable(0)->pid[PID_ROLL].D      = 48;
-    pidProfilesMutable(0)->pid[PID_ROLL].F      = 171;
+    pidProfilesMutable(0)->pid[PID_ROLL].F      = 121;
     pidProfilesMutable(0)->pid[PID_YAW].P       = 60;
     pidProfilesMutable(0)->pid[PID_YAW].I       = 110;
-    pidProfilesMutable(0)->pid[PID_YAW].F       = 171;
+    pidProfilesMutable(0)->pid[PID_YAW].F       = 121;
     pidProfilesMutable(0)->d_min[FD_ROLL]       = 48;
     pidProfilesMutable(0)->d_min[FD_PITCH]      = 58;
     pidProfilesMutable(0)->motor_output_limit   = 80;

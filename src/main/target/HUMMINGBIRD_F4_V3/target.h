@@ -159,6 +159,7 @@
 #define USE_DSHOT_TELEMETRY_STATS
 #define USE_BRUSHED_ESC_AUTODETECT  // Detect if brushed motors are connected and set defaults appropriately to avoid motors spinning on boot
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_AUTO
 
 /* ======== OTHER ======== */
 #define USE_SERVOS
