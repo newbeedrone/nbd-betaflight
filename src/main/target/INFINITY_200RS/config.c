@@ -116,7 +116,7 @@ void targetConfiguration(void)
     // Others
     imuConfigMutable()->small_angle = 180;
 
-#if defined(INFINITY_200RS_BMI270)
+// #if defined(INFINITY_200RS_BMI270)
     //Dusking's dual BMI270 filter settings
     {
         //Gyro
@@ -182,12 +182,12 @@ void targetConfiguration(void)
 
         pidProfilesMutable(0)->yaw_lowpass_hz = 100;
     }
-#endif
+// #endif
 
     //BNF Configurations
 
-#if defined(INFINITY_200RS_BMI270) || defined(INFINITY_200RS_MPU6000)
-    strcpy(pilotConfigMutable()->name, "INFINITY 200RS");
-#endif
+// #if defined(INFINITY_200RS_BMI270) || defined(INFINITY_200RS_MPU6000)
+    strcpy(pilotConfigMutable()->craftName, "INFINITY 200RS");
+// #endif
 }
 #endif
