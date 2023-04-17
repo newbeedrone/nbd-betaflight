@@ -217,11 +217,11 @@ void targetConfiguration(void)
     pidProfilesMutable(0)->simplified_feedforward_gain = 0;
    
   //Rate Profile 1
-    controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 30;
-    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 30;
+    controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 30;
+    controlRateProfilesMutable(0)->rcRates[FD_PITCH] = 30;
     controlRateProfilesMutable(0)->rcRates[FD_YAW] = 25;
-    controlRateProfilesMutable(0)->rates[FD_ROLL] = 45;
-    controlRateProfilesMutable(0)->rates[FD_PITCH] = 45;
+    controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 45;
+    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 45;
     controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 35;
     controlRateProfilesMutable(0)->rates[FD_ROLL] = 75;
     controlRateProfilesMutable(0)->rates[FD_PITCH] = 75;

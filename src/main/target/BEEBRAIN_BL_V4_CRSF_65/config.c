@@ -69,6 +69,7 @@
 #include "sensors/battery.h"
 #include "sensors/gyro.h"
 #include "sensors/barometer.h"
+#include "sensors/acceleration.h"
 
 #include "telemetry/telemetry.h"
 
@@ -174,6 +175,7 @@ void targetConfiguration(void)
     motorConfigMutable()->dev.useDshotTelemetry = true;
     motorConfigMutable()->motorPoleCount = 12;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
+    motorConfigMutable()->digitalIdleOffsetValue = 600;
 
     mixerConfigMutable()->yaw_motors_reversed = false;
     mixerConfigMutable()->crashflip_motor_percent = 0;
@@ -207,35 +209,49 @@ void targetConfiguration(void)
     }
 
     strcpy(pilotConfigMutable()->craftName, TARGET_BOARD_IDENTIFIER);
-    pidProfilesMutable(0)->pid[PID_PITCH].P     = 58;
-    pidProfilesMutable(0)->pid[PID_PITCH].I     = 120;
-    pidProfilesMutable(0)->pid[PID_PITCH].D     = 58;
-    pidProfilesMutable(0)->pid[PID_PITCH].F     = 131;
-    pidProfilesMutable(0)->pid[PID_ROLL].P      = 51;
-    pidProfilesMutable(0)->pid[PID_ROLL].I      = 110;
-    pidProfilesMutable(0)->pid[PID_ROLL].D      = 48;
-    pidProfilesMutable(0)->pid[PID_ROLL].F      = 121;
+    pidProfilesMutable(0)->pid[PID_PITCH].P     = 63;
+    pidProfilesMutable(0)->pid[PID_PITCH].I     = 110;
+    pidProfilesMutable(0)->pid[PID_PITCH].D     = 45;
+    pidProfilesMutable(0)->pid[PID_PITCH].F     = 76;
+    pidProfilesMutable(0)->pid[PID_ROLL].P      = 60;
+    pidProfilesMutable(0)->pid[PID_ROLL].I      = 100;
+    pidProfilesMutable(0)->pid[PID_ROLL].D      = 40;
+    pidProfilesMutable(0)->pid[PID_ROLL].F      = 72;
     pidProfilesMutable(0)->pid[PID_YAW].P       = 60;
-    pidProfilesMutable(0)->pid[PID_YAW].I       = 110;
-    pidProfilesMutable(0)->pid[PID_YAW].F       = 121;
-    pidProfilesMutable(0)->d_min[FD_ROLL]       = 48;
-    pidProfilesMutable(0)->d_min[FD_PITCH]      = 58;
-    pidProfilesMutable(0)->motor_output_limit   = 80;
+    pidProfilesMutable(0)->pid[PID_YAW].I       = 100;
+    pidProfilesMutable(0)->pid[PID_YAW].F       = 72;
+    pidProfilesMutable(0)->d_min[FD_ROLL]       = 40;
+    pidProfilesMutable(0)->d_min[FD_PITCH]      = 45;
+    pidProfilesMutable(0)->motor_output_limit   = 100;
     pidProfilesMutable(0)->simplified_pids_mode = 0;
     pidProfilesMutable(0)->simplified_i_gain    = 0;
     pidProfilesMutable(0)->simplified_dmin_ratio = 0;
     pidProfilesMutable(0)->simplified_feedforward_gain = 0;
+    pidProfilesMutable(0)->simplified_master_multiplier = 135;
+    pidProfilesMutable(0)->anti_gravity_gain = 10;
+    pidProfilesMutable(0)->iterm_rotation = true;
+    pidProfilesMutable(0)->iterm_relax_type = ITERM_RELAX_GYRO;
+    pidProfilesMutable(0)->iterm_relax_cutoff = 20;
+    pidProfilesMutable(0)->dyn_idle_min_rpm = 26;
+    pidProfilesMutable(0)->tpa_rate = 60;
+    pidProfilesMutable(0)->tpa_breakpoint = 2250;
    
   //Rate Profile 1
     controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 30;
     controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 30;
-    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 25;
-    controlRateProfilesMutable(0)->rates[FD_ROLL] = 45;
-    controlRateProfilesMutable(0)->rates[FD_PITCH] = 45;
-    controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 35;
-    controlRateProfilesMutable(0)->rates[FD_ROLL] = 75;
-    controlRateProfilesMutable(0)->rates[FD_PITCH] = 75;
-    controlRateProfilesMutable(0)->rates[FD_YAW] = 68;
+    controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 10;
+    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 10;
+    controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 10;
+    controlRateProfilesMutable(0)->rcRates[FD_PITCH] = 10;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 87;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 85;
+    controlRateProfilesMutable(0)->rates[FD_YAW] = 80;
+
+    dynNotchConfigMutable()->dyn_notch_count = 1;
+    dynNotchConfigMutable()->dyn_notch_q = 500;
+    dynNotchConfigMutable()->dyn_notch_min_hz = 90;
+
+    accelerometerConfigMutable()->acc_lpf_hz = 10;
 
 }
 #endif
