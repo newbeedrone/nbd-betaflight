@@ -87,7 +87,7 @@ static void cmsx_Vtx_ConfigWriteback(void)
     vtxSettingsConfigMutable()->power = cmsx_vtxPower;
     vtxSettingsConfigMutable()->freq = vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel);
 
-    saveConfigAndNotify();
+    // saveConfigAndNotify();
 }
 
 static const void *cmsx_Vtx_onEnter(displayPort_t *pDisp)
