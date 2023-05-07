@@ -29,3 +29,5 @@ TARGET_SRC = \
 	drivers/vtx_rtc6705.c \
 	drivers/vtx_rtc6705_soft_spi.c \
 	$(RX_SRC)
+
+CFLAGS += -DCLOUD_BUILD

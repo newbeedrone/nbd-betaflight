@@ -185,8 +185,6 @@ void targetConfiguration(void)
 
     //BNF Configurations
 
-#if defined GALAXY_AIO_255_BASE
-    strcpy(pilotConfigMutable()->name, "GalaxyAIO255");
-#endif
+    strcpy(pilotConfigMutable()->craftName, "GalaxyAIO255");
 }
 #endif

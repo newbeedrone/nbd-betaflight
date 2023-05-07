@@ -96,7 +96,7 @@ void targetConfiguration(void)
     rxConfigMutable()->fpvCamAngleDegrees = 0;
 
     // VTX, US Regulations
-#if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
+#if !defined(HUMMINGBIRD_F4_V2_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
     vtxSettingsConfigMutable()->band = 4;
     vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;

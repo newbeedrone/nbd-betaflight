@@ -157,8 +157,7 @@ void targetConfiguration(void)
         pidProfilesMutable(0)->yaw_lowpass_hz = 100;
     }
 
-#if defined CRICKET_V2_F7_BASE
-    strcpy(pilotConfigMutable()->name, "CRICKET V2");
-#endif
+    strcpy(pilotConfigMutable()->craftName, "CRICKET V2");
+
 }
 #endif

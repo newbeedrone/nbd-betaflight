@@ -189,8 +189,7 @@ void targetConfiguration(void)
     pidConfigMutable()->runaway_takeoff_prevention = true;
     imuConfigMutable()->small_angle = 180;
 
-#if defined(BEEBRAIN_BL_V2_BASE)
-    strcpy(pilotConfigMutable()->name, "BeeBrain BLV2");
-#endif
+    strcpy(pilotConfigMutable()->craftName, "BeeBrain BLV2");
+
 }
 #endif

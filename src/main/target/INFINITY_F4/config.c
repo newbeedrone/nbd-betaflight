@@ -149,11 +149,11 @@ void targetConfiguration(void)
 
     //BNF Configurations
 
-#if defined(INFINITY200_BASE)
-    strcpy(pilotConfigMutable()->name, "INFINITY200");
+#if defined(INFINITY200)
+    strcpy(pilotConfigMutable()->craftName, "INFINITY200");
 
-#elif defined(INFINITY305_BASE)
-    strcpy(pilotConfigMutable()->name, "INFINITY305");
+#elif defined(INFINITY305)
+    strcpy(pilotConfigMutable()->craftName, "INFINITY305");
 
 #endif
 }

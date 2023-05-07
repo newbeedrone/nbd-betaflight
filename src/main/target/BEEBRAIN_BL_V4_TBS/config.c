@@ -211,9 +211,7 @@ void targetConfiguration(void)
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]        = OSD_POS(2, 10) | OSD_PROFILE_1_FLAG;
 #endif
 
-#if defined(BEEBRAIN_BL_V4_CRSF_BASE)
-    strcpy(pilotConfigMutable()->name, "BBBL V4 CRSF");
+    strcpy(pilotConfigMutable()->craftName, "BBBL V4");
 
-#endif
 }
 #endif

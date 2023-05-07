@@ -195,7 +195,6 @@ void targetConfiguration(void)
     flight3DConfigMutable()->deadband3d_high = 1550;
     flight3DConfigMutable()->deadband3d_low = 1450;
 
-#if defined(BEEBRAIN_PRO_DSM_BASE)
     rxConfigMutable()->rssi_channel = 9;
     rxFailsafeChannelConfigsMutable(8)->mode = RX_FAILSAFE_MODE_SET;
     rxFailsafeChannelConfigsMutable(8)->step = CHANNEL_VALUE_TO_RXFAIL_STEP(1000);
@@ -206,7 +205,6 @@ void targetConfiguration(void)
         channelRangeConfig->min = 1160;
         channelRangeConfig->max = 1840;
     }
-#endif
 
     strcpy(pilotConfigMutable()->craftName, "BeeBrain Pro");
 }

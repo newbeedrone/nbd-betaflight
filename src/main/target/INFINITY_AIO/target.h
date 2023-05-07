@@ -24,6 +24,8 @@
 #define USBD_PRODUCT_STRING             "Infinity AIO"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
 #define LED0_PIN                        PA15
 
 /* ======== BUZZER ======== */
@@ -86,11 +88,51 @@
 #define USE_ACC_SPI_MPU6000
 
 /* ======== RX ======== */
+#define USE_RX_PPM
+#define USE_RX_PWM
+#define USE_SERIALRX
+#define USE_SERIALRX_CRSF               // Team Black Sheep Crossfire protocol
+#define USE_SERIALRX_GHST               // ImmersionRC Ghost Protocol
+#define USE_SERIALRX_IBUS               // FlySky and Turnigy receivers
+#define USE_SERIALRX_SBUS               // Frsky and Futaba receivers
+#define USE_SERIALRX_SPEKTRUM           // SRXL, DSM2 and DSMX protocol
+#define USE_SERIALRX_FPORT              // FrSky FPort
+#define USE_SERIALRX_XBUS               // JR
+#define USE_SERIALRX_SRXL2              // Spektrum SRXL2 protocol
+#define USE_SERIALRX_JETIEXBUS
+#define USE_SERIALRX_SUMD               // Graupner Hott protocol
+#define USE_SERIALRX_SUMH               // Graupner legacy protocol
+
+#define USE_CRSF_V3
+#define USE_CRSF_CMS_TELEMETRY
+#define USE_CRSF_LINK_STATISTICS
+#define USE_TELEMETRY
+#define USE_TELEMETRY_FRSKY_HUB
+#define USE_TELEMETRY_SMARTPORT
+#define USE_TELEMETRY_CRSF
+#define USE_TELEMETRY_GHST
+#define USE_TELEMETRY_SRXL
+#define USE_TELEMETRY_IBUS
+#define USE_TELEMETRY_IBUS_EXTENDED
+#define USE_TELEMETRY_JETIEXBUS
+#define USE_TELEMETRY_MAVLINK
+#define USE_TELEMETRY_HOTT
+#define USE_TELEMETRY_LTM
+
+#define USE_SPEKTRUM_BIND
+#define USE_SPEKTRUM_BIND_PLUG
+#define USE_SPEKTRUM_REAL_RSSI
+#define USE_SPEKTRUM_FAKE_RSSI
+#define USE_SPEKTRUM_RSSI_PERCENT_CONVERSION
+#define USE_SPEKTRUM_VTX_CONTROL
+#define USE_SPEKTRUM_VTX_TELEMETRY
+#define USE_SPEKTRUM_CMS_TELEMETRY
 #define SERIALRX_UART                   SERIAL_PORT_USART1
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_SBUS
 
 /* ======== FLASH ======== */
+#define USE_BLACKBOX
 #define ENABLE_BLACKBOX_LOGGING_ON_SPIFLASH_BY_DEFAULT
 #define USE_FLASHFS
 #define USE_FLASH_M25P16
@@ -114,10 +156,28 @@
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
+/* ======== VTX ======== */
+#define USE_VTX
+#define USE_VTX_COMMON
+#define USE_VTX_CONTROL
+#define USE_VTX_SMARTAUDIO
+#define USE_VTX_TRAMP
+#define USE_VTX_MSP
+#define USE_VTX_TABLE
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+
 /* ======== ESC ======== */
+#define USE_DSHOT
+#define USE_DSHOT_DMAR
+#define USE_DSHOT_BITBANG
+#define USE_DSHOT_TELEMETRY
+#define USE_DSHOT_TELEMETRY_STATS
+#define USE_BRUSHED_ESC_AUTODETECT  // Detect if brushed motors are connected and set defaults appropriately to avoid motors spinning on boot
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_AUTO
 
 /* ======== OTHER ======== */
+#define USE_SERVOS
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_ESC_SENSOR)
 
 #define TARGET_IO_PORTA                 0xffff

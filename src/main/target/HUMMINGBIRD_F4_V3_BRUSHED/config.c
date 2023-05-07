@@ -46,6 +46,7 @@
 #include "flight/mixer.h"
 #include "flight/pid.h"
 #include "flight/imu.h"
+#include "flight/failsafe.h"
 
 #include "pg/vcd.h"
 #include "pg/rx.h"
@@ -88,14 +89,16 @@ void targetConfiguration(void)
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]        = OSD_POS(2, 10) | OSD_PROFILE_1_FLAG;
 
     osdConfigMutable()->enabledWarnings &= ~(1 << OSD_WARNING_CORE_TEMPERATURE);
+    //osdConfigMutable()->cap_alarm = 2200;
     
     // RX
     rxConfigMutable()->rc_smoothing_mode = 1;
     rxConfigMutable()->fpvCamAngleDegrees = 0;
 
     // VTX, US Regulations
-    vtxSettingsConfigMutable()->band = 5;
-    vtxSettingsConfigMutable()->channel = 8;
+#if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
+    vtxSettingsConfigMutable()->band = 4;
+    vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;
 
     uint16_t vtxTableFrequency[6][8] = {
@@ -135,13 +138,10 @@ void targetConfiguration(void)
     strcpy(vtxTableConfigMutable()->channelNames[5], "6");
     strcpy(vtxTableConfigMutable()->channelNames[6], "7");
     strcpy(vtxTableConfigMutable()->channelNames[7], "8");
-    vtxTableConfigMutable()->powerLevels = 3;
+    vtxTableConfigMutable()->powerLevels = 1;
     vtxTableConfigMutable()->powerValues[0] = 0;
-    vtxTableConfigMutable()->powerValues[1] = 1;
-    vtxTableConfigMutable()->powerValues[2] = 2;
-    strcpy(vtxTableConfigMutable()->powerLabels[0], "5  ");
-    strcpy(vtxTableConfigMutable()->powerLabels[1], "25 ");
-    strcpy(vtxTableConfigMutable()->powerLabels[2], "100");
+    strcpy(vtxTableConfigMutable()->powerLabels[0], "25 ");
+#endif
 
     // Switches / Modes
     modeActivationConditionsMutable(0)->modeId           = BOXARM;
@@ -164,40 +164,68 @@ void targetConfiguration(void)
     modeActivationConditionsMutable(3)->range.startStep  = CHANNEL_VALUE_TO_STEP(1700);
     modeActivationConditionsMutable(3)->range.endStep    = CHANNEL_VALUE_TO_STEP(2100);
 
-    // LEDs
-    ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED(7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
-    ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED(8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    // LEDS
+    ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9, 7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
+    ledStripStatusModeConfigMutable()->ledConfigs[3] = DEFINE_LED(10, 7,  4, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE), 0);
 
     // Motor & ESC
     motorConfigMutable()->digitalIdleOffsetValue = 1000;
-    motorConfigMutable()->dev.useBurstDshot = true;
+    motorConfigMutable()->dev.useBurstDshot = DSHOT_DMAR_AUTO;
     motorConfigMutable()->dev.useDshotTelemetry = false;
     motorConfigMutable()->motorPoleCount = 12;
-    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
+    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
 
     mixerConfigMutable()->yaw_motors_reversed = false;
     mixerConfigMutable()->crashflip_motor_percent = 0;
+
+    // Voltage & Current
+    batteryConfigMutable()->forceBatteryCellCount = 1;
+    batteryConfigMutable()->batteryCapacity = 300;
+    batteryConfigMutable()->vbatmaxcellvoltage = 450;
+    batteryConfigMutable()->vbatmincellvoltage = 290;
+    batteryConfigMutable()->vbatwarningcellvoltage = 320;
 
     // Others
     pidConfigMutable()->pid_process_denom = 1;
     pidConfigMutable()->runaway_takeoff_prevention = true;
     imuConfigMutable()->small_angle = 180;
 
-#if defined(HIVE16_DSM_BASE)
-    rxConfigMutable()->rssi_channel = 9;
-    rxFailsafeChannelConfigsMutable(8)->mode = RX_FAILSAFE_MODE_SET;
-    rxFailsafeChannelConfigsMutable(8)->step = CHANNEL_VALUE_TO_RXFAIL_STEP(1000);
+    //BNF Configurations
 
-    for (uint8_t rxRangeIndex = 0; rxRangeIndex < NON_AUX_CHANNEL_COUNT; rxRangeIndex++) {
-        rxChannelRangeConfig_t *channelRangeConfig = rxChannelRangeConfigsMutable(rxRangeIndex);
+    //BNF Configurations
 
-        channelRangeConfig->min = 1160;
-        channelRangeConfig->max = 1840;
-    }
-#endif
+    strcpy(pilotConfigMutable()->craftName, TARGET_BOARD_IDENTIFIER);
 
-#if defined HIVE16_BASE || HIVE16_DSM_BASE
-    strcpy(pilotConfigMutable()->name, "Hive16");
-#endif
+    pidProfilesMutable(0)->pid[PID_PITCH].P     = 58;
+    pidProfilesMutable(0)->pid[PID_PITCH].I     = 120;
+    pidProfilesMutable(0)->pid[PID_PITCH].D     = 58;
+    pidProfilesMutable(0)->pid[PID_PITCH].F     = 131;
+    pidProfilesMutable(0)->pid[PID_ROLL].P      = 51;
+    pidProfilesMutable(0)->pid[PID_ROLL].I      = 110;
+    pidProfilesMutable(0)->pid[PID_ROLL].D      = 48;
+    pidProfilesMutable(0)->pid[PID_ROLL].F      = 121;
+    pidProfilesMutable(0)->pid[PID_YAW].P       = 60;
+    pidProfilesMutable(0)->pid[PID_YAW].I       = 110;
+    pidProfilesMutable(0)->pid[PID_YAW].F       = 121;
+    pidProfilesMutable(0)->d_min[FD_ROLL]       = 48;
+    pidProfilesMutable(0)->d_min[FD_PITCH]      = 58;
+    pidProfilesMutable(0)->motor_output_limit   = 80;
+    pidProfilesMutable(0)->simplified_pids_mode = 0;
+    pidProfilesMutable(0)->simplified_i_gain    = 0;
+    pidProfilesMutable(0)->simplified_dmin_ratio = 0;
+    pidProfilesMutable(0)->simplified_feedforward_gain = 0;
+   
+  //Rate Profile 1
+    controlRateProfilesMutable(0)->rcExpo[FD_ROLL] = 30;
+    controlRateProfilesMutable(0)->rcExpo[FD_PITCH] = 30;
+    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 25;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 45;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 45;
+    controlRateProfilesMutable(0)->rcExpo[FD_YAW] = 35;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 75;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 75;
+    controlRateProfilesMutable(0)->rates[FD_YAW] = 68;
 }
 #endif

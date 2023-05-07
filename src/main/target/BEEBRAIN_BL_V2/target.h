@@ -24,6 +24,8 @@
 #define USBD_PRODUCT_STRING             "BeeBrain BL V2"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
 #define LED0_PIN                        PC13
 #define LED1_PIN                        PC14
 
@@ -82,6 +84,16 @@
 #define GYRO_1_ALIGN                    CW0_DEG
 
 /* ======== OSD ======== */
+#define USE_OSD
+#define USE_CANVAS
+#define USE_CMS
+#define USE_CMS_FAILSAFE_MENU
+#define USE_EXTENDED_CMS_MENUS
+#define USE_MSP_DISPLAYPORT
+#define USE_OSD_OVER_MSP_DISPLAYPORT
+#define USE_OSD_ADJUSTMENTS
+#define USE_OSD_PROFILES
+#define USE_OSD_STICK_OVERLAY
 #define USE_MAX7456
 #define USE_NBD7456 // For NBD7456
 
@@ -89,7 +101,13 @@
 #define MAX7456_SPI_INSTANCE            SPI3
 
 /* ======== VTX ======== */
+#define USE_VTX
+#define USE_VTX_COMMON
+#define USE_VTX_CONTROL
+#define USE_VTX_MSP
+#define USE_VTX_TABLE
 #define USE_VTX_RTC6705
+#define SPI_SHARED_MAX7456_AND_RTC6705
 
 #undef USE_VTX_SMARTAUDIO
 #undef USE_VTX_TRAMP
@@ -101,6 +119,46 @@
 
 /* ======== RX ======== */
 #define USE_RX_SPI
+#define USE_RX_PPM
+#define USE_RX_PWM
+#define USE_SERIALRX
+#define USE_SERIALRX_CRSF               // Team Black Sheep Crossfire protocol
+#define USE_SERIALRX_GHST               // ImmersionRC Ghost Protocol
+#define USE_SERIALRX_IBUS               // FlySky and Turnigy receivers
+#define USE_SERIALRX_SBUS               // Frsky and Futaba receivers
+#define USE_SERIALRX_SPEKTRUM           // SRXL, DSM2 and DSMX protocol
+#define USE_SERIALRX_FPORT              // FrSky FPort
+#define USE_SERIALRX_XBUS               // JR
+#define USE_SERIALRX_SRXL2              // Spektrum SRXL2 protocol
+#define USE_SERIALRX_JETIEXBUS
+#define USE_SERIALRX_SUMD               // Graupner Hott protocol
+#define USE_SERIALRX_SUMH               // Graupner legacy protocol
+
+#define USE_CRSF_V3
+#define USE_CRSF_CMS_TELEMETRY
+#define USE_CRSF_LINK_STATISTICS
+
+#define USE_TELEMETRY
+#define USE_TELEMETRY_FRSKY_HUB
+#define USE_TELEMETRY_SMARTPORT
+#define USE_TELEMETRY_CRSF
+#define USE_TELEMETRY_GHST
+#define USE_TELEMETRY_SRXL
+#define USE_TELEMETRY_IBUS
+#define USE_TELEMETRY_IBUS_EXTENDED
+#define USE_TELEMETRY_JETIEXBUS
+#define USE_TELEMETRY_MAVLINK
+#define USE_TELEMETRY_HOTT
+#define USE_TELEMETRY_LTM
+
+#define USE_SPEKTRUM_BIND
+#define USE_SPEKTRUM_BIND_PLUG
+#define USE_SPEKTRUM_REAL_RSSI
+#define USE_SPEKTRUM_FAKE_RSSI
+#define USE_SPEKTRUM_RSSI_PERCENT_CONVERSION
+#define USE_SPEKTRUM_VTX_CONTROL
+#define USE_SPEKTRUM_VTX_TELEMETRY
+#define USE_SPEKTRUM_CMS_TELEMETRY
 
 #define RX_SPI_INSTANCE                 SPI2
 #define RX_NSS_PIN                      SPI2_NSS_PIN
@@ -110,6 +168,7 @@
 #define RX_CC2500_SPI_ANT_SEL_PIN       PA7
 
 #define USE_RX_FRSKY_SPI_TELEMETRY
+#define USE_RX_CC2500
 #define USE_RX_CC2500_SPI_PA_LNA
 #define USE_RX_CC2500_SPI_DIVERSITY
 #define USE_RX_FRSKY_SPI_D
@@ -136,9 +195,17 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
+#define USE_DSHOT
+#define USE_DSHOT_DMAR
+#define USE_DSHOT_BITBANG
+#define USE_DSHOT_TELEMETRY
+#define USE_DSHOT_TELEMETRY_STATS
+#define USE_BRUSHED_ESC_AUTODETECT  // Detect if brushed motors are connected and set defaults appropriately to avoid motors spinning on boot
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_AUTO
 
 /* ======== OTHER ======== */
+#define USE_SERVOS
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff

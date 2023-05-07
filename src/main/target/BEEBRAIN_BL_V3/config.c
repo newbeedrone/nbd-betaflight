@@ -210,11 +210,10 @@ void targetConfiguration(void)
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]        = OSD_POS(2, 10) | OSD_PROFILE_1_FLAG;
 #endif
 
-#if defined(BEEBRAIN_BL_V3_BASE)
-    strcpy(pilotConfigMutable()->name, "BeeBrain BLV3");
+    strcpy(pilotConfigMutable()->craftName, "BeeBrain BLV3");
 
-#elif defined (BEEBRAIN_BL_V3_MQT_XL)
-    strcpy(pilotConfigMutable()->name, "BBBL V3 MQT XL");
+#if defined (BEEBRAIN_BL_V3_MQT_XL)
+    strcpy(pilotConfigMutable()->craftName, "BBBL V3 MQT XL");
 
     gyroConfigMutable()->gyro_lpf1_static_hz = 300;
     gyroConfigMutable()->gyro_lpf2_static_hz = 600;

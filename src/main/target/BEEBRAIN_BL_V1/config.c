@@ -223,8 +223,6 @@ void targetConfiguration(void)
     }
 #endif
 
-#if defined(BEEBRAIN_BL_V1_BASE)
-    strcpy(pilotConfigMutable()->name, "BeeBrain BLV1");
-#endif
+    strcpy(pilotConfigMutable()->craftName, "BeeBrain BLV1");
 }
 #endif

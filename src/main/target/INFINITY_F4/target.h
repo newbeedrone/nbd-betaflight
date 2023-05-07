@@ -24,6 +24,8 @@
 #define USBD_PRODUCT_STRING             "Infinity F4"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
 #define LED0_PIN                        PC0
 
 /* ======== BUZZER ======== */
@@ -113,6 +115,16 @@
 #define USE_ACC_SPI_MPU6000
 
 /* ======== OSD ======== */
+#define USE_OSD
+#define USE_CANVAS
+#define USE_CMS
+#define USE_CMS_FAILSAFE_MENU
+#define USE_EXTENDED_CMS_MENUS
+#define USE_MSP_DISPLAYPORT
+#define USE_OSD_OVER_MSP_DISPLAYPORT
+#define USE_OSD_ADJUSTMENTS
+#define USE_OSD_PROFILES
+#define USE_OSD_STICK_OVERLAY
 #define USE_MAX7456
 
 #define MAX7456_SPI_CS_PIN              SPI1_NSS_PIN
@@ -160,6 +172,7 @@
 #endif
 
 /* ======== OTHER ======== */
+#define USE_SERVOS
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_TELEMETRY)
 
 #define TARGET_IO_PORTA                 0xffff

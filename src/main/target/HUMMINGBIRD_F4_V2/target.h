@@ -95,7 +95,7 @@
 #define MAX7456_SPI_INSTANCE            SPI2
 
 /* ======== VTX ======== */
-#if !defined(HUMMINGBIRD_F4_V2_BASE_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
+#if !defined(HUMMINGBIRD_F4_V2_NOBEESIGN) && !defined(HUMMINGBIRD_F4_V2_65_NOBEESIGN)
 #define USE_VTX
 #define USE_VTX_COMMON
 #define USE_VTX_CONTROL
@@ -111,6 +111,46 @@
 
 /* ======== RX ======== */
 #define USE_RX_SPI
+#define USE_RX_PPM
+#define USE_RX_PWM
+#define USE_SERIALRX
+#define USE_SERIALRX_CRSF               // Team Black Sheep Crossfire protocol
+#define USE_SERIALRX_GHST               // ImmersionRC Ghost Protocol
+#define USE_SERIALRX_IBUS               // FlySky and Turnigy receivers
+#define USE_SERIALRX_SBUS               // Frsky and Futaba receivers
+#define USE_SERIALRX_SPEKTRUM           // SRXL, DSM2 and DSMX protocol
+#define USE_SERIALRX_FPORT              // FrSky FPort
+#define USE_SERIALRX_XBUS               // JR
+#define USE_SERIALRX_SRXL2              // Spektrum SRXL2 protocol
+#define USE_SERIALRX_JETIEXBUS
+#define USE_SERIALRX_SUMD               // Graupner Hott protocol
+#define USE_SERIALRX_SUMH               // Graupner legacy protocol
+
+#define USE_CRSF_V3
+#define USE_CRSF_CMS_TELEMETRY
+#define USE_CRSF_LINK_STATISTICS
+
+#define USE_TELEMETRY
+#define USE_TELEMETRY_FRSKY_HUB
+#define USE_TELEMETRY_SMARTPORT
+#define USE_TELEMETRY_CRSF
+#define USE_TELEMETRY_GHST
+#define USE_TELEMETRY_SRXL
+#define USE_TELEMETRY_IBUS
+#define USE_TELEMETRY_IBUS_EXTENDED
+#define USE_TELEMETRY_JETIEXBUS
+#define USE_TELEMETRY_MAVLINK
+#define USE_TELEMETRY_HOTT
+#define USE_TELEMETRY_LTM
+
+#define USE_SPEKTRUM_BIND
+#define USE_SPEKTRUM_BIND_PLUG
+#define USE_SPEKTRUM_REAL_RSSI
+#define USE_SPEKTRUM_FAKE_RSSI
+#define USE_SPEKTRUM_RSSI_PERCENT_CONVERSION
+#define USE_SPEKTRUM_VTX_CONTROL
+#define USE_SPEKTRUM_VTX_TELEMETRY
+#define USE_SPEKTRUM_CMS_TELEMETRY
 
 #define RX_SPI_INSTANCE                 SPI3
 #define RX_SPI_LED_INVERTED

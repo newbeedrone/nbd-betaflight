@@ -163,8 +163,6 @@ void targetConfiguration(void)
         pidProfilesMutable(0)->yaw_lowpass_hz = 100;
     }
 
-#if defined INFINITY_AIO_V2_PRO_BASE
-    strcpy(pilotConfigMutable()->name, "InfinityAIOv2Pro");
-#endif
+    strcpy(pilotConfigMutable()->craftName, "InfinityAIOv2Pro");
 }
 #endif
