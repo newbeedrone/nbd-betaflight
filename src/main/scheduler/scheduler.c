@@ -271,25 +271,25 @@ timeDelta_t getTaskDeltaTimeUs(taskId_e taskId)
 }
 
 // Called by tasks executing what are known to be short states
-void schedulerIgnoreTaskStateTime()
+void schedulerIgnoreTaskStateTime(void)
 {
     ignoreCurrentTaskExecRate = true;
     ignoreCurrentTaskExecTime = true;
 }
 
 // Called by tasks with state machines to only count one state as determining rate
-void schedulerIgnoreTaskExecRate()
+void schedulerIgnoreTaskExecRate(void)
 {
     ignoreCurrentTaskExecRate = true;
 }
 
 // Called by tasks without state machines executing in what is known to be a shorter time than peak
-void schedulerIgnoreTaskExecTime()
+void schedulerIgnoreTaskExecTime(void)
 {
     ignoreCurrentTaskExecTime = true;
 }
 
-bool schedulerGetIgnoreTaskExecTime()
+bool schedulerGetIgnoreTaskExecTime(void)
 {
     return ignoreCurrentTaskExecTime;
 }
@@ -365,7 +365,7 @@ FAST_CODE void schedulerSetNextStateTime(timeDelta_t nextStateTime)
     taskNextStateTime = nextStateTime;
 }
 
-FAST_CODE timeDelta_t schedulerGetNextStateTime()
+FAST_CODE timeDelta_t schedulerGetNextStateTime(void)
 {
     return currentTask->anticipatedExecutionTime >> TASK_EXEC_TIME_SHIFT;
 }
@@ -538,7 +538,6 @@ FAST_CODE void scheduler(void)
 #endif
             lastTargetCycles = nextTargetCycles;
 
-#ifdef USE_GYRO_EXTI
             gyroDev_t *gyro = gyroActiveDev();
 
             // Bring the scheduler into lock with the gyro
@@ -547,7 +546,7 @@ FAST_CODE void scheduler(void)
                 static uint32_t terminalGyroRateCount = 0;
                 static int32_t sampleRateStartCycles;
 
-                if ((terminalGyroRateCount == 0)) {
+                if (terminalGyroRateCount == 0) {
                     terminalGyroRateCount = gyro->detectedEXTI + GYRO_RATE_COUNT;
                     sampleRateStartCycles = nowCycles;
                 }
@@ -571,7 +570,7 @@ FAST_CODE void scheduler(void)
 
                 accGyroSkew += gyroSkew;
 
-                if ((terminalGyroLockCount == 0)) {
+                if (terminalGyroLockCount == 0) {
                     terminalGyroLockCount = gyro->detectedEXTI + GYRO_LOCK_COUNT;
                 }
 
@@ -584,7 +583,6 @@ FAST_CODE void scheduler(void)
                     accGyroSkew = 0;
                 }
             }
-#endif
        }
     }
 
@@ -710,12 +708,11 @@ FAST_CODE void scheduler(void)
         }
     }
 
-#if !defined(UNIT_TEST)
-    DEBUG_SET(DEBUG_SCHEDULER, 2, micros() - schedulerStartTimeUs - taskExecutionTimeUs); // time spent in scheduler
-#endif
-
 #if defined(UNIT_TEST)
     readSchedulerLocals(selectedTask, selectedTaskDynamicPriority);
+    UNUSED(taskExecutionTimeUs);
+#else
+    DEBUG_SET(DEBUG_SCHEDULER, 2, micros() - schedulerStartTimeUs - taskExecutionTimeUs); // time spent in scheduler
 #endif
 
     scheduleCount++;

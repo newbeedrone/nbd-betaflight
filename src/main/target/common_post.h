@@ -18,11 +18,71 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Touch up configuration
-
 #pragma once
 
 #include "build/version.h"
+
+/*
+
+    The purpose of this file is to enable / disable any firmware "gates" for features and drivers
+    that require hardware resources that are either available or not available after the target.h
+    has been processed.
+
+    It should also be used to define anything that should be defined (and is required), but is not
+    already, to some sort of defaults.
+
+    CLOUD_BUILD and CORE_BUILD should not be referenced here.
+
+    NOTE: for 4.5 we will be removing any conditions related to specific MCU types, instead 
+    these should be defined in the target.h or in a file that is imported by target.h (in the
+    case of common settings for a given MCU group)
+    
+*/
+
+/*
+    BEGIN HARDWARE INCLUSIONS
+    
+    Simplified options for the moment, i.e. adding USE_MAG or USE_BARO and the entire driver suite is added.
+    In the future we can move to specific drivers being added only - to save flash space.
+*/
+
+#if defined(USE_MAG) && !defined(USE_FAKE_MAG)
+#define USE_MAG_DATA_READY_SIGNAL
+#define USE_MAG_HMC5883
+#define USE_MAG_SPI_HMC5883
+#define USE_MAG_QMC5883
+#define USE_MAG_LIS3MDL
+#define USE_MAG_AK8963
+#define USE_MAG_MPU925X_AK8963
+#define USE_MAG_SPI_AK8963
+#define USE_MAG_AK8975
+#endif
+
+#if defined(USE_RX_CC2500)
+
+#if !defined(USE_RX_SPI)
+#define USE_RX_SPI
+#endif
+
+#define USE_RX_CC2500_SPI_PA_LNA
+#define USE_RX_CC2500_SPI_DIVERSITY
+
+#define USE_RX_SFHSS_SPI
+#define USE_RX_REDPINE_SPI
+
+#define USE_RX_FRSKY_SPI_D
+#define USE_RX_FRSKY_SPI_X
+#define USE_RX_FRSKY_SPI
+#define USE_RX_FRSKY_SPI_TELEMETRY
+
+#define USE_RX_FLYSKY
+#define USE_RX_FLYSKY_SPI_LED
+#define USE_RX_SPEKTRUM
+#define USE_RX_SPEKTRUM_TELEMETRY
+
+#endif // defined(USE_RX_CC2500)
+
+/* END HARDWARE INCLUSIONS */
 
 #if defined(USE_VTX_RTC6705_SOFTSPI)
 #define USE_VTX_RTC6705
@@ -47,8 +107,7 @@
 #endif
 #endif
 
-// XXX Remove USE_BARO_BMP280 and USE_BARO_MS5611 if USE_I2C is not defined.
-// XXX This should go away buy editing relevant target.h files
+// Remove USE_BARO_BMP280 and USE_BARO_MS5611 if USE_I2C is not defined.
 #if !defined(USE_I2C)
 #if defined(USE_BARO_BMP280)
 #undef USE_BARO_BMP280
@@ -56,16 +115,6 @@
 #if defined(USE_BARO_MS5611)
 #undef USE_BARO_MS5611
 #endif
-#endif
-
-#if !defined(USE_MAG)
-#undef USE_MAG_DATA_READY_SIGNAL
-#undef USE_MAG_HMC5883
-#undef USE_MAG_SPI_HMC5883
-#undef USE_MAG_QMC5883
-#undef USE_MAG_LIS3MDL
-#undef USE_MAG_AK8963
-#undef USE_MAG_SPI_AK8963
 #endif
 
 #if !defined(USE_BARO) && !defined(USE_GPS)
@@ -76,8 +125,7 @@
 #define BARO_EOC_PIN NONE
 #endif
 
-
-#if !defined(USE_SERIAL_RX)
+#if !defined(USE_SERIALRX)
 #undef USE_SERIALRX_CRSF
 #undef USE_SERIALRX_IBUS
 #undef USE_SERIALRX_JETIEXBUS
@@ -101,7 +149,10 @@
 #undef USE_TELEMETRY_MAVLINK
 #undef USE_TELEMETRY_SMARTPORT
 #undef USE_TELEMETRY_SRXL
-#undef USE_SERIALRX_FPORT
+
+#ifdef USE_SERIALRX_FPORT
+#define USE_TELEMETRY
+#endif
 #endif
 
 #if !defined(USE_SERIALRX_CRSF)
@@ -120,6 +171,10 @@
 
 #if !defined(USE_TELEMETRY_CRSF) || !defined(USE_CMS)
 #undef USE_CRSF_CMS_TELEMETRY
+#endif
+
+#if !defined(USE_TELEMETRY_CRSF)
+#undef USE_CRSF_V3
 #endif
 
 #if !defined(USE_SERIALRX_JETIEXBUS)
@@ -150,7 +205,7 @@
 #define USE_SBUS_CHANNELS
 #endif
 
-#if !defined(USE_TELEMETRY_SMARTPORT) && !defined(USE_TELEMETRY_CRSF)
+#if !defined(USE_TELEMETRY_SMARTPORT) && !defined(USE_TELEMETRY_CRSF) && !defined(USE_TELEMETRY_GHST)
 #undef USE_MSP_OVER_TELEMETRY
 #endif
 
@@ -165,23 +220,7 @@
 #undef USE_VTX_TRAMP
 #undef USE_VTX_SMARTAUDIO
 #undef USE_VTX_TABLE
-#endif
-
-#if defined(USE_RX_FRSKY_SPI_D) || defined(USE_RX_FRSKY_SPI_X) || defined(USE_RX_REDPINE_SPI)
-#define USE_RX_CC2500
-#define USE_RX_FRSKY_SPI
-#endif
-
-#if defined(USE_RX_SFHSS_SPI)
-#define USE_RX_CC2500
-#endif
-
-#if !defined(USE_RX_CC2500)
-#undef USE_RX_CC2500_SPI_PA_LNA
-#endif
-
-#if !defined(USE_RX_CC2500_SPI_PA_LNA)
-#undef USE_RX_CC2500_SPI_DIVERSITY
+#undef USE_VTX_MSP
 #endif
 
 // Burst dshot to default off if not configured explicitly by target
@@ -194,18 +233,24 @@
 #undef USE_ADC_INTERNAL
 #endif
 
-#if defined(USE_FLASH_W25M512)
-#define USE_FLASH_W25M
+#ifdef USE_FLASH
+#define USE_FLASHFS
+#define USE_FLASH_TOOLS
+#endif
+
+#if (defined(USE_FLASH_W25M512) || defined(USE_FLASH_W25Q128FV)) && !defined(USE_FLASH_M25P16)
 #define USE_FLASH_M25P16
-#define USE_FLASH_W25M
 #endif
 
-#if defined(USE_FLASH_W25M02G)
+#if defined(USE_FLASH_W25M02G) && !defined(USE_FLASH_W25N01G)
 #define USE_FLASH_W25N01G
+#endif
+
+#if (defined(USE_FLASH_M25P16) || defined(USE_FLASH_W25N01G)) && !defined(USE_FLASH_W25M)
 #define USE_FLASH_W25M
 #endif
 
-#if defined(USE_FLASH_M25P16) || defined(USE_FLASH_W25N01G)
+#if defined(USE_FLASH_M25P16) || defined(USE_FLASH_W25M) || defined(USE_FLASH_W25N01G) || defined(USE_FLASH_W25Q128FV)
 #define USE_FLASH_CHIP
 #endif
 
@@ -231,10 +276,6 @@
 #define USE_USB_ADVANCED_PROFILES
 #endif
 
-#if defined(USE_MAX7456)
-#define USE_OSD
-#endif
-
 #if !defined(USE_OSD)
 #undef USE_RX_LINK_QUALITY_INFO
 #undef USE_OSD_PROFILES
@@ -242,8 +283,18 @@
 #undef USE_RX_LINK_UPLINK_POWER
 #endif
 
-#if defined(USE_GPS_RESCUE)
-#define USE_GPS
+// Older ACC/GYRO sensors use MPU6500 driver
+#if !defined(USE_ACC_MPU6500) && (defined(USE_ACC_ICM20601) || defined(USE_ACC_ICM20602) || defined(USE_ACC_ICM20608G))
+#define USE_ACC_MPU6500
+#endif
+#if !defined(USE_ACC_SPI_MPU6500) && (defined(USE_ACC_SPI_ICM20601) || defined(USE_ACC_SPI_ICM20602) || defined(USE_ACC_SPI_ICM20608G))
+#define USE_ACC_SPI_MPU6500
+#endif
+#if !defined(USE_GYRO_MPU6500) && (defined(USE_GYRO_ICM20601) || defined(USE_GYRO_ICM20602) || defined(USE_GYRO_ICM20608G))
+#define USE_GYRO_MPU6500
+#endif
+#if !defined(USE_GYRO_SPI_MPU6500) && (defined(USE_GYRO_SPI_ICM20601) || defined(USE_GYRO_SPI_ICM20602) || defined(USE_GYRO_SPI_ICM20608G))
+#define USE_GYRO_SPI_MPU6500
 #endif
 
 // Generate USE_SPI_GYRO or USE_I2C_GYRO
@@ -251,7 +302,7 @@
 #define USE_I2C_GYRO
 #endif
 
-#if defined(USE_GYRO_SPI_ICM20689) || defined(USE_GYRO_SPI_MPU6000) || defined(USE_GYRO_SPI_MPU6500) || defined(USE_GYRO_SPI_MPU9250) || defined(USE_GYRO_L3GD20) || defined(USE_GYRO_SPI_ICM42605) || defined(USE_GYRO_SPI_ICM42688P)
+#if defined(USE_GYRO_SPI_ICM20689) || defined(USE_GYRO_SPI_MPU6000) || defined(USE_GYRO_SPI_MPU6500) || defined(USE_GYRO_SPI_MPU9250) || defined(USE_GYRO_L3GD20) || defined(USE_GYRO_SPI_ICM42605) || defined(USE_GYRO_SPI_ICM42688P) || defined(USE_ACCGYRO_BMI270)
 #define USE_SPI_GYRO
 #endif
 
@@ -264,20 +315,13 @@
 // Should be set to zero for generic targets to ensure USB is working
 // when unconfigured for targets with non-standard crystal.
 // Can be set at runtime with with CLI parameter 'system_hse_value'.
-#if !defined(STM32F4) || defined(USE_UNIFIED_TARGET)
 #define SYSTEM_HSE_VALUE 0
-#else
-#ifdef TARGET_XTAL_MHZ
-#define SYSTEM_HSE_VALUE TARGET_XTAL_MHZ
-#else
-#define SYSTEM_HSE_VALUE (HSE_VALUE/1000000U)
-#endif
-#endif // !STM32F4 || USE_UNIFIED_TARGET
 
 // Number of pins that needs pre-init
 #ifdef USE_SPI
 #ifndef SPI_PREINIT_COUNT
-#define SPI_PREINIT_COUNT 16 // 2 x 8 (GYROx2, BARO, MAG, MAX, FLASHx2, RX)
+// 2 x 8 (GYROx2, BARO, MAG, MAX, FLASHx2, RX)
+#define SPI_PREINIT_COUNT 16 
 #endif
 #endif
 
@@ -292,15 +336,25 @@
 #if !defined(USE_SERIAL_4WAY_BLHELI_BOOTLOADER) && !defined(USE_SERIAL_4WAY_SK_BOOTLOADER)
 #undef  USE_SERIAL_4WAY_BLHELI_INTERFACE
 #elif !defined(USE_SERIAL_4WAY_BLHELI_INTERFACE) && (defined(USE_SERIAL_4WAY_BLHELI_BOOTLOADER) || defined(USE_SERIAL_4WAY_SK_BOOTLOADER))
+#ifndef USE_SERIAL_4WAY_BLHELI_INTERFACE
 #define USE_SERIAL_4WAY_BLHELI_INTERFACE
 #endif
+#endif
 
-#if !defined(USE_PWM_OUTPUT)
-#undef USE_SERIAL_4WAY_BLHELI_INTERFACE // implementation requires USE_PWM_OUTPUT to find motor outputs.
+#if defined(USE_RX_PWM) || defined(USE_DSHOT) || defined(USE_LED_STRIP) || defined(USE_TRANSPONDER) || defined(USE_BEEPER) || defined(USE_SERIAL_4WAY_BLHELI_INTERFACE)
+#ifndef USE_PWM_OUTPUT
+#define USE_PWM_OUTPUT
+#endif
 #endif
 
 #if !defined(USE_LED_STRIP)
 #undef USE_LED_STRIP_STATUS_MODE
+#endif
+
+#if defined(USE_MAX7456) || defined(USE_FRSKYOSD) || defined(USE_MSP_DISPLAYPORT)
+#ifndef USE_VIDEO_SYSTEM
+#define USE_VIDEO_SYSTEM
+#endif
 #endif
 
 #if defined(USE_LED_STRIP) && !defined(USE_LED_STRIP_STATUS_MODE)
@@ -344,20 +398,14 @@
 #undef BEEPER_PWM_HZ
 #endif
 
-#if defined(USE_DSHOT) || defined(USE_LED_STRIP) || defined(USE_TRANSPONDER)
+#if defined(USE_DMA_SPEC)
 #define USE_TIMER_DMA
 #else
-#undef USE_DMA_SPEC
-#endif
-
-#if !defined(USE_DMA_SPEC)
 #undef USE_TIMER_MGMT
 #endif
 
 #if defined(USE_TIMER_MGMT)
 #undef USED_TIMERS
-#else
-#undef USE_UNIFIED_TARGET
 #endif
 
 #if !defined(USE_RANGEFINDER)
@@ -409,9 +457,28 @@ extern uint8_t __config_end;
 #define USE_CUSTOM_DEFAULTS_ADDRESS
 #endif
 
-#if !defined(USE_EXTI)
-#undef USE_RX_SPI
-#undef USE_RANGEFINDER_HCSR04
+#if defined(USE_RX_EXPRESSLRS) && defined(STM32F411)
+#define RX_SPI_DEFAULT_PROTOCOL          RX_SPI_EXPRESSLRS
+#endif
+
+#if defined(USE_RX_EXPRESSLRS) && !defined(RX_EXPRESSLRS_TIMER_INSTANCE) && (defined(STM32F411) || defined(STM32F405) || defined(STM32F745) || defined(STM32H7))
+#define RX_EXPRESSLRS_TIMER_INSTANCE     TIM5
+#endif
+
+#if defined(USE_RX_EXPRESSLRS)
+// ELRS depends on CRSF telemetry
+#if !defined(USE_TELEMETRY)
+#define USE_TELEMETRY
+#endif
+#if !defined(USE_TELEMETRY_CRSF)
+#define USE_TELEMETRY_CRSF
+#endif
+#if !defined(USE_CRSF_LINK_STATISTICS)
+#define USE_CRSF_LINK_STATISTICS
+#endif
+#if !defined(USE_SERIALRX_CRSF)
+#define USE_SERIALRX_CRSF
+#endif
 #endif
 
 #if defined(USE_RX_SPI) || defined (USE_SERIALRX_SRXL2)
