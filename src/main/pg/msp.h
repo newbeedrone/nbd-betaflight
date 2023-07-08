@@ -20,8 +20,12 @@
 
 #pragma once
 
-#include "cms/cms.h"
-#include "cms/cms_types.h"
-extern CMS_Menu cmsx_menuVtxMsp;
+#include "drivers/io_types.h"
 
-void mspCmsUpdateStatusString(void);
+#include "pg/pg.h"
+
+typedef struct mspConfig_s {
+    uint8_t halfDuplex; // allow msp to operate in half duplex mode
+} mspConfig_t;
+
+PG_DECLARE(mspConfig_t, mspConfig);

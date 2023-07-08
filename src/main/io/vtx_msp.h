@@ -20,8 +20,16 @@
 
 #pragma once
 
-#include "cms/cms.h"
-#include "cms/cms_types.h"
-extern CMS_Menu cmsx_menuVtxMsp;
+#include <stdint.h>
 
-void mspCmsUpdateStatusString(void);
+#include "build/build_config.h"
+
+typedef enum {
+    // Offline - device hasn't responded yet
+    MSP_VTX_STATUS_OFFLINE = 0,
+    MSP_VTX_STATUS_READY,
+} mspVtxStatus_e;
+
+bool vtxMspInit(void);
+void setMspVtxDeviceStatusReady(const int descriptor);
+void prepareMspFrame(uint8_t *mspFrame);

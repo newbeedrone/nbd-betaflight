@@ -20,8 +20,21 @@
 
 #pragma once
 
-#include "cms/cms.h"
-#include "cms/cms_types.h"
-extern CMS_Menu cmsx_menuVtxMsp;
+#include <stdbool.h>
+#include <stdint.h>
 
-void mspCmsUpdateStatusString(void);
+#include "pg/pg.h"
+
+typedef struct gpsConfig_s {
+    uint8_t provider;
+    uint8_t sbasMode;
+    uint8_t autoConfig;
+    uint8_t autoBaud;
+    uint8_t gps_ublox_mode;
+    bool gps_ublox_use_galileo;
+    bool gps_set_home_point_once;
+    bool gps_use_3d_speed;
+    bool sbas_integrity;
+} gpsConfig_t;
+
+PG_DECLARE(gpsConfig_t, gpsConfig);

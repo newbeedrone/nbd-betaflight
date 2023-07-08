@@ -18,10 +18,23 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "platform.h"
 
-#include "cms/cms.h"
-#include "cms/cms_types.h"
-extern CMS_Menu cmsx_menuVtxMsp;
+#ifdef USE_RPM_FILTER
 
-void mspCmsUpdateStatusString(void);
+#include "pg/pg.h"
+#include "pg/pg_ids.h"
+
+#include "rpm_filter.h"
+
+PG_REGISTER_WITH_RESET_TEMPLATE(rpmFilterConfig_t, rpmFilterConfig, PG_RPM_FILTER_CONFIG, 5);
+
+PG_RESET_TEMPLATE(rpmFilterConfig_t, rpmFilterConfig,
+    .rpm_filter_harmonics = 3,
+    .rpm_filter_min_hz = 100,
+    .rpm_filter_fade_range_hz = 50,
+    .rpm_filter_q = 500,
+    .rpm_filter_lpf_hz = 150
+);
+
+#endif // USE_RPM_FILTER

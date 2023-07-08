@@ -18,10 +18,11 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "platform.h"
 
-#include "cms/cms.h"
-#include "cms/cms_types.h"
-extern CMS_Menu cmsx_menuVtxMsp;
+#include "pg/pg.h"
+#include "pg/pg_ids.h"
 
-void mspCmsUpdateStatusString(void);
+#include "msp.h"
+
+PG_REGISTER(mspConfig_t, mspConfig, PG_MSP_CONFIG, 0);
