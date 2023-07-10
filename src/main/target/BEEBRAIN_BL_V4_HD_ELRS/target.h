@@ -58,15 +58,15 @@
 // #define UART5_RX_PIN                    PD2
 // #define UART5_TX_PIN                    PD1
 
-// #define USE_UART7
-// #define UART7_RX_PIN                    PE7
-// #define UART7_TX_PIN                    PE8
+#define USE_UART7
+#define UART7_RX_PIN                    PE7
+#define UART7_TX_PIN                    PE8
 
-// #define USE_UART8
-// #define UART8_RX_PIN                    PE0
-// #define UART8_TX_PIN                    PE1
+#define USE_UART8
+#define UART8_RX_PIN                    PE0
+#define UART8_TX_PIN                    PE1
 
-#define SERIAL_PORT_COUNT               4
+#define SERIAL_PORT_COUNT               6
 
 /* ======== SPI ======== */
 #define USE_SPI
@@ -152,6 +152,10 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
+#define USE_PINIO
+#define USE_PINIOBOX
+#define PINIO1_PIN                      PB14
+
 #define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_ESC_SENSOR | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
@@ -163,3 +167,5 @@
 
 #define USABLE_TIMER_CHANNEL_COUNT      6
 #define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(4) )
+
+#define USE_TARGET_CONFIG
