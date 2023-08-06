@@ -16,26 +16,25 @@
  * along with this software.
  *
  * If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Author: Dominic Clifton
  */
 
 #pragma once
 
-#include "io/displayport_msp.h"
-#include "pg/pg.h"
+#ifdef USE_OCTOSPI
 
-typedef struct displayPortProfile_s {
-    int8_t colAdjust;
-    int8_t rowAdjust;
-    bool invert;
-    uint8_t blackBrightness;
-    uint8_t whiteBrightness;
+typedef struct octoSpiHardware_s {
+    OCTOSPIDevice device;
+    OCTOSPI_TypeDef *reg;
+} octoSpiHardware_t;
 
-    // For attribute-rich OSDs
+typedef struct OCTOSPIDevice_s {
+    OCTOSPI_TypeDef *dev;
+} octoSpiDevice_t;
 
-    uint8_t fontSelection[DISPLAYPORT_SEVERITY_COUNT];
-    uint8_t useDeviceBlink;    // Use device local blink capability
-} displayPortProfile_t;
+extern octoSpiDevice_t octoSpiDevice[OCTOSPIDEV_COUNT];
 
-PG_DECLARE(displayPortProfile_t, displayPortProfileMsp);
+void octoSpiInitDevice(OCTOSPIDevice device);
 
-PG_DECLARE(displayPortProfile_t, displayPortProfileMax7456);
+#endif

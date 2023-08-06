@@ -18,13 +18,4 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-<<<<<<<< HEAD:src/main/io/vtx_beesign.h
-#pragma once
-
-#include <stdint.h>
-
-bool vtxBeesignInit(void);
-void beesignProcess(timeUs_t currentTimeUs);
-========
 #include <stddef.h>
->>>>>>>> 4.4.0:src/main/target/STM32H750/target.c

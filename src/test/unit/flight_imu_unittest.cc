@@ -213,7 +213,6 @@ extern "C" {
     mag_t mag;
 
     gpsSolutionData_t gpsSol;
-    int16_t GPS_verticalSpeedInCmS;
 
     uint8_t debugMode;
     int16_t debug[DEBUG16_VALUE_COUNT];
@@ -257,6 +256,7 @@ extern "C" {
     float baroUpsampleAltitude()  { return 0.0f; }
     float pt2FilterGain(float, float)  { return 0.0f; }
     float getBaroAltitude(void) { return 3000.0f; }
+    float gpsRescueGetImuYawCogGain(void) { return 1.0f; }
 
     void pt2FilterInit(pt2Filter_t *baroDerivativeLpf, float) {
         UNUSED(baroDerivativeLpf);

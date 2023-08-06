@@ -118,10 +118,6 @@
 
 #include "target/common_pre.h"
 
-#ifdef __BOARD__
-#include "board.h"
-#endif
-
 #include "target.h"
 #include "target/common_post.h"
 #include "target/common_defaults_post.h"
