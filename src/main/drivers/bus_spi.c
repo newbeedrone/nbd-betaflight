@@ -41,6 +41,10 @@
 
 #define NUM_QUEUE_SEGS 5
 
+#if !defined(STM32G4) && !defined(STM32H7) && !defined(AT32F435)
+#define USE_TX_IRQ_HANDLER
+#endif
+
 static uint8_t spiRegisteredDeviceCount = 0;
 
 spiDevice_t spiDevice[SPIDEV_COUNT];
@@ -168,6 +172,13 @@ void spiWait(const extDevice_t *dev)
 {
     // Wait for completion
     while (spiIsBusy(dev));
+}
+
+// Negate CS if held asserted after a transfer
+void spiRelease(const extDevice_t *dev)
+{
+    // Negate Chip Select
+    IOHi(dev->busType_u.spi.csnPin);
 }
 
 // Wait for bus to become free, then read/write block of data
@@ -355,6 +366,12 @@ uint16_t spiCalculateDivider(uint32_t freq)
     uint32_t spiClk = SystemCoreClock / 2;
 #elif defined(STM32H7)
     uint32_t spiClk = 100000000;
+#elif defined(AT32F4)
+    if(freq > 36000000){
+        freq = 36000000;
+    }
+
+    uint32_t spiClk = system_core_clock / 2;
 #else
 #error "Base SPI clock not defined for this architecture"
 #endif
@@ -374,6 +391,13 @@ uint32_t spiCalculateClock(uint16_t spiClkDivisor)
     uint32_t spiClk = SystemCoreClock / 2;
 #elif defined(STM32H7)
     uint32_t spiClk = 100000000;
+#elif defined(AT32F4)
+    uint32_t spiClk = system_core_clock / 2;
+
+    if ((spiClk / spiClkDivisor) > 36000000){
+        return 36000000;
+    }
+
 #else
 #error "Base SPI clock not defined for this architecture"
 #endif
@@ -397,8 +421,13 @@ FAST_IRQ_HANDLER static void spiIrqHandler(const extDevice_t *dev)
             break;
 
         case BUS_ABORT:
-            bus->curSegment = (busSegment_t *)BUS_SPI_FREE;
-            return;
+            // Skip to the end of the segment list
+            nextSegment = (busSegment_t *)bus->curSegment + 1;
+            while (nextSegment->len != 0) {
+                bus->curSegment = nextSegment;
+                nextSegment = (busSegment_t *)bus->curSegment + 1;
+            }
+            break;
 
         case BUS_READY:
         default:
@@ -491,7 +520,7 @@ FAST_IRQ_HANDLER static void spiRxIrqHandler(dmaChannelDescriptor_t* descriptor)
     spiIrqHandler(dev);
 }
 
-#if !defined(STM32G4) && !defined(STM32H7)
+#ifdef USE_TX_IRQ_HANDLER
 // Interrupt handler for SPI transmit DMA completion
 FAST_IRQ_HANDLER static void spiTxIrqHandler(dmaChannelDescriptor_t* descriptor)
 {
@@ -589,7 +618,7 @@ void spiInitBusDMA(void)
         }
 
         for (uint8_t opt = txDmaoptMin; opt <= txDmaoptMax; opt++) {
-            const dmaChannelSpec_t *dmaTxChannelSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_SPI_MOSI, device, opt);
+            const dmaChannelSpec_t *dmaTxChannelSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_SPI_SDO, device, opt);
 
             if (dmaTxChannelSpec) {
                 dmaTxIdentifier = dmaGetIdentifier(dmaTxChannelSpec->ref);
@@ -599,16 +628,20 @@ void spiInitBusDMA(void)
                     break;
                 }
 #endif
-                if (!dmaAllocate(dmaTxIdentifier, OWNER_SPI_MOSI, device + 1)) {
+                if (!dmaAllocate(dmaTxIdentifier, OWNER_SPI_SDO, device + 1)) {
                     dmaTxIdentifier = DMA_NONE;
                     continue;
                 }
                 bus->dmaTx = dmaGetDescriptorByIdentifier(dmaTxIdentifier);
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7)
                 bus->dmaTx->stream = DMA_DEVICE_INDEX(dmaTxIdentifier);
                 bus->dmaTx->channel = dmaTxChannelSpec->channel;
+#endif
 
                 dmaEnable(dmaTxIdentifier);
-
+#if defined(USE_ATBSP_DRIVER)
+                dmaMuxEnable(dmaTxIdentifier,dmaTxChannelSpec->dmaMuxId);
+#endif
                 break;
             }
         }
@@ -623,7 +656,7 @@ void spiInitBusDMA(void)
         }
 
         for (uint8_t opt = rxDmaoptMin; opt <= rxDmaoptMax; opt++) {
-            const dmaChannelSpec_t *dmaRxChannelSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_SPI_MISO, device, opt);
+            const dmaChannelSpec_t *dmaRxChannelSpec = dmaGetChannelSpecByPeripheral(DMA_PERIPH_SPI_SDI, device, opt);
 
             if (dmaRxChannelSpec) {
                 dmaRxIdentifier = dmaGetIdentifier(dmaRxChannelSpec->ref);
@@ -633,16 +666,20 @@ void spiInitBusDMA(void)
                     break;
                 }
 #endif
-                if (!dmaAllocate(dmaRxIdentifier, OWNER_SPI_MISO, device + 1)) {
+                if (!dmaAllocate(dmaRxIdentifier, OWNER_SPI_SDI, device + 1)) {
                     dmaRxIdentifier = DMA_NONE;
                     continue;
                 }
                 bus->dmaRx = dmaGetDescriptorByIdentifier(dmaRxIdentifier);
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7)
                 bus->dmaRx->stream = DMA_DEVICE_INDEX(dmaRxIdentifier);
                 bus->dmaRx->channel = dmaRxChannelSpec->channel;
+#endif
 
                 dmaEnable(dmaRxIdentifier);
-
+#if defined(USE_ATBSP_DRIVER)
+                dmaMuxEnable(dmaRxIdentifier,dmaRxChannelSpec->dmaMuxId);
+#endif
                 break;
             }
         }
@@ -660,7 +697,7 @@ void spiInitBusDMA(void)
             dmaSetHandler(dmaRxIdentifier, spiRxIrqHandler, NVIC_PRIO_SPI_DMA, 0);
 
             bus->useDMA = true;
-#if !defined(STM32G4) && !defined(STM32H7)
+#ifdef USE_TX_IRQ_HANDLER
         } else if (dmaTxIdentifier) {
             // Transmit on DMA is adequate for OSD so worth having
             bus->dmaTx = dmaGetDescriptorByIdentifier(dmaTxIdentifier);
@@ -706,7 +743,7 @@ bool spiUseDMA(const extDevice_t *dev)
     return dev->bus->useDMA && dev->bus->dmaRx && dev->useDMA;
 }
 
-bool spiUseMOSI_DMA(const extDevice_t *dev)
+bool spiUseSDO_DMA(const extDevice_t *dev)
 {
     return dev->bus->useDMA && dev->useDMA;
 }
@@ -726,6 +763,19 @@ uint8_t spiGetRegisteredDeviceCount(void)
 uint8_t spiGetExtDeviceCount(const extDevice_t *dev)
 {
     return dev->bus->deviceCount;
+}
+
+// Link two segment lists
+// Note that there is no need to unlink segment lists as this is done automatically as they are processed
+void spiLinkSegments(const extDevice_t *dev, busSegment_t *firstSegment, busSegment_t *secondSegment)
+{
+    busSegment_t *endSegment;
+
+    // Find the last segment of the new transfer
+    for (endSegment = firstSegment; endSegment->len; endSegment++);
+
+    endSegment->u.link.dev = dev;
+    endSegment->u.link.segments = secondSegment;
 }
 
 // DMA transfer setup and start

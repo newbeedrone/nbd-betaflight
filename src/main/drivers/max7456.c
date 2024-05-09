@@ -328,8 +328,8 @@ void max7456ReInit(void)
         } else if (VIN_IS_PAL(srdata)) {
             videoSignalReg = VIDEO_MODE_PAL | OSD_ENABLE;
         } else {
-            // No valid input signal, fallback to default (XXX NTSC for now)
-            videoSignalReg = VIDEO_MODE_NTSC | OSD_ENABLE;
+            // No valid input signal, fallback to default (PAL)
+            videoSignalReg = VIDEO_MODE_PAL | OSD_ENABLE;
         }
         break;
     }
@@ -707,8 +707,8 @@ bool max7456DrawScreen(void)
         bool autoInc = false;
         int posLimit = pos + (maxScreenSize / 2);
 
-        maxSpiBufStartIndex = spiUseMOSI_DMA(dev) ? MAX_BYTES2SEND : MAX_BYTES2SEND_POLLED;
-        maxEncodeTime = spiUseMOSI_DMA(dev) ? MAX_ENCODE_US : MAX_ENCODE_US_POLLED;
+        maxSpiBufStartIndex = spiUseSDO_DMA(dev) ? MAX_BYTES2SEND : MAX_BYTES2SEND_POLLED;
+        maxEncodeTime = spiUseSDO_DMA(dev) ? MAX_ENCODE_US : MAX_ENCODE_US_POLLED;
 
         // Abort for now if the bus is still busy
         if (spiIsBusy(dev)) {

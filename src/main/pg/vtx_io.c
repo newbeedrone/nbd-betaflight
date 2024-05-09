@@ -43,7 +43,7 @@ void pgResetFn_vtxIOConfig(vtxIOConfig_t *vtxIOConfig)
 
     // software SPI
     vtxIOConfig->clockTag = IO_TAG(RTC6705_SPICLK_PIN);
-    vtxIOConfig->dataTag = IO_TAG(RTC6705_SPI_MOSI_PIN);
+    vtxIOConfig->dataTag = IO_TAG(RTC6705_SPI_SDO_PIN);
 
     // external power controller
 #ifdef RTC6705_DYNAMIC_POWER_CTRL

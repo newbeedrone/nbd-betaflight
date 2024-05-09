@@ -104,11 +104,14 @@ struct {
     { 0xEF4016, 133, 50, 64, 256 },
     // Winbond W25Q64
     // Datasheet: https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf
-    { 0xEF4017, 133, 50, 128, 256 }, // W25Q64JV-IQ/JQ 
+    { 0xEF4017, 133, 50, 128, 256 }, // W25Q64JV-IQ/JQ
     { 0xEF7017, 133, 50, 128, 256 }, // W25Q64JV-IM/JM*
     // Winbond W25Q128
     // Datasheet: https://www.winbond.com/resource-files/w25q128fv%20rev.l%2008242015.pdf
     { 0xEF4018, 104, 50, 256, 256 },
+    // PUYA PY25Q128
+    // Datasheet: https://www.puyasemi.com/download_path/%E6%95%B0%E6%8D%AE%E6%89%8B%E5%86%8C/Flash%20%E8%8A%AF%E7%89%87/PY25F128HA_datasheet_V1.1.pdf
+    { 0x852018, 133, 80, 256, 256 },
     // Zbit ZB25VQ128
     // Datasheet: http://zbitsemi.com/upload/file/20201010/20201010174048_82182.pdf
     { 0x5E4018, 104, 50, 256, 256 },
@@ -145,7 +148,7 @@ static uint8_t m25p16_page_buffer[M25P16_PAGESIZE];
 
 static uint8_t m25p16_readStatus(flashDevice_t *fdevice)
 {
-    uint8_t status;
+    uint8_t status = 0;
     if (fdevice->io.mode == FLASHIO_SPI) {
         STATIC_DMA_DATA_AUTO uint8_t readStatus[2] = { M25P16_INSTRUCTION_READ_STATUS_REG, 0 };
         STATIC_DMA_DATA_AUTO uint8_t readyStatus[2];
@@ -153,12 +156,13 @@ static uint8_t m25p16_readStatus(flashDevice_t *fdevice)
         spiReadWriteBuf(fdevice->io.handle.dev, readStatus, readyStatus, sizeof(readStatus));
 
         status = readyStatus[1];
-    }
+    } else {
 #ifdef USE_QUADSPI
-        else if (fdevice->io.mode == FLASHIO_QUADSPI) {
+        if (fdevice->io.mode == FLASHIO_QUADSPI) {
             quadSpiReceive1LINE(fdevice->io.handle.quadSpi, M25P16_INSTRUCTION_READ_STATUS_REG, 0, &status, 1);
         }
 #endif
+    }
 
     return status;
 }

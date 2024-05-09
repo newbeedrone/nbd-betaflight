@@ -33,8 +33,8 @@
 #include "drivers/dshot_bitbang_decode.h"
 #include "drivers/time.h"
 
-#define MIN_VALID_BBSAMPLES ((21 - 2) * 3)
-#define MAX_VALID_BBSAMPLES ((21 + 2) * 3)
+#define MIN_VALID_BBSAMPLES ((21 - 2) * 3) // 57
+#define MAX_VALID_BBSAMPLES ((21 + 2) * 3) // 69
 
 // setting this define in dshot.h allows the cli command dshot_telemetry_info to
 // display the received telemetry data in raw form which helps identify
@@ -65,8 +65,6 @@ typedef struct bitBandWord_s {
     uint32_t value;
     uint32_t junk[15];
 } bitBandWord_t;
-
-
 
 #ifdef DEBUG_BBDECODE
 uint32_t sequence[MAX_GCR_EDGES];
@@ -155,7 +153,7 @@ uint32_t decode_bb_bitband( uint16_t buffer[], uint32_t count, uint32_t bit)
         return DSHOT_TELEMETRY_NOEDGE;
     }
 
-    int remaining = MIN(count - (p - b), (unsigned int)MAX_VALID_BBSAMPLES);
+    const int remaining = MIN(count - startMargin, (unsigned int)MAX_VALID_BBSAMPLES);
 
     bitBandWord_t* oldP = p;
     uint32_t bits = 0;
@@ -301,6 +299,7 @@ FAST_CODE uint32_t decode_bb( uint16_t buffer[], uint32_t count, uint32_t bit)
             break;
         }
     }
+
     const uint32_t startMargin = p - buffer;
 
     if (p >= endP) {
@@ -315,8 +314,7 @@ FAST_CODE uint32_t decode_bb( uint16_t buffer[], uint32_t count, uint32_t bit)
         return DSHOT_TELEMETRY_NOEDGE;
     }
 
-    int remaining = MIN(count - (p - buffer), (unsigned int)MAX_VALID_BBSAMPLES);
-
+    const int remaining = MIN(count - startMargin, (unsigned int)MAX_VALID_BBSAMPLES);
     uint16_t* oldP = p;
     uint32_t bits = 0;
     endP = p + remaining;
@@ -338,7 +336,7 @@ FAST_CODE uint32_t decode_bb( uint16_t buffer[], uint32_t count, uint32_t bit)
                 // A level of length n gets decoded to a sequence of bits of
                 // the form 1000 with a length of (n+1) / 3 to account for 3x
                 // oversampling.
-                const int len = MAX((p - oldP + 1) / 3,1);
+                const int len = MAX((p - oldP + 1) / 3, 1);
                 bits += len;
                 value <<= len;
                 value |= 1 << (len - 1);

@@ -92,6 +92,7 @@ unsigned motorDeviceCount(void);
 motorVTable_t *motorGetVTable(void);
 bool checkMotorProtocolEnabled(const motorDevConfig_t *motorConfig, bool *protocolIsDshot);
 bool isMotorProtocolDshot(void);
+bool isMotorProtocolBidirDshot(void);
 bool isMotorProtocolEnabled(void);
 
 void motorDisable(void);
@@ -99,6 +100,7 @@ void motorEnable(void);
 #ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
 void motorReverse(bool status);
 #endif
+float motorEstimateMaxRpm(void);
 bool motorIsEnabled(void);
 bool motorIsMotorEnabled(uint8_t index);
 timeMs_t motorGetMotorEnableTimeMs(void);

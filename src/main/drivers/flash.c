@@ -239,7 +239,7 @@ static bool flashQuadSpiInit(const flashConfig_t *flashConfig)
 #endif
 
 #ifdef USE_FLASH_M25P16
-                if (!detected && m25p16_detect(&flashDevice, chipID)) {
+                if (!detected && m25p16_identify(&flashDevice, jedecID)) {
                     detected = true;
                 }
 #endif
@@ -519,7 +519,7 @@ static void flashConfigurePartitions(void)
     }
 #endif
 
-#if defined(FIRMWARE_SIZE)
+#if defined(FIRMWARE_SIZE) && defined(USE_FIRMWARE_PARTITION)
     const uint32_t firmwareSize = (FIRMWARE_SIZE * 1024);
     flashSector_t firmwareSectors = (firmwareSize / flashGeometry->sectorSize);
 

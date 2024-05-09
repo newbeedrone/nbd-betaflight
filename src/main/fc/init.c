@@ -51,9 +51,10 @@
 #include "drivers/bus_quadspi.h"
 #include "drivers/bus_spi.h"
 #include "drivers/buttons.h"
-#include "drivers/camera_control.h"
+#include "drivers/camera_control_impl.h"
 #include "drivers/compass/compass.h"
 #include "drivers/dma.h"
+#include "drivers/dshot.h"
 #include "drivers/exti.h"
 #include "drivers/flash.h"
 #include "drivers/inverter.h"
@@ -63,7 +64,6 @@
 #include "drivers/nvic.h"
 #include "drivers/persistent.h"
 #include "drivers/pin_pull_up_down.h"
-#include "drivers/pwm_esc_detect.h"
 #include "drivers/pwm_output.h"
 #include "drivers/rx/rx_pwm.h"
 #include "drivers/sensor.h"
@@ -88,6 +88,7 @@
 
 #include "fc/board_info.h"
 #include "fc/dispatch.h"
+#include "fc/gps_lap_timer.h"
 #include "fc/init.h"
 #include "fc/rc_controls.h"
 #include "fc/runtime_config.h"
@@ -118,7 +119,6 @@
 #include "io/piniobox.h"
 #include "io/rcdevice_cam.h"
 #include "io/serial.h"
-#include "io/servos.h"
 #include "io/transponder_ir.h"
 #include "io/vtx.h"
 #include "io/vtx_control.h"
@@ -259,18 +259,6 @@ static void sdCardAndFSInit(void)
 }
 #endif
 
-static void swdPinsInit(void)
-{
-    IO_t io = IOGetByTag(DEFIO_TAG_E(PA13)); // SWDIO
-    if (IOGetOwner(io) == OWNER_FREE) {
-        IOInit(io, OWNER_SWD, 0);
-    }
-    io = IOGetByTag(DEFIO_TAG_E(PA14)); // SWCLK
-    if (IOGetOwner(io) == OWNER_FREE) {
-        IOInit(io, OWNER_SWD, 0);
-    }
-}
-
 void init(void)
 {
 #ifdef SERIAL_PORT_COUNT
@@ -293,16 +281,6 @@ void init(void)
 #if defined(USE_TARGET_CONFIG)
     // Call once before the config is loaded for any target specific configuration required to support loading the config
     targetConfiguration();
-#endif
-
-#ifdef USE_BRUSHED_ESC_AUTODETECT
-    // Opportunistically use the first motor pin of the default configuration for detection.
-    // We are doing this as with some boards, timing seems to be important, and the later detection will fail.
-    ioTag_t motorIoTag = timerioTagGetByUsage(TIM_USE_MOTOR, 0);
-
-    if (motorIoTag) {
-        detectBrushedESC(motorIoTag);
-    }
 #endif
 
     enum {
@@ -419,7 +397,7 @@ void init(void)
 #endif
 
     if (!readSuccess || !isEEPROMVersionValid() || strncasecmp(systemConfig()->boardIdentifier, TARGET_BOARD_IDENTIFIER, sizeof(TARGET_BOARD_IDENTIFIER))) {
-        resetEEPROM(false);
+        resetEEPROM();
     }
 
     systemState |= SYSTEM_STATE_CONFIG_LOADED;
@@ -428,22 +406,13 @@ void init(void)
     dbgPinInit();
 #endif
 
-#ifdef USE_BRUSHED_ESC_AUTODETECT
-    // Now detect again with the actually configured pin for motor 1, if it is not the default pin.
-    ioTag_t configuredMotorIoTag = motorConfig()->dev.ioTags[0];
-
-    if (configuredMotorIoTag && configuredMotorIoTag != motorIoTag) {
-        detectBrushedESC(configuredMotorIoTag);
-    }
-#endif
-
     debugMode = systemConfig()->debug_mode;
 
 #ifdef TARGET_PREINIT
     targetPreInit();
 #endif
 
-#if !defined(USE_FAKE_LED)
+#if !defined(USE_VIRTUAL_LED)
     ledInit(statusLedConfig());
 #endif
     LED2_ON;
@@ -474,7 +443,7 @@ void init(void)
             bothButtonsHeld = buttonAPressed() && buttonBPressed();
             if (bothButtonsHeld) {
                 if (--secondsRemaining == 0) {
-                    resetEEPROM(false);
+                    resetEEPROM();
 #ifdef USE_PERSISTENT_OBJECTS
                     persistentObjectWrite(PERSISTENT_OBJECT_RESET_REASON, RESET_NONE);
 #endif
@@ -728,6 +697,11 @@ void init(void)
     // Now reset the targetLooptime as it's possible for the validation to change the pid_process_denom
     gyroSetTargetLooptime(pidConfig()->pid_process_denom);
 
+#if defined(USE_DSHOT_TELEMETRY) || defined(USE_ESC_SENSOR)
+    // Initialize the motor frequency filter now that we have a target looptime
+    initDshotTelemetry(gyro.targetLooptime);
+#endif
+
     // Finally initialize the gyro filtering
     gyroInitFilters();
 
@@ -797,6 +771,9 @@ void init(void)
 #ifdef USE_GPS_RESCUE
         gpsRescueInit();
 #endif
+#ifdef USE_GPS_LAP_TIMER
+        gpsLapTimerInit();
+#endif // USE_GPS_LAP_TIMER
     }
 #endif
 
@@ -836,17 +813,15 @@ void init(void)
     flashfsInit();
 #endif
 
-#ifdef USE_BLACKBOX
 #ifdef USE_SDCARD
-    if (blackboxConfig()->device == BLACKBOX_DEVICE_SDCARD) {
-        if (sdcardConfig()->mode) {
-            if (!(initFlags & SD_INIT_ATTEMPTED)) {
-                sdCardAndFSInit();
-                initFlags |= SD_INIT_ATTEMPTED;
-            }
+    if (sdcardConfig()->mode) {
+        if (!(initFlags & SD_INIT_ATTEMPTED)) {
+            sdCardAndFSInit();
+            initFlags |= SD_INIT_ATTEMPTED;
         }
     }
 #endif
+#ifdef USE_BLACKBOX
     blackboxInit();
 #endif
 
@@ -896,12 +871,6 @@ void init(void)
 
 #endif // VTX_CONTROL
 
-#ifdef USE_TIMER
-    // start all timers
-    // TODO - not implemented yet
-    timerStart();
-#endif
-
     batteryInit(); // always needs doing, regardless of features.
 
 #ifdef USE_RCDEVICE
@@ -933,7 +902,13 @@ void init(void)
     //The OSD need to be initialised after GYRO to avoid GYRO initialisation failure on some targets
 
     if (featureIsEnabled(FEATURE_OSD)) {
-        osdDisplayPortDevice_e device = osdConfig()->displayPortDevice;
+        osdDisplayPortDevice_e device;
+
+        if (vcdProfile()->video_system == VIDEO_SYSTEM_HD) {
+            device = OSD_DISPLAYPORT_DEVICE_MSP;
+        } else {
+            device = osdConfig()->displayPortDevice;
+        }
 
         switch(device) {
 
@@ -1029,12 +1004,10 @@ void init(void)
 
     setArmingDisabled(ARMING_DISABLED_BOOT_GRACE_TIME);
 
-    // On F4/F7 allocate SPI DMA streams before motor timers
-#if defined(STM32F4) || defined(STM32F7)
-#ifdef USE_SPI
+// allocate SPI DMA streams before motor timers
+#if defined(USE_SPI) && defined(USE_SPI_DMA_ENABLE_EARLY)
     // Attempt to enable DMA on all SPI busses
     spiInitBusDMA();
-#endif
 #endif
 
 #ifdef USE_MOTOR
@@ -1042,15 +1015,13 @@ void init(void)
     motorEnable();
 #endif
 
-    // On H7/G4 allocate SPI DMA streams after motor timers as SPI DMA allocate will always be possible
-#if defined(STM32H7) || defined(STM32G4)
-#ifdef USE_SPI
+// allocate SPI DMA streams after motor timers as SPI DMA allocate will always be possible
+#if defined(USE_SPI) && defined(USE_SPI_DMA_ENABLE_LATE) && !defined(USE_SPI_DMA_ENABLE_EARLY)
     // Attempt to enable DMA on all SPI busses
     spiInitBusDMA();
 #endif
-#endif
 
-    swdPinsInit();
+    debugInit();
 
     unusedPinsInit();
 

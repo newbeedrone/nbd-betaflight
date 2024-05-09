@@ -25,6 +25,7 @@
 #include "drivers/system.h"
 #include "drivers/flash.h"
 
+#include "config/config_eeprom.h"
 #include "config/config_streamer.h"
 
 #if !defined(CONFIG_IN_FLASH)
@@ -36,45 +37,8 @@ uint8_t eepromData[EEPROM_SIZE];
 #endif
 
 
-#if (defined(STM32H750xx) || defined(STM32H730xx)) && !(defined(CONFIG_IN_EXTERNAL_FLASH) || defined(CONFIG_IN_MEMORY_MAPPED_FLASH) || defined(CONFIG_IN_RAM) || defined(CONFIG_IN_SDCARD))
-#error "The configured MCU only has one flash page which contains the bootloader, no spare flash pages available, use external storage for persistent config or ram for target testing"
-#endif
-// @todo this is not strictly correct for F4/F7, where sector sizes are variable
 #if !defined(FLASH_PAGE_SIZE)
-// F4
-#if defined(STM32F40_41xxx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x4000) // 16K sectors
-# elif defined (STM32F411xE)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x4000)
-# elif defined(STM32F427_437xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x4000)
-# elif defined (STM32F446xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x4000)
-// F7
-#elif defined(STM32F722xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x4000) // 16K sectors
-# elif defined(STM32F745xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x8000) // 32K sectors
-# elif defined(STM32F746xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x8000)
-# elif defined(STM32F765xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x8000)
-# elif defined(UNIT_TEST)
-#  define FLASH_PAGE_SIZE                 (0x400)
-// H7
-# elif defined(STM32H743xx) || defined(STM32H750xx) || defined(STM32H723xx) || defined(STM32H725xx) || defined(STM32H730xx)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x20000) // 128K sectors
-# elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x2000) // 8K sectors
-// G4
-# elif defined(STM32G4)
-#  define FLASH_PAGE_SIZE                 ((uint32_t)0x800) // 2K page
-// SIMULATOR
-# elif defined(SIMULATOR_BUILD)
-#  define FLASH_PAGE_SIZE                 (0x400)
-# else
-#  error "Flash page size not defined for target."
-# endif
+#error "Flash page size not defined for target."
 #endif
 
 void config_streamer_init(config_streamer_t *c)
@@ -93,6 +57,8 @@ void config_streamer_start(config_streamer_t *c, uintptr_t base, int size)
 #elif defined(CONFIG_IN_FLASH) || defined(CONFIG_IN_FILE)
 #if defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
         HAL_FLASH_Unlock();
+#elif defined(AT32F4)
+        flash_unlock();
 #else
         FLASH_Unlock();
 #endif
@@ -111,6 +77,8 @@ void config_streamer_start(config_streamer_t *c, uintptr_t base, int size)
     // NOP
 #elif defined(STM32G4)
     // NOP
+#elif defined(AT32F4)
+    flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
 #elif defined(UNIT_TEST) || defined(SIMULATOR_BUILD)
     // NOP
 #else
@@ -407,7 +375,8 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
 
     uint64_t *dest_addr = (uint64_t *)c->address;
     uint64_t *src_addr = (uint64_t*)buffer;
-    uint8_t row_index = 4;
+    uint8_t row_index = CONFIG_STREAMER_BUFFER_SIZE / sizeof(uint64_t);
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE % sizeof(uint64_t) == 0, "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
     /* copy the 256 bits flash word */
     do
     {
@@ -422,6 +391,7 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
             return -1;
         }
     }
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t), "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
     const FLASH_Status status = FLASH_ProgramWord(c->address, *buffer);
     if (status != FLASH_COMPLETE) {
         return -2;
@@ -448,6 +418,7 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
 
     // For H7
     // HAL_StatusTypeDef HAL_FLASH_Program(uint32_t TypeProgram, uint32_t Address, uint64_t DataAddress);
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t) * FLASH_NB_32BITWORD_IN_FLASHWORD,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
     const HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, c->address, (uint64_t)(uint32_t)buffer);
     if (status != HAL_OK) {
         return -2;
@@ -467,6 +438,7 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
         }
     }
 
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t) * 1,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
     // For F7
     // HAL_StatusTypeDef HAL_FLASH_Program(uint32_t TypeProgram, uint32_t Address, uint64_t Data);
     const HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, c->address, (uint64_t)*buffer);
@@ -488,8 +460,22 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
         }
     }
 
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t) * 2,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
     const HAL_StatusTypeDef status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, c->address, (uint64_t)*buffer);
     if (status != HAL_OK) {
+        return -2;
+    }
+#elif defined(AT32F4)
+    if (c->address % FLASH_PAGE_SIZE == 0) {
+        const flash_status_type status = flash_sector_erase(c->address);
+        if (status != FLASH_OPERATE_DONE) {
+            return -1;
+        }
+    }
+
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t) * 1,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
+    const flash_status_type status = flash_word_program(c->address, (uint32_t)*buffer);
+    if (status != FLASH_OPERATE_DONE) {
         return -2;
     }
 #else // !STM32H7 && !STM32F7 && !STM32G4
@@ -499,6 +485,8 @@ static int write_word(config_streamer_t *c, config_streamer_buffer_align_type_t 
             return -1;
         }
     }
+
+    STATIC_ASSERT(CONFIG_STREAMER_BUFFER_SIZE == sizeof(uint32_t) * 1,  "CONFIG_STREAMER_BUFFER_SIZE does not match written size");
     const FLASH_Status status = FLASH_ProgramWord(c->address, *buffer);
     if (status != FLASH_COMPLETE) {
         return -2;
@@ -534,19 +522,17 @@ int config_streamer_flush(config_streamer_t *c)
         c->err = write_word(c, &c->buffer.w);
         c->at = 0;
     }
-    return c-> err;
+    return c->err;
 }
 
 int config_streamer_finish(config_streamer_t *c)
 {
     if (c->unlocked) {
 #if defined(CONFIG_IN_SDCARD)
-        bool saveEEPROMToSDCard(void); // forward declaration to avoid circular dependency between config_streamer / config_eeprom
         saveEEPROMToSDCard();
 #elif defined(CONFIG_IN_EXTERNAL_FLASH)
         flashFlush();
 #elif defined(CONFIG_IN_MEMORY_MAPPED_FLASH)
-        void saveEEPROMToMemoryMappedFlash(void); // forward declaration to avoid circular dependency between config_streamer / config_eeprom
         saveEEPROMToMemoryMappedFlash();
 #elif defined(CONFIG_IN_RAM)
         // NOP
@@ -555,6 +541,8 @@ int config_streamer_finish(config_streamer_t *c)
 #elif defined(CONFIG_IN_FLASH)
 #if defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
         HAL_FLASH_Lock();
+#elif defined(AT32F4)
+        flash_lock();
 #else
         FLASH_Lock();
 #endif

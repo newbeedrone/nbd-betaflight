@@ -20,9 +20,13 @@
 
 #pragma once
 
+#ifndef TARGET_BOARD_IDENTIFIER
 #define TARGET_BOARD_IDENTIFIER "S745"
+#endif
 
+#ifndef USBD_PRODUCT_STRING
 #define USBD_PRODUCT_STRING     "Betaflight STM32F745"
+#endif
 
 #ifndef STM32F745
 #define STM32F745
@@ -32,6 +36,12 @@
 #define USE_I2C_DEVICE_2
 #define USE_I2C_DEVICE_3
 #define USE_I2C_DEVICE_4
+
+#define USE_VCP
+
+#define USE_SOFTSERIAL
+
+#define UNIFIED_SERIAL_PORT_COUNT       3
 
 #define USE_UART1
 #define USE_UART2
@@ -68,13 +78,7 @@
 
 #define USE_SPI
 #define SPI_FULL_RECONFIGURABILITY
-
-#define USE_VCP
-
-#define USE_SOFTSERIAL1
-#define USE_SOFTSERIAL2
-
-#define UNIFIED_SERIAL_PORT_COUNT       3
+#define USE_SPI_DMA_ENABLE_EARLY
 
 #define USE_USB_DETECT
 
@@ -82,4 +86,9 @@
 
 #define USE_ADC
 
-#define USE_CUSTOM_DEFAULTS
+#define USE_EXTI
+
+#define FLASH_PAGE_SIZE ((uint32_t)0x8000) // 32K sectors
+
+// ITCM is in short supply so excluding fast code where preferred, not required.
+#define FAST_CODE_PREF

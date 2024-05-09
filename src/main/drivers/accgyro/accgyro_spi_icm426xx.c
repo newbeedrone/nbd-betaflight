@@ -45,8 +45,16 @@
 
 #include "sensors/gyro.h"
 
-// 24 MHz max SPI frequency
+// Allows frequency to be set from the compile line EXTRA_FLAGS by adding e.g.
+// -D'ICM426XX_CLOCK=12000000'. If using the configurator this simply becomes
+// ICM426XX_CLOCK=12000000 in the custom settings text box.
+#ifndef ICM426XX_CLOCK
+// Default: 24 MHz max SPI frequency
 #define ICM426XX_MAX_SPI_CLK_HZ 24000000
+#else
+// Use the supplied value
+#define ICM426XX_MAX_SPI_CLK_HZ ICM426XX_CLOCK
+#endif
 
 #define ICM426XX_RA_REG_BANK_SEL                    0x76
 #define ICM426XX_BANK_SELECT0                       0x00
@@ -280,12 +288,11 @@ void icm426xxGyroInit(gyroDev_t *gyro)
     spiWriteReg(dev, ICM426XX_RA_INT_CONFIG1, intConfig1Value);
 
     // Disable AFSR to prevent stalls in gyro output
-    // ICM426XX_INTF_CONFIG1 located in user bank 0
     uint8_t intfConfig1Value = spiReadRegMsk(dev, ICM426XX_INTF_CONFIG1);
-
     intfConfig1Value &= ~ICM426XX_INTF_CONFIG1_AFSR_MASK;
     intfConfig1Value |= ICM426XX_INTF_CONFIG1_AFSR_DISABLE;
     spiWriteReg(dev, ICM426XX_INTF_CONFIG1, intfConfig1Value);
+
 
     // Turn on gyro and acc on again so ODR and FSR can be configured
     turnGyroAccOn(dev);
