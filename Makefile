@@ -16,7 +16,7 @@
 #
 
 # The target to build, see BASE_TARGETS below
-DEFAULT_TARGET ?= BEEBRAIN_BL_V1
+DEFAULT_TARGET ?= STM32F405
 TARGET    ?=
 CONFIG    ?=
 
