@@ -30,10 +30,10 @@
 
 const timerHardware_t timerHardware[USABLE_TIMER_CHANNEL_COUNT] = {
 
-    DEF_TIM(TIM3, CH1, PA6,  TIM_USE_MOTOR,         0, 2, 0), // M1
-    DEF_TIM(TIM3, CH2, PA7,  TIM_USE_MOTOR,         0, 3, 0), // M2
-    DEF_TIM(TIM3, CH3, PB0,  TIM_USE_MOTOR,         0, 0, 0), // M3
-    DEF_TIM(TIM3, CH4, PB1,  TIM_USE_MOTOR,         0, 1, 0), // M4
+    DEF_TIM(TIM3, CH3, PB0,  TIM_USE_MOTOR,         0, 0, 0), // M1
+    DEF_TIM(TIM3, CH4, PB1,  TIM_USE_MOTOR,         0, 1, 0), // M2
+    DEF_TIM(TIM3, CH1, PA6,  TIM_USE_MOTOR,         0, 2, 0), // M3
+    DEF_TIM(TIM3, CH2, PA7,  TIM_USE_MOTOR,         0, 3, 0), // M4
 
     DEF_TIM(TIM8, CH3, PB9,  TIM_USE_LED,           0, 11, 0), // LED Strip
     DEF_TIM(TIM4, CH2, PB7,  TIM_USE_BEEPER,        0, 0, 0),  // Beeper

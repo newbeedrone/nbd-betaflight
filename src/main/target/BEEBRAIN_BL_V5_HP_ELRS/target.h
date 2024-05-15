@@ -124,6 +124,10 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
 /* ======== OTHER ======== */
+#define USE_PINIO
+#define USE_PINIOBOX
+#define PINIO1_PIN                      PB8
+
 #define DEFAULT_FEATURES                ( FEATURE_LED_STRIP | FEATURE_ESC_SENSOR | FEATURE_OSD)
 
 #define TARGET_IO_PORTA                 0xffff
