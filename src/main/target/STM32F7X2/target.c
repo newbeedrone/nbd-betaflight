@@ -18,15 +18,5 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-<<<<<<<< HEAD:src/main/io/displayport_beesign.h
-#pragma once
-
-#include "pg/pg.h"
-#include "drivers/display.h"
-
-struct vcdProfile_s;
-displayPort_t *beesignDisplayPortInit(const struct vcdProfile_s *vcdProfile);
-========
 // Needed to suppress the pedantic warning about an empty file
 #include <stddef.h>
->>>>>>>> 4.4.0:src/main/target/STM32F7X2/target.c
