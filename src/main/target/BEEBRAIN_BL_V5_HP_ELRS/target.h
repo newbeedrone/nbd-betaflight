@@ -24,15 +24,15 @@
 #define USBD_PRODUCT_STRING             "Beebrain BL V5 ELRS"
 
 /* ======== LED ======== */
-#define USE_LED_STRIP
-#define USE_LED_STRIP_STATUS_MODE
 #define LED0_PIN                        PB2
 #define LED1_PIN                        PC13
+
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
 
 /* ======== BUZZER ======== */
 #define USE_BEEPER
 #define BEEPER_PIN                      PB7
-#define BEEPER_PWM_HZ                   5400
 #define BEEPER_INVERTED
 
 /* ======== UART ======== */
