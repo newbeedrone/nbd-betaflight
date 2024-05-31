@@ -58,9 +58,9 @@
 #define USE_SPI
 
 #define USE_SPI_DEVICE_3
-#define SPI3_SCK_PIN                   PB3
-#define SPI3_SDI_PIN                   PB4
-#define SPI3_SDO_PIN                   PB5
+#define SPI3_SCK_PIN                    PB3
+#define SPI3_SDI_PIN                    PB4
+#define SPI3_SDO_PIN                    PB5
 #define USE_SPI_DMA_ENABLE_EARLY
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
@@ -101,30 +101,6 @@
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    0
-/*
-const timerHardware_t timerHardware[USABLE_TIMER_CHANNEL_COUNT] = {
-
-    DEF_TIM(TIM4, CH4, PB9,  TIM_USE_MOTOR,         0, 0), // M1
-    DEF_TIM(TIM4, CH2, PB7,  TIM_USE_MOTOR,         0, 0), // M2
-    DEF_TIM(TIM4, CH1, PB6,  TIM_USE_MOTOR,         0, 0), // M3
-    DEF_TIM(TIM4, CH3, PB8,  TIM_USE_MOTOR,         0, 0), // M4
-
-    DEF_TIM(TIM3, CH1, PA6,  TIM_USE_NONE,          0, 0), // Soft Serial TX/RX for NBD7456 Update
-
-    DEF_TIM(TIM5, CH1, PA0,  TIM_USE_LED,           0, 0), // LED Strip
-    DEF_TIM(TIM2, CH3, PB10, TIM_USE_BEEPER,        0, 0), // Beeper
-};
-*/
-
-#define MOTOR1_PIN                      PB9
-#define MOTOR2_PIN                      PB7
-#define MOTOR3_PIN                      PB6
-#define MOTOR4_PIN                      PB8
-#define USE_DSHOT_BITBAND
-#define USE_ESCSERIAL
-
-#define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
-
 
 #define VBAT_ADC_PIN                    PB1
 #define CURRENT_METER_ADC_PIN           PA5
@@ -136,7 +112,16 @@ const timerHardware_t timerHardware[USABLE_TIMER_CHANNEL_COUNT] = {
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
+/* ======== ESC ======== */
+#define MOTOR1_PIN                      PB9
+#define MOTOR2_PIN                      PB7
+#define MOTOR3_PIN                      PB6
+#define MOTOR4_PIN                      PB8
 
+#define USE_DSHOT_BITBAND
+#define USE_ESCSERIAL
+
+#define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
 /* ======== System ======== */
 #define USE_PID_DENOM_CHECK
 #define USE_EXTI
