@@ -159,6 +159,8 @@ static void rtc6705Transfer(uint32_t command)
     // Perform bitwise reverse of the command.
     command = reverse32(command);
 
+    command = ((command >> 24) & 0xFF) | (((command >> 16) & 0xFF) << 8) | (((command >> 8) & 0xFF) << 16) | (((command >> 0) & 0xFF) << 24);
+
     spiReadWriteBuf(dev, (uint8_t *)&command, NULL, sizeof(command));
 
     delayMicroseconds(2);
