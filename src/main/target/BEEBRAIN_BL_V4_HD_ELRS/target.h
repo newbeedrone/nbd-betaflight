@@ -24,13 +24,16 @@
 #define USBD_PRODUCT_STRING             "Beebrain BL V4 HD ELRS"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
+#define LED_STRIP_PIN                   PA9
+
 #define LED0_PIN                        PC0
 #define LED1_PIN                        PB15
 
 /* ======== BUZZER ======== */
 #define USE_BEEPER
 #define BEEPER_PIN                      PD13
-#define BEEPER_PWM_HZ                   5400
 #define BEEPER_INVERTED
 
 /* ======== UART ======== */
@@ -73,8 +76,8 @@
 
 #define USE_SPI_DEVICE_1
 #define SPI1_SCK_PIN                    PA5
-#define SPI1_MISO_PIN                   PA6
-#define SPI1_MOSI_PIN                   PA7
+#define SPI1_SDI_PIN                   PA6
+#define SPI1_SDO_PIN                   PA7
 #define SPI1_NSS_PIN                    PB0
 
 // #define USE_SPI_DEVICE_2
@@ -85,8 +88,8 @@
 
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
-#define SPI3_MISO_PIN                   PB4
-#define SPI3_MOSI_PIN                   PD6
+#define SPI3_SDI_PIN                   PB4
+#define SPI3_SDO_PIN                   PD6
 #define SPI3_NSS_PIN                    PA15
 
 // #define USE_SPI_DEVICE_4
@@ -105,13 +108,11 @@
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_SPI_GYRO
 #define USE_ACCGYRO_BMI270
 
 #define USE_EXTI
 #define USE_GYRO_EXTI
 #define GYRO_1_EXTI_PIN                 PB1
-#define USE_MPU_DATA_READY_SIGNAL
 
 #define GYRO_1_CS_PIN                   SPI3_NSS_PIN
 #define GYRO_1_SPI_INSTANCE             SPI3
@@ -137,8 +138,8 @@
 #define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    0
 
-#define VBAT_ADC_PIN                    PC1
-#define CURRENT_METER_ADC_PIN           PC2
+#define ADC_VBAT_PIN                    PC1
+#define ADC_CURR_PIN                    PC2
 
 #define VBAT_SCALE_DEFAULT              110
 #define CURRENT_METER_SCALE_DEFAULT     230
@@ -149,14 +150,33 @@
 
 /* ======== ESC ======== */
 #define USE_ESCSERIAL
+
+//#define USE_DSHOT_BITBAND
+
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+
+#define MOTOR1_PIN                      PC9
+#define MOTOR2_PIN                      PC7
+#define MOTOR3_PIN                      PC6
+#define MOTOR4_PIN                      PC8
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, PC9 , 1,  0) \
+    TIMER_PIN_MAP( 1, PC7 , 1,  1) \
+    TIMER_PIN_MAP( 2, PC6 , 1,  2) \
+    TIMER_PIN_MAP( 3, PC8 , 1,  3) \
+    TIMER_PIN_MAP( 4, PA9 , 1,  4) \
+    TIMER_PIN_MAP( 5, PD13, 1,  5)
+
 
 /* ======== OTHER ======== */
 #define USE_PINIO
 #define USE_PINIOBOX
 #define PINIO1_PIN                      PB14
+/* ======== System ======== */
+#define USE_PID_DENOM_CHECK
 
-#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_ESC_SENSOR | FEATURE_OSD)
+#define USE_EXTI
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
@@ -165,7 +185,4 @@
 #define TARGET_IO_PORTE                 0xffff
 #define TARGET_IO_PORTF                 0xffff
 
-#define USABLE_TIMER_CHANNEL_COUNT      6
-#define USED_TIMERS                     ( TIM_N(1) | TIM_N(3) | TIM_N(4) )
-
-#define USE_TARGET_CONFIG
+#define FLASH_PAGE_SIZE                 ((uint32_t)0x4000) // 16K sectors
