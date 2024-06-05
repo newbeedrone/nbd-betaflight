@@ -118,8 +118,6 @@
 #define MOTOR3_PIN                      PB6
 #define MOTOR4_PIN                      PB8
 
-<<<<<<< HEAD
-=======
 #define TIMER_PIN_MAPPING \
     TIMER_PIN_MAP( 0, PB9 , 1,  0) \
     TIMER_PIN_MAP( 1, PB7 , 2,  1) \
@@ -130,7 +128,6 @@
 
 
 
->>>>>>> hotfix/BEEBRAIN_BL_V4_GHOST
 #define USE_DSHOT_BITBAND
 #define USE_ESCSERIAL
 
