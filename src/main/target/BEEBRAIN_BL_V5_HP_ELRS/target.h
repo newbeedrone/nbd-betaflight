@@ -21,19 +21,28 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "Beebrain BL V5 ELRS Rev_A"
-#define USBD_PRODUCT_STRING             "Beebrain BL V5 ELRS"
+#define USBD_PRODUCT_STRING             "Beebrain BL V5 ELRS G4"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
+#define LED_STRIP_PIN                   PB9
+
 #define LED0_PIN                        PB2
 #define LED1_PIN                        PC13
 
-#define USE_LED_STRIP
-#define USE_LED_STRIP_STATUS_MODE
-
 /* ======== BUZZER ======== */
+
 #define USE_BEEPER
 #define BEEPER_PIN                      PB7
 #define BEEPER_INVERTED
+
+/* ======== I2C ======== */
+
+#define USE_I2C_DEVICE_2
+#define I2C_DEVICE_2                    (I2CDEV_2)
+#define I2C2_SCL_PIN                     PC4
+#define I2C2_SDA_PIN                     PA8
 
 /* ======== UART ======== */
 #define USE_UART
@@ -61,21 +70,17 @@
 #define USE_SPI
 
 #define USE_SPI_DEVICE_1
-#define SPI1_SCK_PIN                    PB3
-#define SPI1_MISO_PIN                   PB4
-#define SPI1_MOSI_PIN                   PB5
+#define SPI1_SCK_PIN                   PB3
+#define SPI1_SDI_PIN                   PB4
+#define SPI1_SDO_PIN                   PB5
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_SPI_GYRO
 #define USE_ACCGYRO_BMI270
 
-#define USE_EXTI
 #define USE_GYRO_EXTI
 #define GYRO_1_EXTI_PIN                 PC14
-#define USE_MPU_DATA_READY_SIGNAL
-
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI1
 
@@ -109,8 +114,8 @@
 #define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    0
 
-#define VBAT_ADC_PIN                    PA0
-#define CURRENT_METER_ADC_PIN           PA1
+#define ADC_VBAT_PIN                    PA0
+#define ADC_CURR_PIN                    PA1
 
 #define VBAT_SCALE_DEFAULT              110
 #define CURRENT_METER_SCALE_DEFAULT     500
@@ -120,6 +125,20 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
+#define MOTOR1_PIN                      PB0
+#define MOTOR2_PIN                      PB1
+#define MOTOR3_PIN                      PA6
+#define MOTOR4_PIN                      PA7
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, PB0 , 1,  6) \
+    TIMER_PIN_MAP( 1, PB1 , 1,  1) \
+    TIMER_PIN_MAP( 2, PA6 , 1,  2) \
+    TIMER_PIN_MAP( 3, PA7 , 1,  3) \
+    TIMER_PIN_MAP( 4, PB9 , 1,  4) \
+    TIMER_PIN_MAP( 5, PB7 , 1,  5)
+
+
 #define USE_ESCSERIAL
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 
@@ -127,8 +146,11 @@
 #define USE_PINIO
 #define USE_PINIOBOX
 #define PINIO1_PIN                      PB8
-
-#define DEFAULT_FEATURES                ( FEATURE_LED_STRIP | FEATURE_ESC_SENSOR | FEATURE_OSD)
+/* ======== System ======== */
+#define USE_PID_DENOM_CHECK
+#undef USE_SDCARD
+#define USE_TIMER_UP_CONFIG
+#define USE_EXTI
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
@@ -136,6 +158,3 @@
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
 #define TARGET_IO_PORTF                 0xffff
-
-#define USABLE_TIMER_CHANNEL_COUNT      6
-#define USED_TIMERS                     ( TIM_N(3) | TIM_N(4) | TIM_N(8) )
