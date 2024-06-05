@@ -102,8 +102,8 @@
 #define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    0
 
-#define VBAT_ADC_PIN                    PB1
-#define CURRENT_METER_ADC_PIN           PA5
+#define ADC_VBAT_PIN                    PB1
+#define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              110
 #define CURRENT_METER_SCALE_DEFAULT     510
@@ -117,6 +117,16 @@
 #define MOTOR2_PIN                      PB7
 #define MOTOR3_PIN                      PB6
 #define MOTOR4_PIN                      PB8
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, PB9 , 1,  0) \
+    TIMER_PIN_MAP( 1, PB7 , 2,  1) \
+    TIMER_PIN_MAP( 2, PB6 , 1,  2) \
+    TIMER_PIN_MAP( 3, PB8 , 1,  3) \
+    TIMER_PIN_MAP( 4, PA0 , 1,  4) \
+    TIMER_PIN_MAP( 5, PB10, 1,  5)
+
+
 
 #define USE_DSHOT_BITBAND
 #define USE_ESCSERIAL

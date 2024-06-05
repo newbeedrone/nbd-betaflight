@@ -101,8 +101,8 @@
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
 
-#define VBAT_ADC_PIN                    PB1
-#define CURRENT_METER_ADC_PIN           PA5
+#define ADC_VBAT_PIN                    PB1
+#define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              114
 #define CURRENT_METER_SCALE_DEFAULT     410

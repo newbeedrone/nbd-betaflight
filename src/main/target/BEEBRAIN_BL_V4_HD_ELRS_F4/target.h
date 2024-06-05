@@ -24,14 +24,19 @@
 #define USBD_PRODUCT_STRING             "BeeBrain BL V4 HD ELRS"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
+#define LED_STRIP_PIN                   PA0
 #define LED0_PIN                        PC13
 #define LED1_PIN                        PC14
-
+/* ======== BUZZER ======== */
+#define USE_BEEPER
+#define BEEPER_PIN                      PB10
+#define BEEPER_INVERTED
 /* ======== UART ======== */
 #define USE_UART
-
 #define USE_VCP
-#define USE_MSP_UART
+
 
 #define USE_UART1
 #define UART1_RX_PIN                    PA10
@@ -45,38 +50,39 @@
 #define SOFTSERIAL1_RX_PIN              PA3
 #define SOFTSERIAL1_TX_PIN              PA2
 
+#define USE_SOFTSERIAL2
+#define SOFTSERIAL2_TX_PIN              PA6
+#define USE_SOFTSERIAL3
+#define SOFTSERIAL3_TX_PIN              PA7
+
 #define SERIAL_PORT_COUNT               4
 
 /* ======== SPI ======== */
 #define USE_SPI
 
 #define USE_SPI_DEVICE_2
-#define SPI2_SCK_PIN                    PB13
-#define SPI2_MISO_PIN                   PB14
-#define SPI2_MOSI_PIN                   PB15
+#define SPI2_SCK_PIN                   PB13
+#define SPI2_SDI_PIN                   PB14
+#define SPI2_SDO_PIN                   PB15
 
 #define USE_SPI_DEVICE_3
-#define SPI3_SCK_PIN                    PB3
-#define SPI3_MISO_PIN                   PB4
-#define SPI3_MOSI_PIN                   PB5
+#define SPI3_SCK_PIN                   PB3
+#define SPI3_SDI_PIN                   PB4
+#define SPI3_SDO_PIN                   PB5
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_SPI_GYRO
 #define USE_ACCGYRO_BMI270
 
 #define USE_EXTI
 #define USE_GYRO_EXTI
 #define GYRO_1_EXTI_PIN                 PB0
-#define USE_MPU_DATA_READY_SIGNAL
 
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
 #define GYRO_1_ALIGN                    CW180_DEG
-
-#define ENSURE_MPU_DATA_READY_IS_LOW
 
 /* ======== FLASH ======== */
 #define ENABLE_BLACKBOX_LOGGING_ON_SPIFLASH_BY_DEFAULT
@@ -88,10 +94,10 @@
 /* ======== ADC ======== */
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
-#define ADC1_DMA_OPT                    0
 
-#define VBAT_ADC_PIN                    PB1
-#define CURRENT_METER_ADC_PIN           PA5
+
+#define ADC_VBAT_PIN                    PB1
+#define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              110
 #define CURRENT_METER_SCALE_DEFAULT     415
@@ -103,14 +109,22 @@
 /* ======== ESC ======== */
 #define USE_ESCSERIAL
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
+#define USE_DSHOT_BITBAND
+#define MOTOR1_PIN                      PB9
+#define MOTOR2_PIN                      PB7
+#define MOTOR3_PIN                      PB6
+#define MOTOR4_PIN                      PB8
 
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, PB9 , 1,  0) \
+    TIMER_PIN_MAP( 1, PB7 , 2,  1) \
+    TIMER_PIN_MAP( 2, PB6 , 1,  2) \
+    TIMER_PIN_MAP( 3, PB8 , 1,  3) \
+    TIMER_PIN_MAP( 4, PA0 , 1,  4) \
+    TIMER_PIN_MAP( 5, PB10, 1,  5)
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_TELEMETRY | FEATURE_SOFTSERIAL)
-
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
 #define TARGET_IO_PORTC                 0xffff
-#define TARGET_IO_PORTD                 (BIT(2))
-
-#define USABLE_TIMER_CHANNEL_COUNT      8
-#define USED_TIMERS                     ( TIM_N(2) | TIM_N(3) | TIM_N(4) | TIM_N(5) )
+#define TARGET_IO_PORTD                 0xffff
+#define FLASH_PAGE_SIZE                 ((uint32_t)0x4000) // 16K sectors
