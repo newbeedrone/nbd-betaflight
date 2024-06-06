@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V4 HP TBS Rev_B"
-#define USBD_PRODUCT_STRING             "BeeBrain BL V4 HP TBS STM32F411xE"
+#define USBD_PRODUCT_STRING             "BeeBrain BL V4 HP TBS"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
