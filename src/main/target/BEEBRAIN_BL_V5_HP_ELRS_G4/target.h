@@ -30,20 +30,18 @@
 
 #define LED0_PIN                        PB2
 #define LED1_PIN                        PC13
-
 /* ======== BUZZER ======== */
-
 #define USE_BEEPER
 #define BEEPER_PIN                      PB7
 #define BEEPER_INVERTED
 
 /* ======== I2C ======== */
-
+/*
 #define USE_I2C_DEVICE_2
 #define I2C_DEVICE_2                    (I2CDEV_2)
 #define I2C2_SCL_PIN                     PC4
 #define I2C2_SDA_PIN                     PA8
-
+*/
 /* ======== UART ======== */
 #define USE_UART
 #define USE_VCP
@@ -68,7 +66,8 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
-
+#define SPI_FULL_RECONFIGURABILITY
+#define USE_SPI_DMA_ENABLE_LATE
 #define USE_SPI_DEVICE_1
 #define SPI1_SCK_PIN                   PB3
 #define SPI1_SDI_PIN                   PB4
@@ -135,8 +134,8 @@
     TIMER_PIN_MAP( 1, PB1 , 1,  1) \
     TIMER_PIN_MAP( 2, PA6 , 1,  2) \
     TIMER_PIN_MAP( 3, PA7 , 1,  3) \
-    TIMER_PIN_MAP( 4, PB9 , 1,  4) \
-    TIMER_PIN_MAP( 5, PB7 , 1,  5)
+    TIMER_PIN_MAP( 4, PB9 , 2,  4) \
+    TIMER_PIN_MAP( 5, PB7 , 2,  5)
 
 
 #define USE_ESCSERIAL

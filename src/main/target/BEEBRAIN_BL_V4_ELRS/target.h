@@ -54,7 +54,8 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
-
+#define SPI_FULL_RECONFIGURABILITY
+#define USE_SPI_DMA_ENABLE_LATE
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_SDI_PIN                    PB4
