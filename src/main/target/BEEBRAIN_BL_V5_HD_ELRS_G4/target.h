@@ -97,10 +97,10 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define MOTOR1_PIN                      PB0
-#define MOTOR2_PIN                      PB1
-#define MOTOR3_PIN                      PA6
-#define MOTOR4_PIN                      PA7
+#define MOTOR1_PIN                      PA6
+#define MOTOR2_PIN                      PA7
+#define MOTOR3_PIN                      PB0
+#define MOTOR4_PIN                      PB1
 
 #define USE_ESCSERIAL
 /* ======== System ======== */
