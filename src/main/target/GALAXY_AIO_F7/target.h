@@ -24,13 +24,16 @@
 #define USBD_PRODUCT_STRING             "Galaxy AIO"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
+#define LED_STRIP_PIN                   PA0
+
 #define LED0_PIN                        PC13
 #define LED1_PIN                        PC14
 
 /* ======== BUZZER ======== */
 #define USE_BEEPER
 #define BEEPER_PIN                      PB10
-#define BEEPER_PWM_HZ                   5400
 #define BEEPER_INVERTED
 
 /* ======== UART ======== */
@@ -53,17 +56,17 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
-
+#define USE_SPI_DMA_ENABLE_EARLY
 #define USE_SPI_DEVICE_2
 #define SPI2_SCK_PIN                    PB13
-#define SPI2_MISO_PIN                   PB14
-#define SPI2_MOSI_PIN                   PB15
+#define SPI2_SDO_PIN                   PB14
+#define SPI2_SDI_PIN                   PB15
 #define SPI2_NSS_PIN                    PB12
 
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
-#define SPI3_MISO_PIN                   PB4
-#define SPI3_MOSI_PIN                   PB5
+#define SPI3_SDO_PIN                   PB4
+#define SPI3_SDI_PIN                   PB5
 
 /* ======== GYRO ======== */
 #define USE_GYRO
@@ -72,7 +75,6 @@
 #define USE_EXTI
 #define USE_GYRO_EXTI
 #define GYRO_1_EXTI_PIN                 PB0
-#define USE_MPU_DATA_READY_SIGNAL
 
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
@@ -108,8 +110,8 @@
 #define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    0
 
-#define VBAT_ADC_PIN                    PB1
-#define CURRENT_METER_ADC_PIN           PA5
+#define ADC_VBAT_PIN                    PB1
+#define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              110
 #define CURRENT_METER_SCALE_DEFAULT     510
@@ -122,13 +124,25 @@
 #define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 #define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
 
+#define MOTOR1_PIN                      PB6
+#define MOTOR2_PIN                      PB8
+#define MOTOR3_PIN                      PB9
+#define MOTOR4_PIN                      PB7
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, PB6 , 1,  0) \
+    TIMER_PIN_MAP( 1, PB8 , 2,  1) \
+    TIMER_PIN_MAP( 2, PB9 , 1,  2) \
+    TIMER_PIN_MAP( 3, PB7 , 1,  3) \
+    TIMER_PIN_MAP( 4, PA0 , 1,  4) \
+    TIMER_PIN_MAP( 5, PB10, 1,  5)
+
 /* ======== OTHER ======== */
-#define DEFAULT_FEATURES                (FEATURE_SOFTSERIAL | FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_ESC_SENSOR)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
 #define TARGET_IO_PORTC                 0xffff
-#define TARGET_IO_PORTD                 (BIT(2))
-
-#define USABLE_TIMER_CHANNEL_COUNT      6
-#define USED_TIMERS                     ( TIM_N(2) | TIM_N(4) | TIM_N(5) )
+#define TARGET_IO_PORTD                 0xffff
+#define TARGET_IO_PORTE                 0xffff
+#define TARGET_IO_PORTF                 0xffff
+#define FLASH_PAGE_SIZE ((uint32_t)0x8000) // 32K sectors
