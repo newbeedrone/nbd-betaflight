@@ -57,25 +57,23 @@
 /* ======== SPI ======== */
 #define USE_SPI
 #define USE_SPI_DMA_ENABLE_EARLY
+
 #define USE_SPI_DEVICE_2
 #define SPI2_SCK_PIN                    PB13
-#define SPI2_SDO_PIN                   PB14
-#define SPI2_SDI_PIN                   PB15
+#define SPI2_SDO_PIN                    PB14
+#define SPI2_SDI_PIN                    PB15
 #define SPI2_NSS_PIN                    PB12
 
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
-#define SPI3_SDO_PIN                   PB4
-#define SPI3_SDI_PIN                   PB5
+#define SPI3_SDO_PIN                    PB4
+#define SPI3_SDI_PIN                    PB5
 
 /* ======== GYRO ======== */
 #define USE_GYRO
 #define USE_GYRO_SPI_MPU6000
 
-#define USE_EXTI
-#define USE_GYRO_EXTI
 #define GYRO_1_EXTI_PIN                 PB0
-
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
@@ -97,11 +95,8 @@
 #define SERIALRX_PROVIDER               SERIALRX_SBUS
 
 /* ======== FLASH ======== */
-#define ENABLE_BLACKBOX_LOGGING_ON_SPIFLASH_BY_DEFAULT
-#define USE_FLASHFS
-#define USE_FLASH_M25P16
-#define USE_FLASH_W25M
-#define USE_FLASH_W25N01G
+#define USE_SDCARD
+
 #define FLASH_CS_PIN                    SPI2_NSS_PIN
 #define FLASH_SPI_INSTANCE              SPI2
 
@@ -114,30 +109,29 @@
 #define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     510
-#define CURRENT_METER_OFFSET_DEFAULT    0
+#define CURRENT_METER_SCALE_DEFAULT     410
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
-#define DSHOT_BITBANG_DEFAULT           DSHOT_BITBANG_OFF
-
 #define MOTOR1_PIN                      PB6
 #define MOTOR2_PIN                      PB8
 #define MOTOR3_PIN                      PB9
 #define MOTOR4_PIN                      PB7
 
-#define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, PB6 , 1,  0) \
-    TIMER_PIN_MAP( 1, PB8 , 2,  1) \
-    TIMER_PIN_MAP( 2, PB9 , 1,  2) \
-    TIMER_PIN_MAP( 3, PB7 , 1,  3) \
-    TIMER_PIN_MAP( 4, PA0 , 1,  4) \
-    TIMER_PIN_MAP( 5, PB10, 1,  5)
+#define USE_ESCSERIAL
 
 /* ======== OTHER ======== */
+#define USE_EXTI
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    1, 0) \
+    TIMER_PIN_MAP( 1, MOTOR2_PIN   ,    2, 1) \
+    TIMER_PIN_MAP( 2, MOTOR3_PIN   ,    1, 2) \
+    TIMER_PIN_MAP( 3, MOTOR4_PIN   ,    1, 3) \
+    TIMER_PIN_MAP( 4, LED_STRIP_PIN,    1, 4) \
+    TIMER_PIN_MAP( 5, BEEPER_PIN   ,    1, 5)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
@@ -145,4 +139,5 @@
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
 #define TARGET_IO_PORTF                 0xffff
-#define FLASH_PAGE_SIZE ((uint32_t)0x8000) // 32K sectors
+
+#define FLASH_PAGE_SIZE                 ((uint32_t)0x8000) // 32K sectors
