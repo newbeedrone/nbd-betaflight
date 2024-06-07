@@ -54,14 +54,12 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
-#define SPI_FULL_RECONFIGURABILITY
-#define USE_SPI_DMA_ENABLE_LATE
+#define USE_SPI_DMA_ENABLE_EARLY
+
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_SDI_PIN                    PB4
 #define SPI3_SDO_PIN                    PB5
-
-#define USE_SPI_DMA_ENABLE_EARLY
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
@@ -124,9 +122,8 @@
 #define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
 
 /* ======== System ======== */
-#define USE_PID_DENOM_CHECK
-
 #define USE_EXTI
+#define USE_PID_DENOM_CHECK
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff

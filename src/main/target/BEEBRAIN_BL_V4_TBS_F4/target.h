@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V4 HP TBS Rev_B"
-#define USBD_PRODUCT_STRING             "BeeBrain BL V4 HP TBS F4"
+#define USBD_PRODUCT_STRING             "BeeBrain BL V4 HP TBS"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -32,8 +32,6 @@
 #define LED1_PIN                        PC14
 
 /* ======== UART ======== */
-#define USE_UART
-
 #define USE_VCP
 
 #define USE_UART1
@@ -48,20 +46,19 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
-#define SPI_FULL_RECONFIGURABILITY
 #define USE_SPI_DMA_ENABLE_EARLY
+
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                   PB3
 #define SPI3_SDI_PIN                   PB4
 #define SPI3_SDO_PIN                   PB5
-#define USE_SPI_DMA_ENABLE_EARLY
+
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
 #define USE_ACCGYRO_BMI270
 
 #define GYRO_1_EXTI_PIN                 PB0
-
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
@@ -69,7 +66,7 @@
 
 /* ======== OSD ======== */
 #define USE_MAX7456
-#define USE_NBD7456 // For NBD7456
+#define USE_NBD7456 // For NBD7456, still using?
 
 #define MAX7456_SPI_CS_PIN              PA15
 #define MAX7456_SPI_INSTANCE            SPI3
@@ -100,8 +97,7 @@
 #define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     510
-#define CURRENT_METER_OFFSET_DEFAULT    249
+#define CURRENT_METER_SCALE_DEFAULT     410
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -125,8 +121,8 @@
 #define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
 
 /* ======== System ======== */
-#define USE_PID_DENOM_CHECK
 #define USE_EXTI
+#define USE_PID_DENOM_CHECK
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff

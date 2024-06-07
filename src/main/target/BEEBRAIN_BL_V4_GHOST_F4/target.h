@@ -37,8 +37,6 @@
 #define BEEPER_INVERTED
 
 /* ======== UART ======== */
-#define USE_UART
-
 #define USE_VCP
 
 #define USE_SOFTSERIAL
@@ -56,20 +54,19 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
-#define SPI_FULL_RECONFIGURABILITY
-#define USE_SPI_DMA_ENABLE_LATE
+#define USE_SPI_DMA_ENABLE_EARLY
+
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_SDI_PIN                    PB4
 #define SPI3_SDO_PIN                    PB5
-#define USE_SPI_DMA_ENABLE_EARLY
+
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
 #define USE_ACCGYRO_BMI270
 
 #define GYRO_1_EXTI_PIN                 PB0
-
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI3
 
@@ -83,6 +80,7 @@
 
 /* ======== VTX ======== */
 #define USE_VTX_RTC6705
+
 #define RTC6705_CS_PIN                  PA14
 #define RTC6705_SPI_INSTANCE            SPI3
 #define RTC6705_POWER_PIN               PB2
@@ -107,7 +105,7 @@
 #define ADC_CURR_PIN                    PA5
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     510
+#define CURRENT_METER_SCALE_DEFAULT     410
 #define CURRENT_METER_OFFSET_DEFAULT    249
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
@@ -119,23 +117,14 @@
 #define MOTOR3_PIN                      PB6
 #define MOTOR4_PIN                      PB8
 
-#define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, PB9 , 1,  0) \
-    TIMER_PIN_MAP( 1, PB7 , 2,  1) \
-    TIMER_PIN_MAP( 2, PB6 , 1,  2) \
-    TIMER_PIN_MAP( 3, PB8 , 1,  3) \
-    TIMER_PIN_MAP( 4, PA0 , 1,  4) \
-    TIMER_PIN_MAP( 5, PB10, 1,  5)
-
-
-
 #define USE_DSHOT_BITBAND
 #define USE_ESCSERIAL
 
 #define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
+
 /* ======== System ======== */
-#define USE_PID_DENOM_CHECK
 #define USE_EXTI
+#define USE_PID_DENOM_CHECK
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
