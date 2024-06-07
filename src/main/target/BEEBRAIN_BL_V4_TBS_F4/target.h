@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "BeeBrain BL V4 HP TBS Rev_B"
-#define USBD_PRODUCT_STRING             "BeeBrain BL V4 HP TBS STM32F411xE"
+#define USBD_PRODUCT_STRING             "BeeBrain BL V4 HP TBS F4"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -111,6 +111,13 @@
 #define MOTOR2_PIN                      PB7
 #define MOTOR3_PIN                      PB6
 #define MOTOR4_PIN                      PB8
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, PB9 , 1,  1) \
+    TIMER_PIN_MAP( 1, PB7 , 1,  2) \
+    TIMER_PIN_MAP( 2, PB6 , 1,  3) \
+    TIMER_PIN_MAP( 3, PB8 , 1,  4) \
+    TIMER_PIN_MAP( 4, PA0 , 1,  5) 
 
 #define USE_DSHOT_BITBAND
 #define USE_ESCSERIAL
