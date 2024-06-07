@@ -103,11 +103,11 @@
 #define MOTOR4_PIN                      PB1
 
 #define USE_ESCSERIAL
+
 /* ======== System ======== */
 #define USE_EXTI
 #define USE_PID_DENOM_CHECK
 #define USE_TIMER_UP_CONFIG
-#undef USE_SDCARD
 
 #define TIMER_PIN_MAPPING \
     TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    1, 6) \
