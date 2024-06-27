@@ -134,12 +134,12 @@
 #define USE_TIMER_UP_CONFIG
 
 #define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    1, 6) \
-    TIMER_PIN_MAP( 1, MOTOR2_PIN   ,    1, 1) \
-    TIMER_PIN_MAP( 2, MOTOR3_PIN   ,    1, 2) \
-    TIMER_PIN_MAP( 3, MOTOR4_PIN   ,    1, 3) \
-    TIMER_PIN_MAP( 4, LED_STRIP_PIN,    2, 4) \
-    TIMER_PIN_MAP( 5, BEEPER_PIN   ,    2, 5)
+    TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    2, 6) \
+    TIMER_PIN_MAP( 1, MOTOR2_PIN   ,    2, 1) \
+    TIMER_PIN_MAP( 2, MOTOR3_PIN   ,    2, 2) \
+    TIMER_PIN_MAP( 3, MOTOR4_PIN   ,    3, 3) \
+    TIMER_PIN_MAP( 4, LED_STRIP_PIN,    3, 4) \
+    TIMER_PIN_MAP( 5, BEEPER_PIN   ,    3, 5)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
@@ -147,3 +147,5 @@
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
 #define TARGET_IO_PORTF                 0xffff
+
+#define USE_TARGET_CONFIG
