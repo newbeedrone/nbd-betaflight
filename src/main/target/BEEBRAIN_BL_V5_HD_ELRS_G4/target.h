@@ -106,6 +106,10 @@
 
 /* ======== System ======== */
 #undef USE_SDCARD
+#define USE_GPS
+#define USE_GPS_NMEA
+#define USE_GPS_UBLOX
+#define USE_GPS_RESCUE
 #define USE_EXTI
 #define USE_PID_DENOM_CHECK
 #define USE_TIMER_UP_CONFIG
