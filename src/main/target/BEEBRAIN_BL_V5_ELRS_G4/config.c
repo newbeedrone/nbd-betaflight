@@ -169,7 +169,7 @@ void targetConfiguration(void) {
     };
 
     const char *rtc6705PowerNames[_USER_VTX_TABLE_MAX_POWER_LEVELS + 1] = {
-        "25 ", "100", "200",
+        "25 ", "100", "MAX",
     };
 
     vtxTableConfigMutable()->bands = _USER_VTX_TABLE_MAX_BANDS;
@@ -227,7 +227,7 @@ void targetConfiguration(void) {
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "Racing Acrobee");
+    strcpy(pilotConfigMutable()->craftName, "Acrobee 75");
 
     /* PID Tuning */
     pidProfilesMutable(0)->vbat_sag_compensation = 100;
