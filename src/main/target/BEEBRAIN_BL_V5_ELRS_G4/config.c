@@ -206,7 +206,14 @@ void targetConfiguration(void) {
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
 
+    /* Power & Battery */
+    batteryConfigMutable()->vbatmincellvoltage = 320;
+    batteryConfigMutable()->vbatwarningcellvoltage = 340;
+
     /* OSD */
+    osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);
+    osdWarnSetState(OSD_WARNING_VISUAL_BEEPER, false);
+
     osdElementConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE]  = OSD_PROFILE_1_FLAG | OSD_POS(24,10);
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]         = OSD_PROFILE_1_FLAG | OSD_POS(1, 11);
     osdElementConfigMutable()->item_pos[OSD_ITEM_TIMER_2]       = OSD_PROFILE_1_FLAG | OSD_POS(1, 10);
