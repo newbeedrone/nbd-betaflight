@@ -127,11 +127,6 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(3)->range.startStep = CHANNEL_VALUE_TO_STEP(1300);
     modeActivationConditionsMutable(3)->range.endStep   = CHANNEL_VALUE_TO_STEP(1700);
 
-    modeActivationConditionsMutable(4)->modeId          = BOXBLACKBOX;
-    modeActivationConditionsMutable(4)->auxChannelIndex = AUX4 - NON_AUX_CHANNEL_COUNT;
-    modeActivationConditionsMutable(4)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
-    modeActivationConditionsMutable(4)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
-
     modeActivationConditionsMutable(5)->modeId          = BOXFLIPOVERAFTERCRASH;
     modeActivationConditionsMutable(5)->auxChannelIndex = AUX2 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(5)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
@@ -170,7 +165,7 @@ void targetConfiguration(void) {
 
     /* Notice: VTx power also depend on OSD version, make sure you flash the right OSD firmware */
     const char *rtc6705PowerNames[_USER_VTX_TABLE_MAX_POWER_LEVELS + 1] = {
-        "25 ", "200", "MAX",
+        "25 ", "100", "200",
     };
 
     vtxTableConfigMutable()->bands = _USER_VTX_TABLE_MAX_BANDS;
@@ -235,7 +230,7 @@ void targetConfiguration(void) {
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "Racing Acrobee");
+    strcpy(pilotConfigMutable()->craftName, "Acrobee Racespec");
 
     /* PID Tuning */
     pidProfilesMutable(0)->vbat_sag_compensation = 100;
