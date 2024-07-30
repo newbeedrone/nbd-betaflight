@@ -113,27 +113,22 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(0)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
     modeActivationConditionsMutable(1)->modeId          = BOXANGLE;
-    modeActivationConditionsMutable(1)->auxChannelIndex = AUX3 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(1)->auxChannelIndex = AUX2 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(1)->range.startStep = CHANNEL_VALUE_TO_STEP(900);
     modeActivationConditionsMutable(1)->range.endStep   = CHANNEL_VALUE_TO_STEP(1300);
 
     modeActivationConditionsMutable(2)->modeId          = BOXHORIZON;
-    modeActivationConditionsMutable(2)->auxChannelIndex = AUX3 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(2)->auxChannelIndex = AUX2 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(2)->range.startStep = CHANNEL_VALUE_TO_STEP(1300);
     modeActivationConditionsMutable(2)->range.endStep   = CHANNEL_VALUE_TO_STEP(1700);
 
     modeActivationConditionsMutable(3)->modeId          = BOXBEEPERON;
-    modeActivationConditionsMutable(3)->auxChannelIndex = AUX2 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(3)->auxChannelIndex = AUX3 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(3)->range.startStep = CHANNEL_VALUE_TO_STEP(1300);
     modeActivationConditionsMutable(3)->range.endStep   = CHANNEL_VALUE_TO_STEP(1700);
 
-    modeActivationConditionsMutable(4)->modeId          = BOXBLACKBOX;
-    modeActivationConditionsMutable(4)->auxChannelIndex = AUX4 - NON_AUX_CHANNEL_COUNT;
-    modeActivationConditionsMutable(4)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
-    modeActivationConditionsMutable(4)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
-
     modeActivationConditionsMutable(5)->modeId          = BOXFLIPOVERAFTERCRASH;
-    modeActivationConditionsMutable(5)->auxChannelIndex = AUX2 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(5)->auxChannelIndex = AUX3 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(5)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
     modeActivationConditionsMutable(5)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
