@@ -222,9 +222,9 @@ void targetConfiguration(void) {
     osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MAX7456;
 
     /* Video Transmitter -> Select Mode */
-    vtxSettingsConfigMutable()->band = 5;
-    vtxSettingsConfigMutable()->channel = 8;
-    vtxSettingsConfigMutable()->power = 3;
+    vtxSettingsConfigMutable()->band = 4;
+    vtxSettingsConfigMutable()->channel = 4;
+    vtxSettingsConfigMutable()->power = 1;
 
     /* OSD -> Video Format */
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
