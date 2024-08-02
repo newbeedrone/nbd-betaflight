@@ -16,7 +16,7 @@
 #
 
 # The target to build, see BASE_TARGETS below
-DEFAULT_TARGET ?= ARCOBEE_65
+DEFAULT_TARGET ?= ACROBEE_65
 TARGET    ?=
 CONFIG    ?=
 
@@ -127,7 +127,7 @@ endif
 # default xtal value
 HSE_VALUE       ?= 8000000
 
-CI_TARGETS       := $(filter ARCOBEE_65 ARCOBEE_75 ARCOBEE_75_RACING, $(BASE_TARGETS))
+CI_TARGETS       := $(filter ACROBEE_65 ACROBEE_75 ACROBEE_75_RACING, $(BASE_TARGETS))
 include $(ROOT)/src/main/target/$(TARGET)/target.mk
 
 REVISION := norevision
