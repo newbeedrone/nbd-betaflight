@@ -32,7 +32,8 @@ typedef enum {
 #ifdef USE_GPS
     TABLE_GPS_PROVIDER,
     TABLE_GPS_SBAS_MODE,
-    TABLE_GPS_UBLOX_MODE,
+    TABLE_GPS_UBLOX_MODELS,
+    TABLE_GPS_UBLOX_UTC_STANDARD,
 #endif
 #ifdef USE_GPS_RESCUE
     TABLE_GPS_RESCUE_SANITY_CHECK,
@@ -164,6 +165,7 @@ typedef enum {
     VAR_UINT16 = (2 << VALUE_TYPE_OFFSET),
     VAR_INT16 = (3 << VALUE_TYPE_OFFSET),
     VAR_UINT32 = (4 << VALUE_TYPE_OFFSET),
+    VAR_INT32 = (5 << VALUE_TYPE_OFFSET),
 
     // value section, bits 3-4
     MASTER_VALUE = (0 << VALUE_SECTION_OFFSET),
@@ -219,7 +221,14 @@ typedef union {
     cliStringLengthConfig_t string;           // used for MODE_STRING
     uint8_t bitpos;                           // used for MODE_BITSET
     uint32_t u32Max;                          // used for MODE_DIRECT with VAR_UINT32
+    int32_t d32Max;                           // used for MODE_DIRECT with VAR_INT32
 } cliValueConfig_t;
+
+#ifdef __APPLE__
+#define PTR_PACKING
+#else
+#define PTR_PACKING __attribute__((packed))
+#endif
 
 typedef struct clivalue_s {
     const char *name;
@@ -228,7 +237,7 @@ typedef struct clivalue_s {
 
     pgn_t pgn;
     uint16_t offset;
-} __attribute__((packed)) clivalue_t;
+} PTR_PACKING clivalue_t;
 
 
 extern const lookupTableEntry_t lookupTables[];
@@ -266,4 +275,8 @@ extern const char * const lookupTableOffOn[];
 
 extern const char * const lookupTableSimplifiedTuningPidsMode[];
 
+extern const char * const lookupTableMixerType[];
+
 extern const char * const lookupTableCMSMenuBackgroundType[];
+
+extern const char * const lookupTableThrottleLimitType[];

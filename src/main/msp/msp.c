@@ -53,7 +53,7 @@
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/bus_i2c.h"
 #include "drivers/bus_spi.h"
-#include "drivers/camera_control.h"
+#include "drivers/camera_control_impl.h"
 #include "drivers/compass/compass.h"
 #include "drivers/display.h"
 #include "drivers/dshot.h"
@@ -100,7 +100,6 @@
 #include "io/ledstrip.h"
 #include "io/serial.h"
 #include "io/serial_4way.h"
-#include "io/servos.h"
 #include "io/transponder_ir.h"
 #include "io/usb_msc.h"
 #include "io/vtx_control.h"
@@ -108,6 +107,7 @@
 #include "io/vtx_msp.h"
 
 #include "msp/msp_box.h"
+#include "msp/msp_build_info.h"
 #include "msp/msp_protocol.h"
 #include "msp/msp_protocol_v2_betaflight.h"
 #include "msp/msp_protocol_v2_common.h"
@@ -138,6 +138,7 @@
 #include "scheduler/scheduler.h"
 
 #include "sensors/acceleration.h"
+#include "sensors/adcinternal.h"
 #include "sensors/barometer.h"
 #include "sensors/battery.h"
 #include "sensors/boardalignment.h"
@@ -221,10 +222,12 @@ mspDescriptor_t mspDescriptorAlloc(void)
 
 static uint32_t mspArmingDisableFlags = 0;
 
+#ifndef SIMULATOR_BUILD
 static void mspArmingDisableByDescriptor(mspDescriptor_t desc)
 {
     mspArmingDisableFlags |= (1 << desc);
 }
+#endif
 
 static void mspArmingEnableByDescriptor(mspDescriptor_t desc)
 {
@@ -653,28 +656,18 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
         // Target capabilities (uint8)
 #define TARGET_HAS_VCP 0
 #define TARGET_HAS_SOFTSERIAL 1
-#define TARGET_IS_UNIFIED 2
 #define TARGET_HAS_FLASH_BOOTLOADER 3
-#define TARGET_SUPPORTS_CUSTOM_DEFAULTS 4
-#define TARGET_HAS_CUSTOM_DEFAULTS 5
 #define TARGET_SUPPORTS_RX_BIND 6
 
         uint8_t targetCapabilities = 0;
 #ifdef USE_VCP
         targetCapabilities |= BIT(TARGET_HAS_VCP);
 #endif
-#if defined(USE_SOFTSERIAL1) || defined(USE_SOFTSERIAL2)
+#if defined(USE_SOFTSERIAL)
         targetCapabilities |= BIT(TARGET_HAS_SOFTSERIAL);
 #endif
-        targetCapabilities |= BIT(TARGET_IS_UNIFIED);
 #if defined(USE_FLASH_BOOT_LOADER)
         targetCapabilities |= BIT(TARGET_HAS_FLASH_BOOTLOADER);
-#endif
-#if defined(USE_CUSTOM_DEFAULTS)
-        targetCapabilities |= BIT(TARGET_SUPPORTS_CUSTOM_DEFAULTS);
-        if (hasCustomDefaults()) {
-            targetCapabilities |= BIT(TARGET_HAS_CUSTOM_DEFAULTS);
-        }
 #endif
 #if defined(USE_RX_BIND)
         if (getRxBindSupported()) {
@@ -757,6 +750,8 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
         sbufWriteData(dst, buildDate, BUILD_DATE_LENGTH);
         sbufWriteData(dst, buildTime, BUILD_TIME_LENGTH);
         sbufWriteData(dst, shortGitRevision, GIT_SHORT_REVISION_LENGTH);
+        // Added in API version 1.46
+        sbufWriteBuildInfoFlags(dst);
         break;
 
     case MSP_ANALOG:
@@ -938,6 +933,7 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
         break;
     }
 
+#if defined(USE_OSD)
     case MSP_OSD_CONFIG: {
 #define OSD_FLAGS_OSD_FEATURE           (1 << 0)
 #define OSD_FLAGS_OSD_HARDWARE_BEESIGN  (1 << 1)
@@ -949,7 +945,7 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
 #define OSD_FLAGS_OSD_MSP_DEVICE        (1 << 6)
 
         uint8_t osdFlags = 0;
-#if defined(USE_OSD)
+
         osdFlags |= OSD_FLAGS_OSD_FEATURE;
 
         osdDisplayPortDevice_e deviceType;
@@ -989,7 +985,7 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
         default:
             break;
         }
-#endif
+
         sbufWriteU8(dst, osdFlags);
 
 #ifdef USE_OSD_SD
@@ -997,9 +993,8 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
         sbufWriteU8(dst, vcdProfile()->video_system);
 #else
         sbufWriteU8(dst, VIDEO_SYSTEM_HD);
-#endif
+#endif // USE_OSD_SD
 
-#ifdef USE_OSD
         // OSD specific, not applicable to OSD slaves.
 
         // Configuration
@@ -1062,9 +1057,12 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
         sbufWriteU8(dst, osdConfig()->camera_frame_width);
         sbufWriteU8(dst, osdConfig()->camera_frame_height);
 
-#endif // USE_OSD
+        // API >= 1.46
+        sbufWriteU16(dst, osdConfig()->link_quality_alarm);
+
         break;
     }
+#endif // USE_OSD
 
     case MSP_OSD_CANVAS: {
 #ifdef USE_OSD
@@ -1129,29 +1127,23 @@ static bool mspProcessOutCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, sbuf_t
             // config state flags - bits to indicate the state of the configuration, reboot required, etc.
             // other flags can be added as needed
             sbufWriteU8(dst, (getRebootRequired() << 0));
+
+            // Added in API version 1.46
+            // Write CPU temp
+#ifdef USE_ADC_INTERNAL
+            sbufWriteU16(dst, getCoreTemperatureCelsius());
+#else
+            sbufWriteU16(dst, 0);
+#endif
         }
         break;
 
     case MSP_RAW_IMU:
         {
-#if defined(USE_ACC)
-            // Hack scale due to choice of units for sensor data in multiwii
-
-            uint8_t scale;
-            if (acc.dev.acc_1G > 512 * 4) {
-                scale = 8;
-            } else if (acc.dev.acc_1G > 512 * 2) {
-                scale = 4;
-            } else if (acc.dev.acc_1G >= 512) {
-                scale = 2;
-            } else {
-                scale = 1;
-            }
-#endif
 
             for (int i = 0; i < 3; i++) {
 #if defined(USE_ACC)
-                sbufWriteU16(dst, lrintf(acc.accADC[i] / scale));
+                sbufWriteU16(dst, lrintf(acc.accADC[i]));
 #else
                 sbufWriteU16(dst, 0);
 #endif
@@ -1236,8 +1228,8 @@ case MSP_NAME:
             bool rpmDataAvailable = false;
 
 #ifdef USE_DSHOT_TELEMETRY
-            if (motorConfig()->dev.useDshotTelemetry) {
-                rpm = erpmToRpm(getDshotTelemetry(i));
+            if (useDshotTelemetry) {
+                rpm = lrintf(getDshotRpm(i));
                 rpmDataAvailable = true;
                 invalidPct = 10000; // 100.00%
 
@@ -1273,7 +1265,7 @@ case MSP_NAME:
             if (featureIsEnabled(FEATURE_ESC_SENSOR)) {
                 escSensorData_t *escData = getEscSensorData(i);
                 if (!rpmDataAvailable) {  // We want DSHOT telemetry RPM data (if available) to have precedence
-                    rpm = erpmToRpm(escData->rpm);
+                    rpm = lrintf(erpmToRpm(escData->rpm));
                     rpmDataAvailable = true;
                 }
                 escTemperature = escData->temperature;
@@ -1322,7 +1314,7 @@ case MSP_NAME:
             const uint8_t warningsLen = strlen(warningsBuffer);
 
             if (isBlinking) {
-                displayAttr |= DISPLAYPORT_ATTR_BLINK;
+                displayAttr |= DISPLAYPORT_BLINK;
             }
             sbufWriteU8(dst, displayAttr);  // see displayPortSeverity_e
             sbufWriteU8(dst, warningsLen);  // length byte followed by the actual characters
@@ -1466,7 +1458,7 @@ case MSP_NAME:
         sbufWriteU8(dst, getMotorCount());
         sbufWriteU8(dst, motorConfig()->motorPoleCount);
 #ifdef USE_DSHOT_TELEMETRY
-        sbufWriteU8(dst, motorConfig()->dev.useDshotTelemetry);
+        sbufWriteU8(dst, useDshotTelemetry);
 #else
         sbufWriteU8(dst, 0);
 #endif
@@ -1478,6 +1470,11 @@ case MSP_NAME:
 #endif
         break;
 
+#ifdef USE_MAG
+    case MSP_COMPASS_CONFIG:
+        sbufWriteU16(dst, imuConfig()->mag_declination);
+        break;
+#endif
     // Deprecated in favor of MSP_MOTOR_TELEMETY as of API version 1.42
     // Used by DJI FPV
     case MSP_ESC_SENSOR_DATA:
@@ -1492,11 +1489,11 @@ case MSP_NAME:
         } else
 #endif
 #if defined(USE_DSHOT_TELEMETRY)
-        if (motorConfig()->dev.useDshotTelemetry) {
+        if (useDshotTelemetry) {
             sbufWriteU8(dst, getMotorCount());
             for (int i = 0; i < getMotorCount(); i++) {
                 sbufWriteU8(dst, dshotTelemetryState.motorState[i].telemetryData[DSHOT_TELEMETRY_TYPE_TEMPERATURE]);
-                sbufWriteU16(dst, getDshotTelemetry(i) * 100 * 2 / motorConfig()->motorPoleCount);
+                sbufWriteU16(dst, lrintf(getDshotRpm(i)));
             }
         }
         else
@@ -1526,8 +1523,8 @@ case MSP_NAME:
         sbufWriteU16(dst, (uint16_t)constrain(gpsSol.llh.altCm / 100, 0, UINT16_MAX)); // alt changed from 1m to 0.01m per lsb since MSP API 1.39 by RTH. To maintain backwards compatibility compensate to 1m per lsb in MSP again.
         sbufWriteU16(dst, gpsSol.groundSpeed);
         sbufWriteU16(dst, gpsSol.groundCourse);
-        // Added in API version 1.44    
-        sbufWriteU16(dst, gpsSol.dop.hdop);
+        // Added in API version 1.44
+        sbufWriteU16(dst, gpsSol.dop.pdop);
         break;
 
     case MSP_COMP_GPS:
@@ -1548,10 +1545,10 @@ case MSP_NAME:
 
 #ifdef USE_GPS_RESCUE
     case MSP_GPS_RESCUE:
-        sbufWriteU16(dst, gpsRescueConfig()->angle);
-        sbufWriteU16(dst, gpsRescueConfig()->initialAltitudeM);
+        sbufWriteU16(dst, gpsRescueConfig()->maxRescueAngle);
+        sbufWriteU16(dst, gpsRescueConfig()->returnAltitudeM);
         sbufWriteU16(dst, gpsRescueConfig()->descentDistanceM);
-        sbufWriteU16(dst, gpsRescueConfig()->rescueGroundspeed);
+        sbufWriteU16(dst, gpsRescueConfig()->groundSpeedCmS);
         sbufWriteU16(dst, gpsRescueConfig()->throttleMin);
         sbufWriteU16(dst, gpsRescueConfig()->throttleMax);
         sbufWriteU16(dst, gpsRescueConfig()->throttleHover);
@@ -1564,7 +1561,9 @@ case MSP_NAME:
         sbufWriteU8(dst, gpsRescueConfig()->allowArmingWithoutFix);
         sbufWriteU8(dst, gpsRescueConfig()->altitudeMode);
         // Added in API version 1.44
-        sbufWriteU16(dst, gpsRescueConfig()->minRescueDth);
+        sbufWriteU16(dst, gpsRescueConfig()->minStartDistM);
+        // Added in API version 1.46
+        sbufWriteU16(dst, gpsRescueConfig()->initialClimbM);
         break;
 
     case MSP_GPS_RESCUE_PIDS:
@@ -1737,7 +1736,7 @@ case MSP_NAME:
 
 #ifdef USE_LED_STRIP
     case MSP_LED_STRIP_CONFIG:
-        for (int i = 0; i < LED_MAX_STRIP_LENGTH; i++) {
+        for (int i = 0; i < LED_STRIP_MAX_LENGTH; i++) {
 #ifdef USE_LED_STRIP_STATUS_MODE
             const ledConfig_t *ledConfig = &ledStripStatusModeConfig()->ledConfigs[i];
             sbufWriteU32(dst, *ledConfig);
@@ -1968,7 +1967,7 @@ case MSP_NAME:
         sbufWriteU8(dst, 0); // reserved
         sbufWriteU16(dst, currentPidProfile->rateAccelLimit);
         sbufWriteU16(dst, currentPidProfile->yawRateAccelLimit);
-        sbufWriteU8(dst, currentPidProfile->levelAngleLimit);
+        sbufWriteU8(dst, currentPidProfile->angle_limit);
         sbufWriteU8(dst, 0); // was pidProfile.levelSensitivity
         sbufWriteU16(dst, 0); // was currentPidProfile->itermThrottleThreshold
         sbufWriteU16(dst, currentPidProfile->anti_gravity_gain);
@@ -2063,11 +2062,13 @@ case MSP_NAME:
         sbufWriteU8(dst, currentPidProfile->tpa_rate);
         sbufWriteU16(dst, currentPidProfile->tpa_breakpoint);   // was currentControlRateProfile->tpa_breakpoint
         break;
+
     case MSP_SENSOR_CONFIG:
+        // use sensorIndex_e index: 0:GyroHardware, 1:AccHardware, 2:BaroHardware, 3:MagHardware, 4:RangefinderHardware
 #if defined(USE_ACC)
         sbufWriteU8(dst, accelerometerConfig()->acc_hardware);
 #else
-        sbufWriteU8(dst, 0);
+        sbufWriteU8(dst, ACC_NONE);
 #endif
 #ifdef USE_BARO
         sbufWriteU8(dst, barometerConfig()->baro_hardware);
@@ -2078,6 +2079,44 @@ case MSP_NAME:
         sbufWriteU8(dst, compassConfig()->mag_hardware);
 #else
         sbufWriteU8(dst, MAG_NONE);
+#endif
+        // Added in MSP API 1.46
+#ifdef USE_RANGEFINDER
+        sbufWriteU8(dst, rangefinderConfig()->rangefinder_hardware);    // no RANGEFINDER_DEFAULT value
+#else
+        sbufWriteU8(dst, RANGEFINDER_NONE);
+#endif
+        break;
+
+    // Added in MSP API 1.46
+    case MSP2_SENSOR_CONFIG_ACTIVE:
+
+#define SENSOR_NOT_AVAILABLE 0xFF
+
+#if defined(USE_GYRO)
+        sbufWriteU8(dst, detectedSensors[SENSOR_INDEX_GYRO]);
+#else
+        sbufWriteU8(dst, SENSOR_NOT_AVAILABLE);
+#endif
+#if defined(USE_ACC)
+        sbufWriteU8(dst, detectedSensors[SENSOR_INDEX_ACC]);
+#else
+        sbufWriteU8(dst, SENSOR_NOT_AVAILABLE);
+#endif
+#ifdef USE_BARO
+        sbufWriteU8(dst, detectedSensors[SENSOR_INDEX_BARO]);
+#else
+        sbufWriteU8(dst, SENSOR_NOT_AVAILABLE);
+#endif
+#ifdef USE_MAG
+        sbufWriteU8(dst, detectedSensors[SENSOR_INDEX_MAG]);
+#else
+        sbufWriteU8(dst, SENSOR_NOT_AVAILABLE);
+#endif
+#ifdef USE_RANGEFINDER
+        sbufWriteU8(dst, detectedSensors[SENSOR_INDEX_RANGEFINDER]);
+#else
+        sbufWriteU8(dst, SENSOR_NOT_AVAILABLE);
 #endif
         break;
 
@@ -2507,25 +2546,14 @@ static mspResult_e mspFcProcessOutCommandWithArg(mspDescriptor_t srcDesc, int16_
 
     case MSP_RESET_CONF:
         {
-#if defined(USE_CUSTOM_DEFAULTS)
-            defaultsType_e defaultsType = DEFAULTS_TYPE_CUSTOM;
-#endif
             if (sbufBytesRemaining(src) >= 1) {
                 // Added in MSP API 1.42
-#if defined(USE_CUSTOM_DEFAULTS)
-                defaultsType = sbufReadU8(src);
-#else
                 sbufReadU8(src);
-#endif
             }
 
             bool success = false;
             if (!ARMING_FLAG(ARMED)) {
-#if defined(USE_CUSTOM_DEFAULTS)
-                success = resetEEPROM(defaultsType == DEFAULTS_TYPE_CUSTOM);
-#else
-                success = resetEEPROM(false);
-#endif
+                success = resetEEPROM();
 
                 if (success && mspPostProcessFn) {
                     rebootMode = MSP_REBOOT_FIRMWARE;
@@ -2544,7 +2572,7 @@ static mspResult_e mspFcProcessOutCommandWithArg(mspDescriptor_t srcDesc, int16_
             // type byte, then length byte followed by the actual characters
             const uint8_t textType = sbufBytesRemaining(src) ? sbufReadU8(src) : 0;
 
-            char* textVar;
+            const char *textVar;
 
             switch (textType) {
                 case MSP2TEXT_PILOT_NAME:
@@ -2563,9 +2591,19 @@ static mspResult_e mspFcProcessOutCommandWithArg(mspDescriptor_t srcDesc, int16_
                     textVar = currentControlRateProfile->profileName;
                     break;
 
+                case MSP2TEXT_BUILDKEY:
+                    textVar = buildKey;
+                    break;
+
+                case MSP2TEXT_RELEASENAME:
+                    textVar = releaseName;
+                    break;
+
                 default:
                     return MSP_RESULT_ERROR;
             }
+
+            if (!textVar) return MSP_RESULT_ERROR;
 
             const uint8_t textLength = strlen(textVar);
 
@@ -2577,6 +2615,13 @@ static mspResult_e mspFcProcessOutCommandWithArg(mspDescriptor_t srcDesc, int16_
             }
         }
         break;
+#ifdef USE_LED_STRIP
+    case MSP2_GET_LED_STRIP_CONFIG_VALUES:
+        sbufWriteU8(dst, ledStripConfig()->ledstrip_brightness);
+        sbufWriteU16(dst, ledStripConfig()->ledstrip_rainbow_delta);
+        sbufWriteU16(dst, ledStripConfig()->ledstrip_rainbow_freq);
+        break;
+#endif
 
     default:
         return MSP_RESULT_CMD_UNKNOWN;
@@ -2827,13 +2872,21 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
             gpsConfigMutable()->gps_ublox_use_galileo = sbufReadU8(src);
         }
         break;
+#endif
 
+#ifdef USE_MAG
+    case MSP_SET_COMPASS_CONFIG:
+        imuConfigMutable()->mag_declination = sbufReadU16(src);
+        break;
+#endif
+
+#ifdef USE_GPS
 #ifdef USE_GPS_RESCUE
-        case MSP_SET_GPS_RESCUE:
-        gpsRescueConfigMutable()->angle = sbufReadU16(src);
-        gpsRescueConfigMutable()->initialAltitudeM = sbufReadU16(src);
+    case MSP_SET_GPS_RESCUE:
+        gpsRescueConfigMutable()->maxRescueAngle = sbufReadU16(src);
+        gpsRescueConfigMutable()->returnAltitudeM = sbufReadU16(src);
         gpsRescueConfigMutable()->descentDistanceM = sbufReadU16(src);
-        gpsRescueConfigMutable()->rescueGroundspeed = sbufReadU16(src);
+        gpsRescueConfigMutable()->groundSpeedCmS = sbufReadU16(src);
         gpsRescueConfigMutable()->throttleMin = sbufReadU16(src);
         gpsRescueConfigMutable()->throttleMax = sbufReadU16(src);
         gpsRescueConfigMutable()->throttleHover = sbufReadU16(src);
@@ -2848,7 +2901,11 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
         }
         if (sbufBytesRemaining(src) >= 2) {
             // Added in API version 1.44
-            gpsRescueConfigMutable()->minRescueDth = sbufReadU16(src);
+            gpsRescueConfigMutable()->minStartDistM = sbufReadU16(src);
+        }
+        if (sbufBytesRemaining(src) >= 2) {
+            // Added in API version 1.46
+            gpsRescueConfigMutable()->initialClimbM = sbufReadU16(src);
         }
         break;
 
@@ -3106,7 +3163,7 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
         currentPidProfile->rateAccelLimit = sbufReadU16(src);
         currentPidProfile->yawRateAccelLimit = sbufReadU16(src);
         if (sbufBytesRemaining(src) >= 2) {
-            currentPidProfile->levelAngleLimit = sbufReadU8(src);
+            currentPidProfile->angle_limit = sbufReadU8(src);
             sbufReadU8(src); // was pidProfile.levelSensitivity
         }
         if (sbufBytesRemaining(src) >= 4) {
@@ -3567,11 +3624,13 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
                 disableRunawayTakeoff = sbufReadU8(src);
             }
             if (command) {
+#ifndef SIMULATOR_BUILD // In simulator mode we can safely arm with MSP link.
                 mspArmingDisableByDescriptor(srcDesc);
                 setArmingDisabled(ARMING_DISABLED_MSP);
                 if (ARMING_FLAG(ARMED)) {
                     disarm(DISARM_REASON_ARMING_DISABLED);
                 }
+#endif
 #ifdef USE_RUNAWAY_TAKEOFF
                 runawayTakeoffTemporaryDisable(false);
 #endif
@@ -3587,7 +3646,7 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
         }
         break;
 
-#ifdef USE_FLASHFS
+#if defined(USE_FLASHFS) && defined(USE_BLACKBOX)
     case MSP_DATAFLASH_ERASE:
         blackboxEraseAll();
 
@@ -3595,6 +3654,34 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
 #endif
 
 #ifdef USE_GPS
+    case MSP2_SENSOR_GPS:
+        (void)sbufReadU8(src);              // instance
+        (void)sbufReadU16(src);             // gps_week
+        gpsSol.time = sbufReadU32(src);     // ms_tow
+        gpsSetFixState(sbufReadU8(src) != 0); // fix_type
+        gpsSol.numSat = sbufReadU8(src);    // satellites_in_view
+        gpsSol.acc.hAcc = sbufReadU16(src) * 10; // horizontal_pos_accuracy - convert cm to mm
+        gpsSol.acc.vAcc = sbufReadU16(src) * 10; // vertical_pos_accuracy - convert cm to mm
+        gpsSol.acc.sAcc = sbufReadU16(src) * 10; // horizontal_vel_accuracy - convert cm to mm
+        gpsSol.dop.pdop = sbufReadU16(src); // hdop in 4.4 and earlier, pdop in 4.5 and above
+        gpsSol.llh.lon = sbufReadU32(src);
+        gpsSol.llh.lat = sbufReadU32(src);
+        gpsSol.llh.altCm = sbufReadU32(src); // alt
+        int32_t ned_vel_north = (int32_t)sbufReadU32(src);  // ned_vel_north
+        int32_t ned_vel_east = (int32_t)sbufReadU32(src);   // ned_vel_east
+        gpsSol.groundSpeed = (uint16_t)sqrtf((ned_vel_north * ned_vel_north) + (ned_vel_east * ned_vel_east));
+        (void)sbufReadU32(src);             // ned_vel_down
+        gpsSol.groundCourse = ((uint16_t)sbufReadU16(src) % 36000) / 10; // incoming value expected to be in centidegrees, output value in decidegrees
+        (void)sbufReadU16(src);             // true_yaw
+        (void)sbufReadU16(src);             // year
+        (void)sbufReadU8(src);              // month
+        (void)sbufReadU8(src);              // day
+        (void)sbufReadU8(src);              // hour
+        (void)sbufReadU8(src);              // min
+        (void)sbufReadU8(src);              // sec
+        GPS_update |= GPS_MSP_UPDATE;        // MSP data signalisation to GPS functions
+        break;
+
     case MSP_SET_RAW_GPS:
         gpsSetFixState(sbufReadU8(src));
         gpsSol.numSat = sbufReadU8(src);
@@ -3720,7 +3807,7 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
 #else
             uint8_t emptyUid[6];
             sbufReadData(src, emptyUid, 6);
-#endif        
+#endif
         }
         break;
     case MSP_SET_FAILSAFE_CONFIG:
@@ -3828,7 +3915,7 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
     case MSP_SET_LED_STRIP_CONFIG:
         {
             i = sbufReadU8(src);
-            if (i >= LED_MAX_STRIP_LENGTH || dataSize != (1 + 4)) {
+            if (i >= LED_STRIP_MAX_LENGTH || dataSize != (1 + 4)) {
                 return MSP_RESULT_ERROR;
             }
 #ifdef USE_LED_STRIP_STATUS_MODE
@@ -3982,6 +4069,14 @@ static mspResult_e mspProcessInCommand(mspDescriptor_t srcDesc, int16_t cmdMSP, 
         }
         break;
 
+#ifdef USE_LED_STRIP
+    case MSP2_SET_LED_STRIP_CONFIG_VALUES:
+        ledStripConfigMutable()->ledstrip_brightness = sbufReadU8(src);
+        ledStripConfigMutable()->ledstrip_rainbow_delta = sbufReadU16(src);
+        ledStripConfigMutable()->ledstrip_rainbow_freq = sbufReadU16(src);
+        break;
+#endif
+
     default:
         // we do not know how to handle the (valid) message, indicate error MSP $M!
         return MSP_RESULT_ERROR;
@@ -4104,17 +4199,30 @@ static mspResult_e mspCommonProcessInCommand(mspDescriptor_t srcDesc, int16_t cm
             if ((int8_t)addr == -1) {
                 /* Set general OSD settings */
                 videoSystem_e video_system = sbufReadU8(src);
-#ifndef USE_OSD_HD
-                if (video_system == VIDEO_SYSTEM_HD) {
-                    video_system = VIDEO_SYSTEM_AUTO;
-                }
-#endif
 
                 if ((video_system == VIDEO_SYSTEM_HD) && (vcdProfile()->video_system != VIDEO_SYSTEM_HD)) {
                     // If switching to HD, don't wait for the VTX to communicate the correct resolution, just
-                    // increase the canvas size to the HD default as that is what the user will expect
+#ifdef USE_OSD_HD
+                    // If an HD build, increase the canvas size to the HD default as that is what the user will expect
                     osdConfigMutable()->canvas_cols = OSD_HD_COLS;
                     osdConfigMutable()->canvas_rows = OSD_HD_ROWS;
+                    // Also force use of MSP displayport
+                    osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MSP;
+#else
+                    // must have an SD build option, keep existing SD video_system, do not change canvas size
+                    video_system = vcdProfile()->video_system;
+#endif
+                } else if ((video_system != VIDEO_SYSTEM_HD) && (vcdProfile()->video_system == VIDEO_SYSTEM_HD)) {
+                    // Switching away from HD to SD
+#ifdef USE_OSD_SD
+                    // SD is in the build; set canvas size to SD and displayport device to auto
+                    osdConfigMutable()->canvas_cols = OSD_SD_COLS;
+                    osdConfigMutable()->canvas_rows = (video_system == VIDEO_SYSTEM_NTSC) ? VIDEO_LINES_NTSC : VIDEO_LINES_PAL;
+                    osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_AUTO;
+#else
+                    // must have an HD build option, keep existing HD video_system, do not change canvas size
+                    video_system = VIDEO_SYSTEM_HD;
+#endif
                 }
 
                 vcdProfileMutable()->video_system = video_system;
@@ -4166,15 +4274,19 @@ static mspResult_e mspCommonProcessInCommand(mspDescriptor_t srcDesc, int16_t cm
                     osdConfigMutable()->camera_frame_width = sbufReadU8(src);
                     osdConfigMutable()->camera_frame_height = sbufReadU8(src);
                 }
+
+                if (sbufBytesRemaining(src) >= 2) {
+                    // API >= 1.46
+                    osdConfigMutable()->link_quality_alarm = sbufReadU16(src);
+                }
+
             } else if ((int8_t)addr == -2) {
                 // Timers
                 uint8_t index = sbufReadU8(src);
                 if (index > OSD_TIMER_COUNT) {
-                  return MSP_RESULT_ERROR;
+                    return MSP_RESULT_ERROR;
                 }
                 osdConfigMutable()->timers[index] = sbufReadU16(src);
-
-                return MSP_RESULT_ERROR;
             } else {
                 const uint16_t value = sbufReadU16(src);
 
@@ -4189,7 +4301,7 @@ static mspResult_e mspCommonProcessInCommand(mspDescriptor_t srcDesc, int16_t cm
                     osdElementConfigMutable()->item_pos[addr] = value;
                     osdAnalyzeActiveElements();
                 } else {
-                  return MSP_RESULT_ERROR;
+                    return MSP_RESULT_ERROR;
                 }
             }
         }

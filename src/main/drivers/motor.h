@@ -53,7 +53,9 @@ typedef struct motorVTable_s {
     void (*reverse)(bool);
 #endif
     bool (*isMotorEnabled)(uint8_t index);
-    bool (*updateStart)(void);
+    bool (*telemetryWait)(void);
+    bool (*decodeTelemetry)(void);
+    void (*updateInit)(void);
     void (*write)(uint8_t index, float value);
     void (*writeInt)(uint8_t index, uint16_t value);
     void (*updateComplete)(void);
@@ -73,7 +75,7 @@ typedef struct motorDevice_s {
 
 void motorPostInitNull();
 void motorWriteNull(uint8_t index, float value);
-bool motorUpdateStartNull(void);
+bool motorDecodeTelemetryNull(void);
 void motorUpdateCompleteNull(void);
 
 void motorPostInit();
@@ -87,9 +89,10 @@ uint16_t motorConvertToExternal(float motorValue);
 struct motorDevConfig_s; // XXX Shouldn't be needed once pwm_output* is really cleaned up.
 void motorDevInit(const struct motorDevConfig_s *motorConfig, uint16_t idlePulse, uint8_t motorCount);
 unsigned motorDeviceCount(void);
-motorVTable_t motorGetVTable(void);
+motorVTable_t *motorGetVTable(void);
 bool checkMotorProtocolEnabled(const motorDevConfig_t *motorConfig, bool *protocolIsDshot);
 bool isMotorProtocolDshot(void);
+bool isMotorProtocolBidirDshot(void);
 bool isMotorProtocolEnabled(void);
 
 void motorDisable(void);
@@ -97,6 +100,7 @@ void motorEnable(void);
 #ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
 void motorReverse(bool status);
 #endif
+float motorEstimateMaxRpm(void);
 bool motorIsEnabled(void);
 bool motorIsMotorEnabled(uint8_t index);
 timeMs_t motorGetMotorEnableTimeMs(void);

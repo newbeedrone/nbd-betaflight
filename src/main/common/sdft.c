@@ -55,7 +55,7 @@ void sdftInit(sdft_t *sdft, const int startBin, const int endBin, const int numB
     sdft->endBin = constrain(endBin, sdft->startBin, SDFT_BIN_COUNT - 1);
 
     sdft->numBatches = MAX(numBatches, 1);
-    sdft->batchSize = (sdft->endBin - sdft->startBin) / sdft->numBatches + 1;  // batchSize = ceil(numBins / numBatches)
+    sdft->batchSize = (sdft->endBin - sdft->startBin + 1) / sdft->numBatches;
 
     for (int i = 0; i < SDFT_SAMPLE_SIZE; i++) {
         sdft->samples[i] = 0.0f;
@@ -71,7 +71,7 @@ void sdftInit(sdft_t *sdft, const int startBin, const int endBin, const int numB
 FAST_CODE void sdftPush(sdft_t *sdft, const float sample)
 {
     const float delta = sample - rPowerN * sdft->samples[sdft->idx];
-    
+
     sdft->samples[sdft->idx] = sample;
     sdft->idx = (sdft->idx + 1) % SDFT_SAMPLE_SIZE;
 
@@ -183,7 +183,7 @@ static FAST_CODE void applySqrt(const sdft_t *sdft, float *data)
 }
 
 
-// Needed for proper windowing at the edges of startBin and endBin
+// Needed for proper windowing at the edges of active range
 static FAST_CODE void updateEdges(sdft_t *sdft, const float value, const int batchIdx)
 {
     // First bin outside of lower range

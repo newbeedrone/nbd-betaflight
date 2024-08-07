@@ -23,6 +23,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <limits.h>
+#include <math.h>
 
 #include "platform.h"
 
@@ -59,12 +61,18 @@
 // 1 - ID of late task
 // 2 - Amount task is late in 10th of a us
 // 3 - Gyro lock skew in 10th of a us
+// 4 - Minimum Gyro period in 100th of a us
+// 5 - Maximum Gyro period in 100th of a us
+// 6 - Span of Gyro period in 100th of a us
+// 7 - Standard deviation of gyro cycle time in 100th of a us
 
 // DEBUG_TIMING_ACCURACY, requires USE_LATE_TASK_STATISTICS to be defined
 // 0 - % CPU busy
 // 1 - Tasks late in last second
 // 2 - Total lateness in last second in 10ths us
 // 3 - Total tasks run in last second
+// 4 - 10ths % of tasks late in last second
+// 7 - Standard deviation of gyro cycle time in 100th of a us
 
 extern task_t tasks[];
 
@@ -103,14 +111,20 @@ static uint8_t skippedOSDAttempts = 0;
 static int16_t lateTaskCount = 0;
 static uint32_t lateTaskTotal = 0;
 static int16_t taskCount = 0;
+static uint32_t lateTaskPercentage = 0;
 static uint32_t nextTimingCycles;
+static int32_t gyroCyclesNow;
 #endif
 
 static timeMs_t lastFailsafeCheckMs = 0;
 
 // No need for a linked list for the queue, since items are only inserted at startup
-
-STATIC_UNIT_TESTED FAST_DATA_ZERO_INIT task_t* taskQueueArray[TASK_COUNT + 1]; // extra item for NULL pointer at end of queue
+#ifdef UNIT_TEST
+#define TASK_QUEUE_RESERVE 1
+#else
+#define TASK_QUEUE_RESERVE 0
+#endif
+STATIC_UNIT_TESTED FAST_DATA_ZERO_INIT task_t* taskQueueArray[TASK_COUNT + 1 + TASK_QUEUE_RESERVE]; // extra item for NULL pointer at end of queue (+ overflow check in UNTT_TEST)
 
 void queueClear(void)
 {
@@ -192,6 +206,15 @@ void taskSystemLoad(timeUs_t currentTimeUs)
 
 #if defined(SIMULATOR_BUILD)
     averageSystemLoadPercent = 0;
+#endif
+}
+
+uint32_t getCpuPercentageLate(void)
+{
+#if defined(USE_LATE_TASK_STATISTICS)
+    return lateTaskPercentage;
+#else
+    return 0;
 #endif
 }
 
@@ -424,8 +447,8 @@ FAST_CODE timeUs_t schedulerExecuteTask(task_t *selectedTask, timeUs_t currentTi
 }
 
 #if defined(UNIT_TEST)
-task_t *unittest_scheduler_selectedTask;
-uint8_t unittest_scheduler_selectedTaskDynamicPriority;
+STATIC_UNIT_TESTED task_t *unittest_scheduler_selectedTask;
+STATIC_UNIT_TESTED uint8_t unittest_scheduler_selectedTaskDynamicPriority;
 
 static void readSchedulerLocals(task_t *selectedTask, uint8_t selectedTaskDynamicPriority)
 {
@@ -438,6 +461,12 @@ FAST_CODE void scheduler(void)
 {
     static uint32_t checkCycles = 0;
     static uint32_t scheduleCount = 0;
+#if defined(USE_LATE_TASK_STATISTICS)
+    static uint32_t gyroCyclesMean = 0;
+    static uint32_t gyroCyclesCount = 0;
+    static uint64_t gyroCyclesTotal = 0;
+    static float devSquared = 0.0f;
+#endif
 #if !defined(UNIT_TEST)
     const timeUs_t schedulerStartTimeUs = micros();
 #endif
@@ -492,7 +521,6 @@ FAST_CODE void scheduler(void)
                 nowCycles = getCycleCounter();
                 schedLoopRemainingCycles = cmpTimeCycles(nextTargetCycles, nowCycles);
             }
-            DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 0, clockCyclesTo10thMicros(cmpTimeCycles(nowCycles, lastTargetCycles)));
 #endif
             currentTimeUs = micros();
             taskExecutionTimeUs += schedulerExecuteTask(gyroTask, currentTimeUs);
@@ -518,6 +546,13 @@ FAST_CODE void scheduler(void)
             }
 
 #if defined(USE_LATE_TASK_STATISTICS)
+            gyroCyclesNow = cmpTimeCycles(nowCycles, lastTargetCycles);
+            gyroCyclesTotal += gyroCyclesNow;
+            gyroCyclesCount++;
+            DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 0, clockCyclesTo10thMicros(gyroCyclesNow));
+            int32_t deviationCycles = gyroCyclesNow - gyroCyclesMean;
+            devSquared += deviationCycles * deviationCycles;
+
             // % CPU busy
             DEBUG_SET(DEBUG_TIMING_ACCURACY, 0, getAverageSystemLoadPercent());
 
@@ -531,6 +566,20 @@ FAST_CODE void scheduler(void)
                 // Total tasks run in last second
                 DEBUG_SET(DEBUG_TIMING_ACCURACY, 3, taskCount);
 
+                lateTaskPercentage = 1000 * (uint32_t)lateTaskCount / taskCount;
+                // 10ths % of tasks late in last second
+                DEBUG_SET(DEBUG_TIMING_ACCURACY, 4, lateTaskPercentage);
+
+                float gyroCyclesStdDev = sqrt(devSquared/gyroCyclesCount);
+                int32_t gyroCyclesStdDev100thus = clockCyclesTo100thMicros((int32_t)gyroCyclesStdDev);
+                DEBUG_SET(DEBUG_TIMING_ACCURACY, 7, gyroCyclesStdDev100thus);
+                DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 7, gyroCyclesStdDev100thus);
+
+                gyroCyclesMean = gyroCyclesTotal/gyroCyclesCount;
+
+                devSquared = 0.0f;
+                gyroCyclesTotal = 0;
+                gyroCyclesCount = 0;
                 lateTaskCount = 0;
                 lateTaskTotal = 0;
                 taskCount = 0;
@@ -570,6 +619,29 @@ FAST_CODE void scheduler(void)
 
                 accGyroSkew += gyroSkew;
 
+#if defined(USE_LATE_TASK_STATISTICS)
+                static int32_t minGyroPeriod = (int32_t)INT_MAX;
+                static int32_t maxGyroPeriod = (int32_t)INT_MIN;
+                static uint32_t lastGyroSyncEXTI;
+
+                gyroCyclesNow = cmpTimeCycles(gyro->gyroSyncEXTI, lastGyroSyncEXTI);
+
+                if (gyroCyclesNow) {
+                    lastGyroSyncEXTI = gyro->gyroSyncEXTI;
+                    // If we're syncing to a short cycle, divide by eight
+                    if (gyro->gyroShortPeriod != 0) {
+                        gyroCyclesNow /= 8;
+                    }
+                    if (gyroCyclesNow < minGyroPeriod) {
+                        minGyroPeriod = gyroCyclesNow;
+                    }
+                    // Crude detection of missed cycles caused by configurator traffic
+                    if ((gyroCyclesNow > maxGyroPeriod) && (gyroCyclesNow < (1.5 * minGyroPeriod))) {
+                        maxGyroPeriod = gyroCyclesNow;
+                    }
+                }
+#endif
+
                 if (terminalGyroLockCount == 0) {
                     terminalGyroLockCount = gyro->detectedEXTI + GYRO_LOCK_COUNT;
                 }
@@ -579,7 +651,15 @@ FAST_CODE void scheduler(void)
 
                     // Move the desired start time of the gyroTask
                     lastTargetCycles -= (accGyroSkew/GYRO_LOCK_COUNT);
+
+#if defined(USE_LATE_TASK_STATISTICS)
                     DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 3, clockCyclesTo10thMicros(accGyroSkew/GYRO_LOCK_COUNT));
+                    DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 4, clockCyclesTo100thMicros(minGyroPeriod));
+                    DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 5, clockCyclesTo100thMicros(maxGyroPeriod));
+                    DEBUG_SET(DEBUG_SCHEDULER_DETERMINISM, 6, clockCyclesTo100thMicros(maxGyroPeriod - minGyroPeriod));
+                    minGyroPeriod = INT_MAX;
+                    maxGyroPeriod = INT_MIN;
+#endif
                     accGyroSkew = 0;
                 }
             }

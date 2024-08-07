@@ -124,9 +124,9 @@
 #define W25N01G_TIMEOUT_RESET_MS            500 // tRSTmax = 500ms
 
 // Sizes (in bits)
-#define W28N01G_STATUS_REGISTER_SIZE        8
-#define W28N01G_STATUS_PAGE_ADDRESS_SIZE    16
-#define W28N01G_STATUS_COLUMN_ADDRESS_SIZE  16
+#define W25N01G_STATUS_REGISTER_SIZE        8
+#define W25N01G_STATUS_PAGE_ADDRESS_SIZE    16
+#define W25N01G_STATUS_COLUMN_ADDRESS_SIZE  16
 
 typedef struct bblut_s {
     uint16_t pba;
@@ -188,7 +188,7 @@ static void w25n01g_performCommandWithPageAddress(flashDeviceIO_t *io, uint8_t c
     else if (io->mode == FLASHIO_QUADSPI) {
         QUADSPI_TypeDef *quadSpi = io->handle.quadSpi;
 
-        quadSpiInstructionWithAddress1LINE(quadSpi, command, 0, pageAddress & 0xffff, W28N01G_STATUS_PAGE_ADDRESS_SIZE + 8);
+        quadSpiInstructionWithAddress1LINE(quadSpi, command, 0, pageAddress & 0xffff, W25N01G_STATUS_PAGE_ADDRESS_SIZE + 8);
     }
 #endif
 }
@@ -221,8 +221,8 @@ static uint8_t w25n01g_readRegister(flashDeviceIO_t *io, uint8_t reg)
 
         QUADSPI_TypeDef *quadSpi = io->handle.quadSpi;
 
-        uint8_t in[1];
-        quadSpiReceiveWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_READ_STATUS_REG, 0, reg, W28N01G_STATUS_REGISTER_SIZE, in, sizeof(in));
+        uint8_t in[W25N01G_STATUS_REGISTER_SIZE / 8];
+        quadSpiReceiveWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_READ_STATUS_REG, 0, reg, W25N01G_STATUS_REGISTER_SIZE, in, sizeof(in));
 
         return in[0];
     }
@@ -253,7 +253,7 @@ static void w25n01g_writeRegister(flashDeviceIO_t *io, uint8_t reg, uint8_t data
    else if (io->mode == FLASHIO_QUADSPI) {
        QUADSPI_TypeDef *quadSpi = io->handle.quadSpi;
 
-       quadSpiTransmitWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_WRITE_STATUS_REG, 0, reg, W28N01G_STATUS_REGISTER_SIZE, &data, 1);
+       quadSpiTransmitWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_WRITE_STATUS_REG, 0, reg, W25N01G_STATUS_REGISTER_SIZE, &data, 1);
    }
 #endif
 }
@@ -281,9 +281,19 @@ static void w25n01g_deviceReset(flashDevice_t *fdevice)
 
 bool w25n01g_isReady(flashDevice_t *fdevice)
 {
-    uint8_t status = w25n01g_readRegister(&fdevice->io, W25N01G_STAT_REG);
+    // If we're waiting on DMA completion, then SPI is busy
+    if (fdevice->io.mode == FLASHIO_SPI) {
+        if (fdevice->io.handle.dev->bus->useDMA && spiIsBusy(fdevice->io.handle.dev)) {
+            return false;
+        }
+    }
 
-    return ((status & W25N01G_STATUS_FLAG_BUSY) == 0);
+    // Irrespective of the current state of fdevice->couldBeBusy read the status or device blocks
+
+    // Poll the FLASH device to see if it's busy
+    fdevice->couldBeBusy = ((w25n01g_readRegister(&fdevice->io, W25N01G_STAT_REG) & W25N01G_STATUS_FLAG_BUSY) != 0);
+
+    return !fdevice->couldBeBusy;
 }
 
 static bool w25n01g_waitForReady(flashDevice_t *fdevice)
@@ -311,18 +321,11 @@ static void w25n01g_writeEnable(flashDevice_t *fdevice)
     fdevice->couldBeBusy = true;
 }
 
-/**
- * Read chip identification and geometry information (into global `geometry`).
- *
- * Returns true if we get valid ident, false if something bad happened like there is no M25P16.
- */
 const flashVTable_t w25n01g_vTable;
 
-static void w25n01g_deviceInit(flashDevice_t *flashdev);
-
-bool w25n01g_detect(flashDevice_t *fdevice, uint32_t chipID)
+bool w25n01g_identify(flashDevice_t *fdevice, uint32_t jedecID)
 {
-    switch (chipID) {
+    switch (jedecID) {
     case JEDEC_ID_WINBOND_W25N01GV:
         fdevice->geometry.sectors = 1024;      // Blocks
         fdevice->geometry.pagesPerSector = 64; // Pages/Blocks
@@ -348,6 +351,19 @@ bool w25n01g_detect(flashDevice_t *fdevice, uint32_t chipID)
             W25N01G_BB_MANAGEMENT_START_BLOCK + W25N01G_BB_MANAGEMENT_BLOCKS - 1);
 
     fdevice->couldBeBusy = true; // Just for luck we'll assume the chip could be busy even though it isn't specced to be
+    fdevice->vTable = &w25n01g_vTable;
+
+    return true;
+}
+
+static void w25n01g_deviceInit(flashDevice_t *flashdev);
+
+
+void w25n01g_configure(flashDevice_t *fdevice, uint32_t configurationFlags)
+{
+    if (configurationFlags & FLASH_CF_SYSTEM_IS_MEMORY_MAPPED) {
+        return;
+    }
 
     w25n01g_deviceReset(fdevice);
 
@@ -365,11 +381,11 @@ bool w25n01g_detect(flashDevice_t *fdevice, uint32_t chipID)
     // There will be a least chance of running out of replacement blocks.
     // If it ever run out, the device becomes unusable.
 
+    if (fdevice->io.mode == FLASHIO_SPI) {    // Need to set clock speed for 8kHz logging support with SPI
+        spiSetClkDivisor(fdevice->io.handle.dev, spiCalculateDivider(100000000));
+    }
+
     w25n01g_deviceInit(fdevice);
-
-    fdevice->vTable = &w25n01g_vTable;
-
-    return true;
 }
 
 /**
@@ -398,6 +414,7 @@ void w25n01g_eraseCompletely(flashDevice_t *fdevice)
     }
 }
 
+#ifdef USE_QUADSPI
 static void w25n01g_programDataLoad(flashDevice_t *fdevice, uint16_t columnAddress, const uint8_t *data, int length)
 {
 
@@ -422,7 +439,7 @@ static void w25n01g_programDataLoad(flashDevice_t *fdevice, uint16_t columnAddre
    else if (fdevice->io.mode == FLASHIO_QUADSPI) {
        QUADSPI_TypeDef *quadSpi = fdevice->io.handle.quadSpi;
 
-       quadSpiTransmitWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_PROGRAM_DATA_LOAD, 0, columnAddress, W28N01G_STATUS_COLUMN_ADDRESS_SIZE, data, length);
+       quadSpiTransmitWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_PROGRAM_DATA_LOAD, 0, columnAddress, W25N01G_STATUS_COLUMN_ADDRESS_SIZE, data, length);
     }
 #endif
 
@@ -453,13 +470,14 @@ static void w25n01g_randomProgramDataLoad(flashDevice_t *fdevice, uint16_t colum
     else if (fdevice->io.mode == FLASHIO_QUADSPI) {
         QUADSPI_TypeDef *quadSpi = fdevice->io.handle.quadSpi;
 
-        quadSpiTransmitWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_RANDOM_PROGRAM_DATA_LOAD, 0, columnAddress, W28N01G_STATUS_COLUMN_ADDRESS_SIZE, data, length);
+        quadSpiTransmitWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_RANDOM_PROGRAM_DATA_LOAD, 0, columnAddress, W25N01G_STATUS_COLUMN_ADDRESS_SIZE, data, length);
      }
 #endif
 
     w25n01g_setTimeout(fdevice, W25N01G_TIMEOUT_PAGE_PROGRAM_MS);
 
 }
+#endif
 
 static void w25n01g_programExecute(flashDevice_t *fdevice, uint32_t pageAddress)
 {
@@ -488,18 +506,14 @@ flashfs page program behavior
 
 To cope with this behavior.
 
-pageProgramBegin:
 If buffer is dirty and programLoadAddress != address, then the last page is a partial write;
 issue PAGE_PROGRAM_EXECUTE to flash buffer contents, clear dirty and record the address as programLoadAddress and programStartAddress.
-Else do nothing.
 
-pageProgramContinue:
 Mark buffer as dirty.
 If programLoadAddress is on page boundary, then issue PROGRAM_LOAD_DATA, else issue RANDOM_PROGRAM_LOAD_DATA.
 Update programLoadAddress.
 Optionally observe the programLoadAddress, and if it's on page boundary, issue PAGE_PROGRAM_EXECUTE.
 
-pageProgramFinish:
 Observe programLoadAddress. If it's on page boundary, issue PAGE_PROGRAM_EXECUTE and clear dirty, else just return.
 If pageProgramContinue observes the page boundary, then do nothing(?).
 */
@@ -507,6 +521,8 @@ If pageProgramContinue observes the page boundary, then do nothing(?).
 static uint32_t programStartAddress;
 static uint32_t programLoadAddress;
 bool bufferDirty = false;
+
+#ifdef USE_QUADSPI
 bool isProgramming = false;
 
 void w25n01g_pageProgramBegin(flashDevice_t *fdevice, uint32_t address, void (*callback)(uint32_t length))
@@ -578,6 +594,175 @@ void w25n01g_pageProgramFinish(flashDevice_t *fdevice)
         programStartAddress = programLoadAddress;
     }
 }
+#else
+void w25n01g_pageProgramBegin(flashDevice_t *fdevice, uint32_t address, void (*callback)(uint32_t length))
+{
+    fdevice->callback = callback;
+    fdevice->currentWriteAddress = address;
+
+}
+
+static uint32_t currentPage = UINT32_MAX;
+
+// Called in ISR context
+// Check if the status was busy and if so repeat the poll
+busStatus_e w25n01g_callbackReady(uint32_t arg)
+{
+    flashDevice_t *fdevice = (flashDevice_t *)arg;
+    extDevice_t *dev = fdevice->io.handle.dev;
+
+    uint8_t readyPoll = dev->bus->curSegment->u.buffers.rxData[2];
+
+    if (readyPoll & W25N01G_STATUS_FLAG_BUSY) {
+        return BUS_BUSY;
+    }
+
+    // Bus is now known not to be busy
+    fdevice->couldBeBusy = false;
+
+    return BUS_READY;
+}
+
+// Called in ISR context
+// A write enable has just been issued
+busStatus_e w25n01g_callbackWriteEnable(uint32_t arg)
+{
+    flashDevice_t *fdevice = (flashDevice_t *)arg;
+
+    // As a write has just occurred, the device could be busy
+    fdevice->couldBeBusy = true;
+
+    return BUS_READY;
+}
+
+// Called in ISR context
+// Write operation has just completed
+busStatus_e w25n01g_callbackWriteComplete(uint32_t arg)
+{
+    flashDevice_t *fdevice = (flashDevice_t *)arg;
+
+    fdevice->currentWriteAddress += fdevice->callbackArg;
+    // Call transfer completion callback
+    if (fdevice->callback) {
+        fdevice->callback(fdevice->callbackArg);
+    }
+
+    return BUS_READY;
+}
+
+uint32_t w25n01g_pageProgramContinue(flashDevice_t *fdevice, uint8_t const **buffers, uint32_t *bufferSizes, uint32_t bufferCount)
+{
+    if (bufferCount < 1) {
+        fdevice->callback(0);
+        return 0;
+    }
+
+    // The segment list cannot be in automatic storage as this routine is non-blocking
+    STATIC_DMA_DATA_AUTO uint8_t readStatus[] = { W25N01G_INSTRUCTION_READ_STATUS_REG, W25N01G_STAT_REG, 0 };
+    STATIC_DMA_DATA_AUTO uint8_t readyStatus[3];
+    STATIC_DMA_DATA_AUTO uint8_t writeEnable[] = { W25N01G_INSTRUCTION_WRITE_ENABLE };
+    STATIC_DMA_DATA_AUTO uint8_t progExecCmd[] = { W25N01G_INSTRUCTION_PROGRAM_EXECUTE, 0, 0, 0};
+    STATIC_DMA_DATA_AUTO uint8_t progExecDataLoad[] = { W25N01G_INSTRUCTION_PROGRAM_DATA_LOAD, 0, 0};
+    STATIC_DMA_DATA_AUTO uint8_t progRandomProgDataLoad[] = { W25N01G_INSTRUCTION_RANDOM_PROGRAM_DATA_LOAD, 0, 0};
+
+    static busSegment_t segmentsDataLoad[] = {
+        {.u.buffers = {readStatus, readyStatus}, sizeof(readStatus), true, w25n01g_callbackReady},
+        {.u.buffers = {writeEnable, NULL}, sizeof(writeEnable), true, w25n01g_callbackWriteEnable},
+        {.u.buffers = {progExecDataLoad, NULL}, sizeof(progExecDataLoad), false, NULL},
+        {.u.link = {NULL, NULL}, 0, true, NULL},
+    };
+
+    static busSegment_t segmentsRandomDataLoad[] = {
+        {.u.buffers = {readStatus, readyStatus}, sizeof(readStatus), true, w25n01g_callbackReady},
+        {.u.buffers = {writeEnable, NULL}, sizeof(writeEnable), true, w25n01g_callbackWriteEnable},
+        {.u.buffers = {progRandomProgDataLoad, NULL}, sizeof(progRandomProgDataLoad), false, NULL},
+        {.u.link = {NULL, NULL}, 0, true, NULL},
+    };
+
+    static busSegment_t segmentsBuffer[] = {
+        {.u.buffers = {NULL, NULL}, 0, true, NULL},
+        {.u.link = {NULL, NULL}, 0, true, NULL},
+    };
+
+    static busSegment_t segmentsFlash[] = {
+        {.u.buffers = {readStatus, readyStatus}, sizeof(readStatus), true, w25n01g_callbackReady},
+        {.u.buffers = {writeEnable, NULL}, sizeof(writeEnable), true, w25n01g_callbackWriteEnable},
+        {.u.buffers = {progExecCmd, NULL}, sizeof(progExecCmd), true, w25n01g_callbackWriteComplete},
+        {.u.link = {NULL, NULL}, 0, true, NULL},
+    };
+
+    busSegment_t *programSegment;
+
+    // Ensure any prior DMA has completed before continuing
+    spiWait(fdevice->io.handle.dev);
+
+    uint32_t columnAddress;
+
+    if (bufferDirty) {
+        columnAddress = W25N01G_LINEAR_TO_COLUMN(programLoadAddress);
+        // Set the address and buffer details for the random data load
+        progRandomProgDataLoad[1] = (columnAddress >> 8) & 0xff;
+        progRandomProgDataLoad[2] = columnAddress & 0xff;
+        programSegment = segmentsRandomDataLoad;
+    } else {
+        programStartAddress = programLoadAddress = fdevice->currentWriteAddress;
+        columnAddress = W25N01G_LINEAR_TO_COLUMN(programLoadAddress);
+        // Set the address and buffer details for the data load
+        progExecDataLoad[1] = (columnAddress >> 8) & 0xff;
+        progExecDataLoad[2] = columnAddress & 0xff;
+        programSegment = segmentsDataLoad;
+    }
+
+    // Add the data buffer
+    segmentsBuffer[0].u.buffers.txData = (uint8_t *)buffers[0];
+    segmentsBuffer[0].len = bufferSizes[0];
+    segmentsBuffer[0].callback = NULL;
+
+    spiLinkSegments(fdevice->io.handle.dev, programSegment, segmentsBuffer);
+
+    bufferDirty = true;
+    programLoadAddress += bufferSizes[0];
+
+    if (W25N01G_LINEAR_TO_COLUMN(programLoadAddress) == 0) {
+        // Flash the loaded data
+        currentPage = W25N01G_LINEAR_TO_PAGE(programStartAddress);
+
+        progExecCmd[2] = (currentPage >> 8) & 0xff;
+        progExecCmd[3] = currentPage & 0xff;
+
+        spiLinkSegments(fdevice->io.handle.dev, segmentsBuffer, segmentsFlash);
+
+        bufferDirty = false;
+
+        programStartAddress = programLoadAddress;
+    } else {
+        // Callback on completion of data load
+        segmentsBuffer[0].callback = w25n01g_callbackWriteComplete;
+    }
+
+    if (!fdevice->couldBeBusy) {
+        // Skip the ready check
+        programSegment++;
+    }
+
+    fdevice->callbackArg = bufferSizes[0];
+
+    spiSequence(fdevice->io.handle.dev, programSegment);
+
+    if (fdevice->callback == NULL) {
+        // No callback was provided so block
+        // Block pending completion of SPI access
+        spiWait(fdevice->io.handle.dev);
+    }
+
+    return fdevice->callbackArg;
+}
+
+void w25n01g_pageProgramFinish(flashDevice_t *fdevice)
+{
+    UNUSED(fdevice);
+}
+#endif // USE_QUADSPI
 
 /**
  * Write bytes to a flash page. Address must not cross a page boundary.
@@ -610,9 +795,6 @@ void w25n01g_flush(flashDevice_t *fdevice)
         w25n01g_programExecute(fdevice, W25N01G_LINEAR_TO_PAGE(programStartAddress));
 
         bufferDirty = false;
-        isProgramming = true;
-    } else {
-        isProgramming = false;
     }
 }
 
@@ -696,8 +878,8 @@ int w25n01g_readBytes(flashDevice_t *fdevice, uint32_t address, uint8_t *buffer,
     else if (fdevice->io.mode == FLASHIO_QUADSPI) {
         QUADSPI_TypeDef *quadSpi = fdevice->io.handle.quadSpi;
 
-        //quadSpiReceiveWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_READ_DATA, 8, column, W28N01G_STATUS_COLUMN_ADDRESS_SIZE, buffer, length);
-        quadSpiReceiveWithAddress4LINES(quadSpi, W25N01G_INSTRUCTION_FAST_READ_QUAD_OUTPUT, 8, column, W28N01G_STATUS_COLUMN_ADDRESS_SIZE, buffer, length);
+        //quadSpiReceiveWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_READ_DATA, 8, column, W25N01G_STATUS_COLUMN_ADDRESS_SIZE, buffer, length);
+        quadSpiReceiveWithAddress4LINES(quadSpi, W25N01G_INSTRUCTION_FAST_READ_QUAD_OUTPUT, 8, column, W25N01G_STATUS_COLUMN_ADDRESS_SIZE, buffer, length);
     }
 #endif
 
@@ -765,7 +947,7 @@ int w25n01g_readExtensionBytes(flashDevice_t *fdevice, uint32_t address, uint8_t
     else if (fdevice->io.mode == FLASHIO_QUADSPI) {
         QUADSPI_TypeDef *quadSpi = fdevice->io.handle.quadSpi;
 
-        quadSpiReceiveWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_READ_DATA, 8, column, W28N01G_STATUS_COLUMN_ADDRESS_SIZE, buffer, length);
+        quadSpiReceiveWithAddress1LINE(quadSpi, W25N01G_INSTRUCTION_READ_DATA, 8, column, W25N01G_STATUS_COLUMN_ADDRESS_SIZE, buffer, length);
     }
 #endif
 
@@ -785,6 +967,7 @@ const flashGeometry_t* w25n01g_getGeometry(flashDevice_t *fdevice)
 }
 
 const flashVTable_t w25n01g_vTable = {
+    .configure = w25n01g_configure,
     .isReady = w25n01g_isReady,
     .waitForReady = w25n01g_waitForReady,
     .eraseSector = w25n01g_eraseSector,

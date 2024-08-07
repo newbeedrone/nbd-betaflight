@@ -14,10 +14,11 @@
 USER_DIR = ../main
 TEST_DIR = unit
 ROOT = ../..
-OBJECT_DIR = ../../obj/test
+OBJECT_DIR = $(ROOT)/obj/test
 TARGET_DIR = $(USER_DIR)/target
+MAKE_SCRIPT_DIR := $(ROOT)/mk
 
-include $(ROOT)/make/system-id.mk
+include $(MAKE_SCRIPT_DIR)/system-id.mk
 
 VPATH := $(VPATH):$(USER_DIR):$(TEST_DIR)
 
@@ -108,8 +109,13 @@ cli_unittest_SRC := \
 		$(USER_DIR)/common/crc.c \
 		$(USER_DIR)/common/printf.c \
 		$(USER_DIR)/common/streambuf.c \
+		$(USER_DIR)/common/maths.c \
+		$(USER_DIR)/common/gps_conversion.c \
 		$(USER_DIR)/config/feature.c \
+		$(USER_DIR)/io/gps.c \
 		$(USER_DIR)/pg/pg.c \
+		$(USER_DIR)/fc/runtime_config.c \
+		$(USER_DIR)/drivers/serial.c \
 		$(USER_DIR)/common/typeconversion.c
 
 cli_unittest_DEFINES := \
@@ -185,7 +191,7 @@ motor_output_unittest_SRC := \
 		$(USER_DIR)/drivers/dshot.c
 
 motor_output_unittest_DEFINES := \
-		USE_DSHOT= 
+		USE_DSHOT=
 
 osd_unittest_SRC := \
 		$(USER_DIR)/osd/osd.c \
@@ -287,10 +293,11 @@ rx_sumd_unittest_SRC := \
 scheduler_unittest_SRC := \
 		$(USER_DIR)/scheduler/scheduler.c \
 		$(USER_DIR)/common/crc.c \
-		$(USER_DIR)/common/streambuf.c
+		$(USER_DIR)/common/streambuf.c \
+		$(TEST_DIR)/scheduler_stubs.c
 
 scheduler_unittest_DEFINES := \
-		USE_OSD= 
+		USE_OSD=
 
 sensor_gyro_unittest_SRC := \
 		$(USER_DIR)/sensors/gyro.c \
@@ -301,7 +308,7 @@ sensor_gyro_unittest_SRC := \
 		$(USER_DIR)/common/maths.c \
 		$(USER_DIR)/common/streambuf.c \
 		$(USER_DIR)/common/sensor_alignment.c \
-		$(USER_DIR)/drivers/accgyro/accgyro_fake.c \
+		$(USER_DIR)/drivers/accgyro/accgyro_virtual.c \
 		$(USER_DIR)/drivers/accgyro/gyro_sync.c \
 		$(USER_DIR)/pg/pg.c \
 		$(USER_DIR)/pg/gyrodev.c
@@ -475,34 +482,23 @@ GTEST_DIR = ../../lib/test/gtest
 
 # Use clang/clang++ by default
 
-CC  := clang-12
-CXX := clang++-12
+CC  := clang-15
+CXX := clang++-15
 ifeq ($(shell which $(CC) 2>/dev/null),)
-$(info Falling back to 'clang'.)
+$(info Falling back to 'clang')
 CC  := clang
 CXX := clang++
 endif
 
-#CC  := gcc
-#CXX := g++
-
-# These flags are needed for clang > 10 (linux / MacOS) to make test work:
-# -Wno-c99-extensions
-# -Wno-reorder
+OPTIMIZE = -O0
 
 COMMON_FLAGS = \
-	-g \
-	-Wall \
-	-Wextra \
-	-Werror \
-	-Wno-error=unused-command-line-argument \
-	-ggdb3 \
-	-O0 \
+	-g -ggdb3 \
+	-Wall -Wextra  \
+	$(OPTIMIZE) \
 	-DUNIT_TEST \
 	-isystem $(GTEST_DIR)/inc \
 	-MMD -MP \
-	-Wno-c99-extensions \
-	-Wno-reorder \
 	-pipe
 
 CC_VERSION = $(shell $(CC) -dumpversion)
@@ -510,30 +506,37 @@ CXX_VERSION = $(shell $(CXX) -dumpversion)
 
 ifeq ($(shell $(CC) -v 2>&1 | grep -q "clang version" && echo "clang"),clang)
 
-# Please revisit versions when new clang version arrive. Supported versions: { Linux / OSX: 7 - 14 }
+# Please revisit versions when new clang version arrive. Supported versions: { Linux / OSX: 7 - 16 }
 # Travis reports CC_VERSION of 4.2.1
 CC_VERSION_MAJOR := $(firstword $(subst ., ,$(CC_VERSION)))
 CC_VERSION_CHECK_MIN := 7
-CC_VERSION_CHECK_MAX := 14
+CC_VERSION_CHECK_MAX := 16
 
-# Added flags for clang 11 - 13 are not backwards compatible
-ifeq ($(shell expr $(CC_VERSION_MAJOR) \> 10 \& $(CC_VERSION_MAJOR) \< 14), 1)
-COMMON_FLAGS += \
-	-fcommon \
-	-Wno-void-pointer-to-int-cast
-endif
+# c99-designator is fine, code is not expected to be clean C++
+COMMON_FLAGS += -Wno-c99-designator
+
+# no warning expected on clang
+COMMON_FLAGS += -Werror
 
 ifeq ($(shell expr $(CC_VERSION_MAJOR) \< $(CC_VERSION_CHECK_MIN) \| $(CC_VERSION_MAJOR) \> $(CC_VERSION_CHECK_MAX)),1)
-$(error $(CC) $(CC_VERSION) is not supported. The officially supported version of clang is 'clang-12'. If this is not found, 'clang' is used as a fallback. The version of the compiler must be between $(CC_VERSION_CHECK_MIN) and $(CC_VERSION_CHECK_MAX).)
+$(error $(CC) $(CC_VERSION) is not supported. The officially supported version of clang is 'clang-15'. If this is not found, 'clang' is used as a fallback. The version of the compiler must be between $(CC_VERSION_CHECK_MIN) and $(CC_VERSION_CHECK_MAX).)
 endif
 
 COMMON_FLAGS += -fblocks
 ifndef CYGWIN
 ifneq ($(OSFAMILY), macosx)
 LDFLAGS	     += -lBlocksRuntime
-endif
-endif
-endif
+endif # !macosx
+endif # !CYGWIN
+
+else ifeq ($(shell $(CC) -v 2>&1 | grep -q "gcc version" && echo "gcc"),gcc)
+
+$(warning warning: gcc/g++ support is experimental. For normal testing, clang is recommended)
+
+# no -Werror, allow warning for gcc now
+COMMON_FLAGS += -Wno-missing-field-initializers
+
+endif # is clang / gcc
 
 $(info CC version: $(shell $(CC) --version))
 $(info CXX version: $(shell $(CXX) --version))
@@ -558,7 +561,7 @@ C_FLAGS = $(COMMON_FLAGS) \
 
 # Flags passed to the C++ compiler.
 CXX_FLAGS = $(COMMON_FLAGS) \
-	-std=gnu++11
+	-std=gnu++14
 
 # Compiler flags for coverage instrumentation
 ifdef USE_COVERAGE
@@ -592,7 +595,7 @@ GTEST_HEADERS = $(GTEST_DIR)/inc/gtest/*.h
 ## V                 : Set verbosity level based on the V= parameter
 ##                     V=0 Low
 ##                     V=1 High
-include ../../make/build_verbosity.mk
+include $(MAKE_SCRIPT_DIR)/build_verbosity.mk
 
 # House-keeping build targets.
 

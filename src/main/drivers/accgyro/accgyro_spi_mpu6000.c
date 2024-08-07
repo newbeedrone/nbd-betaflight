@@ -131,6 +131,10 @@ uint8_t mpu6000SpiDetect(const extDevice_t *dev)
 {
     // reset the device configuration
     spiWriteReg(dev, MPU_RA_PWR_MGMT_1, BIT_H_RESET);
+    delay(100);  // datasheet specifies a 100ms delay after reset
+    // reset the device signal paths
+    spiWriteReg(dev, MPU_RA_SIGNAL_PATH_RESET, BIT_GYRO | BIT_ACC | BIT_TEMP);
+    delay(100);  // datasheet specifies a 100ms delay after signal path reset
 
     uint8_t attemptsRemaining = 5;
     do {
@@ -151,21 +155,24 @@ uint8_t mpu6000SpiDetect(const extDevice_t *dev)
 
     /* look for a product ID we recognise */
 
-    // verify product revision
-    switch (productID) {
-    case MPU6000ES_REV_C4:
-    case MPU6000ES_REV_C5:
-    case MPU6000_REV_C4:
-    case MPU6000_REV_C5:
-    case MPU6000ES_REV_D6:
-    case MPU6000ES_REV_D7:
-    case MPU6000ES_REV_D8:
-    case MPU6000_REV_D6:
-    case MPU6000_REV_D7:
-    case MPU6000_REV_D8:
-    case MPU6000_REV_D9:
-    case MPU6000_REV_D10:
-        detectedSensor = MPU_60x0_SPI;
+        /* look for a product ID we recognise */
+
+        // verify product revision
+        switch (productID) {
+        case MPU6000ES_REV_C4:
+        case MPU6000ES_REV_C5:
+        case MPU6000_REV_C4:
+        case MPU6000_REV_C5:
+        case MPU6000ES_REV_D6:
+        case MPU6000ES_REV_D7:
+        case MPU6000ES_REV_D8:
+        case MPU6000_REV_D6:
+        case MPU6000_REV_D7:
+        case MPU6000_REV_D8:
+        case MPU6000_REV_D9:
+        case MPU6000_REV_D10:
+            detectedSensor = MPU_60x0_SPI;
+        }
     }
 
     // reset the device signal paths
