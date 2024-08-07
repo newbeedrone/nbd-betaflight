@@ -28,7 +28,6 @@
 
 #include "drivers/display_canvas.h"
 #include "drivers/osd.h"
-#include "drivers/beesign.h"
 
 #include "display.h"
 
@@ -216,8 +215,7 @@ bool displaySupportsOsdSymbols(displayPort_t *instance)
     // Assume device types that support OSD display will support the OSD symbols (since the OSD logic will use them)
     if ((instance->deviceType == DISPLAYPORT_DEVICE_TYPE_MAX7456)
         || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_MSP)
-        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_FRSKYOSD)
-        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_BEESIGN)) {
+        || (instance->deviceType == DISPLAYPORT_DEVICE_TYPE_FRSKYOSD)) {
         return true;
     } else {
         return false;

@@ -53,7 +53,6 @@
 
 #include "config/feature.h"
 
-#include "drivers/beesign.h"
 #include "drivers/display.h"
 #include "drivers/dshot.h"
 #include "drivers/flash.h"
@@ -467,38 +466,12 @@ void pgResetFn_osdElementConfig(osdElementConfig_t *osdElementConfig)
 
 static void osdDrawLogo(int x, int y)
 {
-#ifdef USE_OSD_BEESIGN
-    if (checkBeesignSerialPort()) {
-        uint8_t column;
-        uint16_t fontOffset = 0xC4;
-        for (column = 0; column < 6; column++) {
-            displayWriteChar(osdDisplayPort, x + column, y, DISPLAYPORT_SEVERITY_NORMAL, fontOffset++);
-        }
-        for (column = 7; column < 24; column++) {
-            displayWriteChar(osdDisplayPort, x + column, y, DISPLAYPORT_SEVERITY_NORMAL, 0xC0);
-        }
-        for (column = 0; column < 24; column++) {
-            displayWriteChar(osdDisplayPort, x + column, y + 1, DISPLAYPORT_SEVERITY_NORMAL, fontOffset++);
-        }
-        for (column = 0; column < 24; column++) {
-            displayWriteChar(osdDisplayPort, x + column, y + 2, DISPLAYPORT_SEVERITY_NORMAL, fontOffset++);
-        }
-        for (column = 0; column < 6; column++) {
-            displayWriteChar(osdDisplayPort, x + column, y + 3, DISPLAYPORT_SEVERITY_NORMAL, fontOffset++);
-        }
-        for (column = 7; column < 24; column++) {
-            displayWriteChar(osdDisplayPort, x + column, y + 3, DISPLAYPORT_SEVERITY_NORMAL, 0xC0);
-        }
-    } else
-#endif
-    {
-        // display logo and help
-        int fontOffset = 160;
-        for (int row = 0; row < OSD_LOGO_ROWS; row++) {
-            for (int column = 0; column < OSD_LOGO_COLS; column++) {
-                if (fontOffset <= SYM_END_OF_FONT)
-                    displayWriteChar(osdDisplayPort, x + column, y + row, DISPLAYPORT_SEVERITY_NORMAL, fontOffset++);
-            }
+    // display logo and help
+    int fontOffset = 160;
+    for (int row = 0; row < OSD_LOGO_ROWS; row++) {
+        for (int column = 0; column < OSD_LOGO_COLS; column++) {
+            if (fontOffset <= SYM_END_OF_FONT)
+                displayWriteChar(osdDisplayPort, x + column, y + row, DISPLAYPORT_SEVERITY_NORMAL, fontOffset++);
         }
     }
 }
@@ -518,30 +491,15 @@ static void osdCompleteInitialization(void)
     displayBeginTransaction(osdDisplayPort, DISPLAY_TRANSACTION_OPT_RESET_DRAWING);
     displayClearScreen(osdDisplayPort, DISPLAY_CLEAR_WAIT);
 
-#ifdef USE_OSD_BEESIGN
-    osdDrawLogo(1, 0);
-#else
     osdDrawLogo(midCol - (OSD_LOGO_COLS) / 2, midRow - 5);
-#endif
 
     char string_buffer[30];
     tfp_sprintf(string_buffer, "V%s", FC_VERSION_STRING);
-#ifdef USE_OSD_BEESIGN
-    displayWrite(osdDisplayPort, 18, 5, DISPLAYPORT_SEVERITY_NORMAL, string_buffer);
-#else
     displayWrite(osdDisplayPort, midCol + 5, midRow, DISPLAYPORT_SEVERITY_NORMAL, string_buffer);
-#endif
-
 #ifdef USE_CMS
-#ifdef USE_OSD_BEESIGN
-    displayWrite(osdDisplayPort, 7, 7, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT1);
-    displayWrite(osdDisplayPort, 11, 8, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT2);
-    displayWrite(osdDisplayPort, 11, 9, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT3);
-#else
     displayWrite(osdDisplayPort, midCol - 8, midRow + 2,  DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT1);
     displayWrite(osdDisplayPort, midCol - 4, midRow + 3, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT2);
     displayWrite(osdDisplayPort, midCol - 4, midRow + 4, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT3);
-#endif
 #endif
 
 #ifdef USE_RTC_TIME
@@ -809,15 +767,9 @@ static void osdGetBlackboxStatusString(char * buff)
 
 static void osdDisplayStatisticLabel(uint8_t x, uint8_t y, const char * text, const char * value)
 {
-#ifdef USE_OSD_BEESIGN
-    displayWrite(osdDisplayPort, 0, y, DISPLAYPORT_SEVERITY_NORMAL, text);
-    displayWrite(osdDisplayPort, 17, y, DISPLAYPORT_SEVERITY_NORMAL, ":");
-    displayWrite(osdDisplayPort, 19, y, DISPLAYPORT_SEVERITY_NORMAL, value);
-#else
     displayWrite(osdDisplayPort, x - 13, y, DISPLAYPORT_SEVERITY_NORMAL, text);
     displayWrite(osdDisplayPort, x + 5, y, DISPLAYPORT_SEVERITY_NORMAL, ":");
     displayWrite(osdDisplayPort, x + 7, y, DISPLAYPORT_SEVERITY_NORMAL, value);
-#endif
 }
 
 /*
@@ -850,11 +802,7 @@ static bool osdDisplayStat(int statistic, uint8_t displayRow)
             tfp_sprintf(buff, "NO RTC");
         }
 
-#ifdef USE_OSD_BEESIGN
-        displayWrite(osdDisplayPort, 0, displayRow, DISPLAYPORT_SEVERITY_NORMAL, buff);
-#else
         displayWrite(osdDisplayPort, midCol - 13, displayRow, DISPLAYPORT_SEVERITY_NORMAL, buff);
-#endif
         return true;
     }
 
@@ -1144,11 +1092,7 @@ static bool osdRenderStatsContinue(void)
         }
 
         if (displayLabel) {
-#ifdef USE_OSD_BEESIGN
-            displayWrite(osdDisplayPort, 0, osdStatsRenderingState.row++, DISPLAYPORT_SEVERITY_NORMAL, "  --- STATS ---");
-#else
             displayWrite(osdDisplayPort, midCol - (strlen("--- STATS ---") / 2), osdStatsRenderingState.row++, DISPLAYPORT_SEVERITY_NORMAL, "--- STATS ---");
-#endif
             return false;
         }
     }
@@ -1255,11 +1199,8 @@ static timeDelta_t osdShowArmed(void)
     } else {
         ret = (REFRESH_1S / 2);
     }
-#ifdef USE_OSD_BEESIGN
-    displayWrite(osdDisplayPort, 9, 4, DISPLAYPORT_SEVERITY_NORMAL, "ARMED");
-#else
     displayWrite(osdDisplayPort, midCol - (strlen("ARMED") / 2), midRow, DISPLAYPORT_SEVERITY_NORMAL, "ARMED");
-#endif
+
     if (isFlipOverAfterCrashActive()) {
         displayWrite(osdDisplayPort, midCol - (strlen(CRASH_FLIP_WARNING) / 2), midRow + 1, DISPLAYPORT_SEVERITY_NORMAL, CRASH_FLIP_WARNING);
     }
@@ -1470,12 +1411,10 @@ void osdUpdate(timeUs_t currentTimeUs)
         break;
 
     case OSD_STATE_UPDATE_HEARTBEAT:
-#ifndef USE_NBD7456
         if (displayHeartbeat(osdDisplayPort)) {
             // Extraordinary action was taken, so return without allowing osdStateDurationFractionUs table to be updated
             return;
         }
-#endif
 
         osdState = OSD_STATE_PROCESS_STATS1;
         break;
