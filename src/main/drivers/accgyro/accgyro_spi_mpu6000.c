@@ -136,24 +136,12 @@ uint8_t mpu6000SpiDetect(const extDevice_t *dev)
     spiWriteReg(dev, MPU_RA_SIGNAL_PATH_RESET, BIT_GYRO | BIT_ACC | BIT_TEMP);
     delay(100);  // datasheet specifies a 100ms delay after signal path reset
 
-    uint8_t attemptsRemaining = 5;
-    do {
-        delay(100);  // datasheet specifies a 100ms delay after reset
-
-        const uint8_t whoAmI = spiReadRegMsk(dev, MPU_RA_WHO_AM_I);
-        if (whoAmI == MPU6000_WHO_AM_I_CONST) {
-            break;
-        }
-        if (!attemptsRemaining) {
-            return MPU_NONE;
-        }
-    } while (attemptsRemaining--);
-
+    const uint8_t whoAmI = spiReadRegMsk(dev, MPU_RA_WHO_AM_I);
     delayMicroseconds(1); // Ensure CS high time is met which is violated on H7 without this delay
     uint8_t detectedSensor = MPU_NONE;
-    const uint8_t productID = spiReadRegMsk(dev, MPU_RA_PRODUCT_ID);
 
-    /* look for a product ID we recognise */
+    if (whoAmI == MPU6000_WHO_AM_I_CONST) {
+        const uint8_t productID = spiReadRegMsk(dev, MPU_RA_PRODUCT_ID);
 
         /* look for a product ID we recognise */
 
@@ -174,10 +162,6 @@ uint8_t mpu6000SpiDetect(const extDevice_t *dev)
             detectedSensor = MPU_60x0_SPI;
         }
     }
-
-    // reset the device signal paths
-    spiWriteReg(dev, MPU_RA_SIGNAL_PATH_RESET, BIT_GYRO | BIT_ACC | BIT_TEMP);
-    delay(100);  // datasheet specifies a 100ms delay after signal path reset
 
     return detectedSensor;
 }

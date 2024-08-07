@@ -173,11 +173,6 @@ typedef enum {
 #ifdef USE_PINIOBOX
     TASK_PINIOBOX,
 #endif
-
-#ifdef USE_BEESIGN
-    TASK_BEESIGN,
-#endif
-
 #ifdef USE_CRSF_V3
     TASK_SPEED_NEGOTIATION,
 #endif

@@ -16,7 +16,7 @@
 #
 
 # The target to build, see BASE_TARGETS below
-DEFAULT_TARGET ?= STM32F405
+DEFAULT_TARGET ?= ACROBEE_65
 TARGET    ?=
 CONFIG    ?=
 
@@ -116,7 +116,7 @@ FC_VER_PATCH := $(shell grep " FC_VERSION_PATCH" src/main/build/version.h | awk 
 FC_VER       := $(FC_VER_MAJOR).$(FC_VER_MINOR).$(FC_VER_PATCH)
 
 # import config handling
-include $(MAKE_SCRIPT_DIR)/config.mk
+# include $(MAKE_SCRIPT_DIR)/config.mk
 
 ifeq ($(CONFIG),)
 ifeq ($(TARGET),)
@@ -127,7 +127,7 @@ endif
 # default xtal value
 HSE_VALUE       ?= 8000000
 
-CI_TARGETS       := $(BASE_TARGETS) $(filter CRAZYBEEF4SX1280 CRAZYBEEF4FR IFLIGHT_BLITZ_F722 NUCLEOF446 SPRACINGH7EXTREME SPRACINGH7RF, $(BASE_CONFIGS))
+CI_TARGETS       := $(filter ACROBEE_65 ACROBEE_75 ACROBEE_75_RACING, $(BASE_TARGETS))
 include $(ROOT)/src/main/target/$(TARGET)/target.mk
 
 REVISION := norevision

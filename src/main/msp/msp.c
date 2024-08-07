@@ -647,7 +647,7 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
 #else
         sbufWriteU16(dst, 0); // No other build targets currently have hardware revision detection.
 #endif
-#if defined(USE_MAX7456) || defined(USE_BEESIGN)
+#if defined(USE_MAX7456)
         sbufWriteU8(dst, 2);  // 2 == FC with MAX7456
 #else
         sbufWriteU8(dst, 0);  // 0 == FC
@@ -936,7 +936,6 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
 #if defined(USE_OSD)
     case MSP_OSD_CONFIG: {
 #define OSD_FLAGS_OSD_FEATURE           (1 << 0)
-#define OSD_FLAGS_OSD_HARDWARE_BEESIGN  (1 << 1)
 //#define OSD_FLAGS_OSD_SLAVE             (1 << 1)
 #define OSD_FLAGS_RESERVED_1            (1 << 2)
 #define OSD_FLAGS_OSD_HARDWARE_FRSKYOSD (1 << 3)
@@ -966,17 +965,8 @@ static bool mspCommonProcessOutCommand(int16_t cmdMSP, sbuf_t *dst, mspPostProce
             }
 
             break;
-        case OSD_DISPLAYPORT_DEVICE_BEESIGN:
-            osdFlags |= OSD_FLAGS_OSD_HARDWARE_BEESIGN;
-            if (displayIsReady) {
-                osdFlags |= OSD_FLAGS_OSD_DEVICE_DETECTED;
-            }
-
-            break;
-
         case OSD_DISPLAYPORT_DEVICE_MSP:
             osdFlags |= OSD_FLAGS_OSD_MSP_DEVICE;
-
             if (displayIsReady) {
                 osdFlags |= OSD_FLAGS_OSD_DEVICE_DETECTED;
             }
@@ -1678,11 +1668,7 @@ case MSP_NAME:
 
     case MSP_CF_SERIAL_CONFIG:
         for (int i = 0; i < SERIAL_PORT_COUNT; i++) {
-            if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)
-#ifdef USE_BEESIGN
-                || serialConfig()->portConfigs[i].functionMask == FUNCTION_BEESIGN
-#endif
-            ) {
+            if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)) {
                 continue;
             };
             sbufWriteU8(dst, serialConfig()->portConfigs[i].identifier);
@@ -1696,21 +1682,13 @@ case MSP_NAME:
     case MSP2_COMMON_SERIAL_CONFIG: {
         uint8_t count = 0;
         for (int i = 0; i < SERIAL_PORT_COUNT; i++) {
-            if (serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)
-#ifdef USE_BEESIGN
-                && !(serialConfig()->portConfigs[i].functionMask == FUNCTION_BEESIGN)
-#endif
-            ) {
+            if (serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)) {
                 count++;
             }
         }
         sbufWriteU8(dst, count);
         for (int i = 0; i < SERIAL_PORT_COUNT; i++) {
-            if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)
-#ifdef USE_BEESIGN
-                || serialConfig()->portConfigs[i].functionMask == FUNCTION_BEESIGN
-#endif
-            ) {
+            if (!serialIsPortAvailable(serialConfig()->portConfigs[i].identifier)) {
                 continue;
             };
             sbufWriteU8(dst, serialConfig()->portConfigs[i].identifier);

@@ -62,9 +62,8 @@ static OSD_TAB_t entryVtxPit = {&cmsx_vtxPit, 2, cmsxCmsPitNames};
 
 static void cmsx_Vtx_ConfigRead(void)
 {
-    cmsx_vtxBand = vtxSettingsConfigMutable()->band;
-    cmsx_vtxChannel = vtxSettingsConfigMutable()->channel;
-    cmsx_vtxPower = vtxSettingsConfigMutable()->power;
+    vtxCommonGetBandAndChannel(vtxCommonDevice(), &cmsx_vtxBand, &cmsx_vtxChannel);
+    vtxCommonGetPowerIndex(vtxCommonDevice(), &cmsx_vtxPower);
 
 #ifdef CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
     lastVtxBand = cmsx_vtxBand;
@@ -87,7 +86,7 @@ static void cmsx_Vtx_ConfigWriteback(void)
     vtxSettingsConfigMutable()->power = cmsx_vtxPower;
     vtxSettingsConfigMutable()->freq = vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel);
 
-    // saveConfigAndNotify();
+    saveConfigAndNotify();
 }
 
 static const void *cmsx_Vtx_onEnter(displayPort_t *pDisp)

@@ -78,7 +78,6 @@
 #include "drivers/timer.h"
 #include "drivers/transponder_ir.h"
 #include "drivers/usb_io.h"
-#include "drivers/beesign.h"
 #ifdef USE_USB_MSC
 #include "drivers/usb_msc.h"
 #endif
@@ -110,7 +109,6 @@
 #include "io/displayport_frsky_osd.h"
 #include "io/displayport_max7456.h"
 #include "io/displayport_msp.h"
-#include "io/displayport_beesign.h"
 #include "io/flashfs.h"
 #include "io/gimbal.h"
 #include "io/gps.h"
@@ -126,7 +124,6 @@
 #include "io/vtx_rtc6705.h"
 #include "io/vtx_smartaudio.h"
 #include "io/vtx_tramp.h"
-#include "io/vtx_beesign.h"
 
 #include "msc/emfat_file.h"
 #ifdef USE_PERSISTENT_MSC_RTC
@@ -761,10 +758,6 @@ void init(void)
 
     rxInit();
 
-#ifdef USE_BEESIGN
-    beesignInit();
-#endif
-
 #ifdef USE_GPS
     if (featureIsEnabled(FEATURE_GPS)) {
         gpsInit();
@@ -855,10 +848,6 @@ void init(void)
     vtxSmartAudioInit();
 #endif
 
-#ifdef USE_VTX_BEESIGN
-    vtxBeesignInit();
-#endif
-
 #ifdef USE_VTX_TRAMP
     vtxTrampInit();
 #endif
@@ -933,17 +922,6 @@ void init(void)
             // If there is a max7456 chip for the OSD configured and detected then use it.
             if (max7456DisplayPortInit(vcdProfile(), &osdDisplayPort) || device == OSD_DISPLAYPORT_DEVICE_MAX7456) {
                 osdDisplayPortDevice = OSD_DISPLAYPORT_DEVICE_MAX7456;
-                break;
-            }
-            FALLTHROUGH;
-#endif
-
-#if defined(USE_OSD_BEESIGN)
-        case OSD_DISPLAYPORT_DEVICE_BEESIGN:
-            // If using beesign for the OSD configured and detectd then use it.
-            osdDisplayPort = beesignDisplayPortInit(vcdProfile());
-            if (osdDisplayPort || device == OSD_DISPLAYPORT_DEVICE_BEESIGN) {
-                osdDisplayPortDevice = OSD_DISPLAYPORT_DEVICE_BEESIGN;
                 break;
             }
             FALLTHROUGH;

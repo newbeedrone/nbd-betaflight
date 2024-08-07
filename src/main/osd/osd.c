@@ -53,7 +53,6 @@
 
 #include "config/feature.h"
 
-#include "drivers/beesign.h"
 #include "drivers/display.h"
 #include "drivers/dshot.h"
 #include "drivers/flash.h"
@@ -492,11 +491,7 @@ static void osdCompleteInitialization(void)
     displayBeginTransaction(osdDisplayPort, DISPLAY_TRANSACTION_OPT_RESET_DRAWING);
     displayClearScreen(osdDisplayPort, DISPLAY_CLEAR_WAIT);
 
-#ifdef USE_OSD_BEESIGN
-    osdDrawLogo(1, 0);
-#else
     osdDrawLogo(midCol - (OSD_LOGO_COLS) / 2, midRow - 5);
-#endif
 
     char string_buffer[30];
     tfp_sprintf(string_buffer, "V%s", FC_VERSION_STRING);
@@ -505,7 +500,6 @@ static void osdCompleteInitialization(void)
     displayWrite(osdDisplayPort, midCol - 8, midRow + 2,  DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT1);
     displayWrite(osdDisplayPort, midCol - 4, midRow + 3, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT2);
     displayWrite(osdDisplayPort, midCol - 4, midRow + 4, DISPLAYPORT_SEVERITY_NORMAL, CMS_STARTUP_HELP_TEXT3);
-#endif
 #endif
 
 #ifdef USE_RTC_TIME
@@ -1417,12 +1411,10 @@ void osdUpdate(timeUs_t currentTimeUs)
         break;
 
     case OSD_STATE_UPDATE_HEARTBEAT:
-#ifndef USE_NBD7456
         if (displayHeartbeat(osdDisplayPort)) {
             // Extraordinary action was taken, so return without allowing osdStateDurationFractionUs table to be updated
             return;
         }
-#endif
 
         osdState = OSD_STATE_PROCESS_STATS1;
         break;

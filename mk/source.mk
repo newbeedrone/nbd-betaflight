@@ -149,7 +149,6 @@ COMMON_SRC = \
             cms/cms_menu_power.c \
             cms/cms_menu_saveexit.c \
             cms/cms_menu_vtx_common.c \
-            cms/cms_menu_vtx_beesign.c \
             cms/cms_menu_vtx_rtc6705.c \
             cms/cms_menu_vtx_smartaudio.c \
             cms/cms_menu_vtx_tramp.c \
@@ -165,7 +164,6 @@ COMMON_SRC = \
             drivers/vtx_table.c \
             io/dashboard.c \
             io/displayport_frsky_osd.c \
-            io/displayport_beesign.c \
             io/displayport_max7456.c \
             io/displayport_msp.c \
             io/displayport_oled.c \
@@ -198,7 +196,6 @@ COMMON_SRC = \
             telemetry/ibus_shared.c \
             sensors/esc_sensor.c \
             io/vtx.c \
-            io/vtx_beesign.c \
             io/vtx_rtc6705.c \
             io/vtx_smartaudio.c \
             io/vtx_tramp.c \
@@ -321,7 +318,6 @@ SPEED_OPTIMISED_SRC := $(SPEED_OPTIMISED_SRC) \
             drivers/serial_uart.c \
             drivers/system.c \
             drivers/timer.c \
-            drivers/beesign.c \
             fc/core.c \
             fc/tasks.c \
             fc/rc.c \
@@ -417,7 +413,6 @@ SIZE_OPTIMISED_SRC := $(SIZE_OPTIMISED_SRC) \
             cms/cms_menu_power.c \
             cms/cms_menu_saveexit.c \
             cms/cms_menu_vtx_common.c \
-            cms/cms_menu_vtx_beesign.c \
             cms/cms_menu_vtx_rtc6705.c \
             cms/cms_menu_vtx_smartaudio.c \
             cms/cms_menu_vtx_tramp.c \

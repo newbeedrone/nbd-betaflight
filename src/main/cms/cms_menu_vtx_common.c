@@ -24,7 +24,7 @@
 
 #include "platform.h"
 
-#if defined(USE_CMS) && defined(USE_VTX_CONTROL) && (defined(USE_VTX_TRAMP) || defined(USE_VTX_SMARTAUDIO) || defined(USE_VTX_RTC6705) || defined(USE_VTX_MSP) || defined(USE_VTX_BEESIGN))
+#if defined(USE_CMS) && defined(USE_VTX_CONTROL) && (defined(USE_VTX_TRAMP) || defined(USE_VTX_SMARTAUDIO) || defined(USE_VTX_RTC6705) || defined(USE_VTX_MSP))
 
 #include "common/printf.h"
 
@@ -32,7 +32,6 @@
 #include "cms/cms_menu_vtx_rtc6705.h"
 #include "cms/cms_menu_vtx_smartaudio.h"
 #include "cms/cms_menu_vtx_tramp.h"
-#include "cms/cms_menu_vtx_beesign.h"
 #include "cms/cms_menu_vtx_msp.h"
 #include "cms/cms_types.h"
 
@@ -118,11 +117,6 @@ const void *cmsSelectVtx(displayPort_t *pDisplay, const void *ptr)
         case VTXDEV_TRAMP:
             cmsMenuChange(pDisplay, &cmsx_menuVtxTramp);
 
-            break;
-#endif
-#if defined(USE_VTX_BEESIGN)
-        case VTXDEV_BEESIGN:
-            cmsMenuChange(pDisplay, &cmsx_menuVtxBeesign);
             break;
 #endif
 #if defined(USE_VTX_MSP)

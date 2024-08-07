@@ -140,6 +140,11 @@
 #define USE_RX_FRSKY_SPI
 #define USE_RX_FRSKY_SPI_TELEMETRY
 
+#define USE_RX_FLYSKY
+#define USE_RX_FLYSKY_SPI_LED
+#define USE_RX_SPEKTRUM
+#define USE_RX_SPEKTRUM_TELEMETRY
+
 #endif // defined(USE_RX_CC2500)
 
 #if defined(CAMERA_CONTROL_PIN) && defined(USE_VTX) && !defined(USE_CAMERA_CONTROL)

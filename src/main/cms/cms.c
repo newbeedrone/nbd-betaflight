@@ -1020,10 +1020,6 @@ const void *cmsMenuExit(displayPort_t *pDisplay, const void *ptr)
     displayRelease(pDisplay);
     currentCtx.menu = NULL;
 
-#ifdef USE_OSD_BEESIGN
-    displayClearScreen(pDisplay, DISPLAY_CLEAR_NONE);
-#endif
-
     if ((exitType == CMS_EXIT_SAVEREBOOT) || (exitType == CMS_POPUP_SAVEREBOOT) || (exitType == CMS_POPUP_EXITREBOOT)) {
         displayClearScreen(pDisplay, DISPLAY_CLEAR_WAIT);
         cmsDisplayWrite(pDisplay, 5, 3, DISPLAYPORT_SEVERITY_NORMAL, "REBOOTING...");
