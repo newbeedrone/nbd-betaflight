@@ -95,7 +95,6 @@ bool cliMode = false;
 #include "drivers/usb_msc.h"
 #include "drivers/vtx_common.h"
 #include "drivers/vtx_table.h"
-#include "drivers/beesign.h"
 
 #include "fc/board_info.h"
 #include "fc/controlrate_profile.h"
@@ -123,7 +122,6 @@ bool cliMode = false;
 #include "io/usb_msc.h"
 #include "io/vtx_control.h"
 #include "io/vtx.h"
-#include "io/vtx_beesign.h"
 
 #include "msp/msp.h"
 #include "msp/msp_box.h"
@@ -6430,25 +6428,6 @@ static void cliMsc(const char *cmdName, char *cmdline)
 
 typedef void cliCommandFn(const char* name, char *cmdline);
 
-#ifdef USE_VTX_BEESIGN
-static void beesignSetVTxLock(const char *cmdName, char *cmdline)
-{
-    UNUSED(cmdName);
-    UNUSED(cmdline);
-
-    bsSetVTxLock();
-    cliPrintLine("beesign vtx lock success");
-}
-static void beesignSetVTxUnlock(const char *cmdName, char *cmdline)
-{
-    UNUSED(cmdName);
-    UNUSED(cmdline);
-
-    bsSetVTxUnlock();
-    cliPrintLine("beesign vtx unlock success");
-}
-#endif // USE_VTX_BEESIGN
-
 typedef struct {
     const char *name;
 #ifndef MINIMAL_CLI
@@ -6628,10 +6607,6 @@ const clicmd_t cmdTable[] = {
 #else
     CLI_COMMAND_DEF("vtx", "vtx channels on switch", "<index> <aux_channel> <vtx_band> <vtx_channel> <vtx_power> <start_range> <end_range>", cliVtx),
 #endif
-#endif
-#ifdef USE_VTX_BEESIGN
-    CLI_COMMAND_DEF("beesign_vtx_lock", "beesign disable some vtx frequencies for certain regions", NULL, beesignSetVTxLock),
-    CLI_COMMAND_DEF("beesign_vtx_unlock", "beesign available all vtx frequencies", NULL, beesignSetVTxUnlock),
 #endif
 #ifdef USE_VTX_TABLE
     CLI_COMMAND_DEF("vtx_info", "vtx power config dump", NULL, cliVtxInfo),
