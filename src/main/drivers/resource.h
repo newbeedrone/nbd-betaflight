@@ -17,9 +17,10 @@
  *
  * If not, see <http://www.gnu.org/licenses/>.
  */
-#include "platform.h"
 
 #pragma once
+
+#include "platform.h"
 
 typedef enum {
     OWNER_FREE = 0,

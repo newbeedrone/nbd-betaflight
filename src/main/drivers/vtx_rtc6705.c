@@ -109,9 +109,9 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
         IOInit(vtxPowerPin, OWNER_VTX_POWER, 0);
 
 #ifdef VTX_POWER_PIN_INVERTED
-        IOHi(vtxPowerPin);
-#else
         IOLo(vtxPowerPin);
+#else
+        IOHi(vtxPowerPin);
 #endif
 
         IOConfigGPIO(vtxPowerPin, IOCFG_OUT_PP);
