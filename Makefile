@@ -116,7 +116,7 @@ FC_VER_PATCH := $(shell grep " FC_VERSION_PATCH" src/main/build/version.h | awk 
 FC_VER       := $(FC_VER_MAJOR).$(FC_VER_MINOR).$(FC_VER_PATCH)
 
 # import config handling
-# include $(MAKE_SCRIPT_DIR)/config.mk
+include $(MAKE_SCRIPT_DIR)/config.mk
 
 ifeq ($(CONFIG),)
 ifeq ($(TARGET),)
@@ -127,7 +127,7 @@ endif
 # default xtal value
 HSE_VALUE       ?= 8000000
 
-CI_TARGETS       := $(filter ACROBEE_65 ACROBEE_75 ACROBEE_75_RACING, $(BASE_TARGETS))
+CI_TARGETS       := $(filter ACROBEE_65 ACROBEE_75 ACROBEE_75_RACING, $(BASE_TARGETS)) $(BASE_CONFIGS)
 include $(ROOT)/src/main/target/$(TARGET)/target.mk
 
 REVISION := norevision
