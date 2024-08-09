@@ -104,6 +104,12 @@
 
 #define USE_ESCSERIAL
 
+/* ======== GPS ======== */
+#define USE_GPS
+#define USE_GPS_NMEA
+#define USE_GPS_UBLOX
+#define USE_GPS_RESCUE
+
 /* ======== System ======== */
 #undef USE_SDCARD
 #define USE_EXTI
