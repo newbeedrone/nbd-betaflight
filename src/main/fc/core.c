@@ -1218,7 +1218,6 @@ static FAST_CODE void subTaskMotorUpdate(timeUs_t currentTimeUs)
         writeServos();
     }
 #endif
-
     writeMotors();
 
 #ifdef USE_DSHOT_TELEMETRY_STATS
@@ -1308,6 +1307,13 @@ FAST_CODE void taskMainPidLoop(timeUs_t currentTimeUs)
 
     subTaskRcCommand(currentTimeUs);
     subTaskPidController(currentTimeUs);
+    #ifdef USE_MOTOR_CURRENT_LITMIT
+    if((getAmperage() / 100)>CURRENT_LITMIT_AMPERAGE)
+    {
+        setArmingDisabled(ARMING_DISABLED_CURRENT_LIT);
+        disarm(DISARM_REASON_CURRENT_LITMIT);
+    }
+    #endif
     subTaskMotorUpdate(currentTimeUs);
     subTaskPidSubprocesses(currentTimeUs);
 
