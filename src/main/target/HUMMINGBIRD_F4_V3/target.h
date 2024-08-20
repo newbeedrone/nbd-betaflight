@@ -47,31 +47,32 @@
 
 /* ======== SPI ======== */
 #define USE_SPI
+#define USE_SPI_DMA_ENABLE_EARLY
 
 #define USE_SPI_DEVICE_1
 #define SPI1_SCK_PIN                    PA5
-#define SPI1_SDO_PIN                   PA6
-#define SPI1_SDI_PIN                   PA7
+#define SPI1_SDO_PIN                    PA6
+#define SPI1_SDI_PIN                    PA7
 #define SPI1_NSS_PIN                    PA4
 
 #define USE_SPI_DEVICE_2
 #define SPI2_SCK_PIN                    PB13
-#define SPI2_SDO_PIN                   PB14
-#define SPI2_SDI_PIN                   PB15
+#define SPI2_SDO_PIN                    PB14
+#define SPI2_SDI_PIN                    PB15
 
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
-#define SPI3_SDO_PIN                   PB4
-#define SPI3_SDI_PIN                   PB5
+#define SPI3_SDO_PIN                    PB4
+#define SPI3_SDI_PIN                    PB5
+#define SPI3_NSS_PIN                    PA15
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
 #define USE_ACCGYRO_BMI270
 
-#define GYRO_1_EXTI_PIN                 PB6
-
 #define GYRO_1_CS_PIN                   SPI1_NSS_PIN
+#define GYRO_1_EXTI_PIN                 PB6
 #define GYRO_1_SPI_INSTANCE             SPI1
 
 #define GYRO_1_ALIGN                    CW180_DEG
@@ -89,19 +90,21 @@
 #define RTC6705_SPI_INSTANCE            SPI2
 
 /* ======== RX ======== */
-#define USE_SPI_DMA_ENABLE_EARLY
-#define RX_SPI_INSTANCE                 SPI3
-#define RX_SPI_LED_INVERTED
-#define RX_NSS_PIN                      PA15
+#define USE_RX_EXPRESSLRS
+#define USE_RX_SX1280
+#undef USE_RX_SX127X
+
+#define RX_NSS_PIN                      SPI3_NSS_PIN
 #define RX_SPI_LED_PIN                  PC15
 #define RX_SPI_EXTI_PIN                 PC13
 #define RX_SPI_BIND_PIN                 PB2
 #define RX_EXPRESSLRS_SPI_RESET_PIN     PB9
 #define RX_EXPRESSLRS_SPI_BUSY_PIN      PA13
 
-#define USE_TELEMETRY
-#define USE_RX_EXPRESSLRS
-#define USE_RX_SX1280
+#define RX_SPI_INSTANCE                 SPI3
+#define RX_EXPRESSLRS_TIMER_INSTANCE    TIM9
+
+#define RX_SPI_LED_INVERTED
 
 /* ======== ADC ======== */
 #define USE_ADC
@@ -120,27 +123,24 @@
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
 /* ======== ESC ======== */
-
-#define ENABLE_DSHOT_DMAR               DSHOT_DMAR_ON
 #define MOTOR1_PIN                      PB8
 #define MOTOR2_PIN                      PA0
 #define MOTOR3_PIN                      PB10
 #define MOTOR4_PIN                      PB7
 
-#define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, PB8 , 1,  1) \
-    TIMER_PIN_MAP( 1, PA0 , 1,  2) \
-    TIMER_PIN_MAP( 2, PB10, 2,  3) \
-    TIMER_PIN_MAP( 3, PB7 , 1,  4) \
-    TIMER_PIN_MAP( 4, PB1 , 1,  5) 
-
 #define USE_DSHOT_BITBAND
 #define USE_ESCSERIAL
-
-#define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
 /* ======== System ======== */
-#define USE_PID_DENOM_CHECK
 #define USE_EXTI
+#define USE_PID_DENOM_CHECK
+
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, MOTOR1_PIN   , 2,  0) \
+    TIMER_PIN_MAP( 1, MOTOR2_PIN   , 1,  0) \
+    TIMER_PIN_MAP( 2, MOTOR3_PIN   , 1,  0) \
+    TIMER_PIN_MAP( 3, MOTOR4_PIN   , 1,  0) \
+    TIMER_PIN_MAP( 4, LED_STRIP_PIN, 2,  0) 
+
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
 #define TARGET_IO_PORTC                 0xffff
