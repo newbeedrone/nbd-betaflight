@@ -29,7 +29,7 @@
 #define USE_LED_STRIP_STATUS_MODE
 #define LED_STRIP_PIN                   PB1
 
-#define LED0_PIN                        PC14
+// #define LED0_PIN                        PC14
 
 /* ======== UART ======== */
 #define USE_UART
@@ -69,7 +69,8 @@
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_ACCGYRO_BMI270
+#define USE_ACC_SPI_ICM42688P
+#define USE_GYRO_SPI_ICM42688P
 
 #define GYRO_1_EXTI_PIN                 PB6
 
@@ -103,8 +104,7 @@
 #define RX_EXPRESSLRS_SPI_RESET_PIN     PB9
 #define RX_EXPRESSLRS_SPI_BUSY_PIN      PA13
 
-#define RX_EXPRESSLRS_TIMER_INSTANCE    TIM3
-#define USE_TELEMETRY
+#define RX_EXPRESSLRS_TIMER_INSTANCE    TIM5
 #define USE_RX_EXPRESSLRS
 #define USE_RX_SX1280
 
@@ -118,8 +118,7 @@
 #define ADC_CURR_PIN                    PB0
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     410
-#define CURRENT_METER_OFFSET_DEFAULT    0
+#define CURRENT_METER_SCALE_DEFAULT     810
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -137,13 +136,14 @@
     TIMER_PIN_MAP( 1, MOTOR2_PIN , 1,  0) \
     TIMER_PIN_MAP( 2, MOTOR3_PIN , 1,  0) \
     TIMER_PIN_MAP( 3, MOTOR4_PIN , 1,  0) \
-    TIMER_PIN_MAP( 4, LED_STRIP_PIN , 1,  1)
+    TIMER_PIN_MAP( 4, LED_STRIP_PIN , 2,  0)
     
 #define USE_BRUSHED_FLIPOVERAFTERCRASH
+#define USE_BRUSHED_REVERSE_FLAG        
 #define BRUSHED_REVERSE_PIN             PA8
 
 #define USE_MOTOR_CURRENT_LITMIT
-#define CURRENT_LITMIT_AMPERAGE         4   
+#define CURRENT_LITMIT_AMPERAGE         3   
 
 /* ======== System ======== */
 #define USE_PID_DENOM_CHECK

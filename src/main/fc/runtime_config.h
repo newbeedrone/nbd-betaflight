@@ -66,15 +66,15 @@ typedef enum {
     ARMING_DISABLED_ACC_CALIBRATION = (1 << 23),
     ARMING_DISABLED_MOTOR_PROTOCOL  = (1 << 24),
     ARMING_DISABLED_ARM_SWITCH      = (1 << 25), // Needs to be the last element, since it's always activated if one of the others is active when arming
-    #ifdef USE_MOTOR_CURRENT_LITMIT
-     ARMING_DISABLED_CURRENT_LIT    = (1 << 26), // BRUSHED_MOTORS ONLY
-    #endif
+    // #ifdef USE_MOTOR_CURRENT_LITMIT
+    // ARMING_DISABLED_CURRENT_LITMIT  = (1 << 26), // BRUSHED_MOTORS ONLY
+    // #endif
 } armingDisableFlags_e;
-#ifdef USE_MOTOR_CURRENT_LITMIT
-    #define ARMING_DISABLE_FLAGS_COUNT (LOG2(ARMING_DISABLED_CURRENT_LIT) + 1)
-#else
+// #ifdef USE_MOTOR_CURRENT_LITMIT
+//     #define ARMING_DISABLE_FLAGS_COUNT (LOG2(ARMING_DISABLED_CURRENT_LITMIT) + 1)
+// #else
     #define ARMING_DISABLE_FLAGS_COUNT (LOG2(ARMING_DISABLED_ARM_SWITCH) + 1)
-#endif
+// #endif
 extern const char *armingDisableFlagNames[ARMING_DISABLE_FLAGS_COUNT];
 
 void setArmingDisabled(armingDisableFlags_e flag);
