@@ -106,6 +106,8 @@
 #define USE_ESCSERIAL
 
 /* ======== System ======== */
+#define SYSTEM_HSE_MHZ                  8
+
 #undef USE_SDCARD
 #define USE_EXTI
 #define USE_PID_DENOM_CHECK
