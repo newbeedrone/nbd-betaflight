@@ -29,7 +29,7 @@
 #define USE_LED_STRIP_STATUS_MODE
 #define LED_STRIP_PIN                   PB1
 
-// #define LED0_PIN                        PC14
+#define LED0_PIN                        PC14
 
 /* ======== UART ======== */
 #define USE_UART
@@ -77,7 +77,8 @@
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI1
 
-#define GYRO_1_ALIGN                    CW180_DEG
+#define GYRO_1_ALIGN                    CW270_DEG
+#define DEFAULT_ALIGN_BOARD_YAW         45
 
 /* ======== OSD ======== */
 #define USE_MAX7456
@@ -108,6 +109,8 @@
 #define USE_RX_EXPRESSLRS
 #define USE_RX_SX1280
 
+#define RX_SPI_PROTOCOL                 EXPRESSLRS
+
 /* ======== ADC ======== */
 #define USE_ADC
 
@@ -118,7 +121,8 @@
 #define ADC_CURR_PIN                    PB0
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     810
+#define DEFAULT_CURRENT_METER_SCALE     800
+#define DEFAULT_CURRENT_METER_OFFSET    0
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -138,13 +142,15 @@
     TIMER_PIN_MAP( 3, MOTOR4_PIN , 1,  0) \
     TIMER_PIN_MAP( 4, LED_STRIP_PIN , 2,  0)
     
-#define USE_BRUSHED_FLIPOVERAFTERCRASH
-#define USE_BRUSHED_REVERSE_FLAG        
 #define BRUSHED_REVERSE_PIN             PA8
 
-#define USE_MOTOR_CURRENT_LITMIT
-#define CURRENT_LITMIT_AMPERAGE         3   
+#define USE_BRUSHED_FLIPOVERAFTERCRASH
+#define BRUSHED_FLIPOVERAFTERCRASH_LOW_ACTIVE 
 
+#define USE_MOTOR_CURRENT_LITMIT
+#define CURRENT_LITMIT_AMPERAGE         9.5   
+
+#undef USE_LATE_TASK_STATISTICS
 /* ======== System ======== */
 #define USE_PID_DENOM_CHECK
 #define USE_EXTI
@@ -155,3 +161,5 @@
 #define TARGET_IO_PORTE                 0xffff
 
 #define FLASH_PAGE_SIZE                 ((uint32_t)0x4000) // 16K sectors
+
+#define USE_TARGET_CONFIG

@@ -1307,35 +1307,12 @@ FAST_CODE void taskMainPidLoop(timeUs_t currentTimeUs)
     subTaskRcCommand(currentTimeUs);
     subTaskPidController(currentTimeUs);
     #ifdef USE_MOTOR_CURRENT_LITMIT
-            static uint8_t flag_int;
-            if(flag_int == 0)
-            {
-                GPIO_InitTypeDef  GPIO_InitStructure;
-                    
-                // RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);	   
-
-                /*PE12引脚配置*/	
-                GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;	  			// 引脚 PE12
-                GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;		// 推挽输出
-                GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		// IO口速度为50MHz
-                GPIO_Init(GPIOC, &GPIO_InitStructure);	
-                GPIO_SetBits(GPIOA, GPIO_Pin_8);
-                flag_int =1;
-            }
-        #endif
-        #ifdef USE_MOTOR_CURRENT_LITMIT
-            if ((getAmperage()/100) > CURRENT_LITMIT_AMPERAGE)
-            {
-                    GPIO_ResetBits(GPIOC, GPIO_Pin_14);
-                    setArmingDisabled(ARMING_DISABLED_ARM_SWITCH);
-                    disarm(DISARM_REASON_SWITCH);
-            }
-            else
-            {
-                // unsetArmingDisabled(ARMING_DISABLED_CURRENT_LITMIT);
-                GPIO_SetBits(GPIOC, GPIO_Pin_14);
-            }
-        #endif
+        if ((getAmperage()/100) > CURRENT_LITMIT_AMPERAGE)
+        {
+            setArmingDisabled(ARMING_DISABLED_ARM_SWITCH);
+            disarm(DISARM_REASON_SWITCH);
+        }
+    #endif
     subTaskMotorUpdate(currentTimeUs);
     subTaskPidSubprocesses(currentTimeUs);
 
