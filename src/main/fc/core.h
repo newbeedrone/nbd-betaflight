@@ -55,9 +55,6 @@ typedef enum {
     DISARM_REASON_RUNAWAY_TAKEOFF   = 6,
     DISARM_REASON_GPS_RESCUE        = 7,
     DISARM_REASON_SERIAL_COMMAND    = 8,
-    #ifdef USE_MOTOR_CURRENT_LITMIT
-    DISARM_REASON_CURRENT_LITMIT    = 9,
-    #endif
 
 #ifdef UNIT_TEST
     DISARM_REASON_SYSTEM            = 255,
