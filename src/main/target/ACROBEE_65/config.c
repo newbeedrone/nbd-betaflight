@@ -25,7 +25,7 @@
 
 #include "platform.h"
 
-// #ifdef USE_TARGET_CONFIG
+#ifdef USE_TARGET_CONFIG
 
 #include "blackbox/blackbox.h"
 
@@ -223,6 +223,9 @@ void targetConfiguration(void) {
 
     osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MAX7456;
 
+    /* CPU Frequency */
+    systemConfigMutable()->cpu_overclock = 2;
+
     /* Video Transmitter -> Select Mode */
     vtxSettingsConfigMutable()->band = 4;
     vtxSettingsConfigMutable()->channel = 4;
@@ -260,4 +263,4 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->simplified_pitch_pi_gain = 125;
 }
 
-// #endif /* USE_TARGET_CONFIG */
+#endif /* USE_TARGET_CONFIG */
