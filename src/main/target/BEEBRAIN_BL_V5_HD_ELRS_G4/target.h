@@ -90,8 +90,9 @@
 #define ADC_VBAT_PIN                    PA0
 #define ADC_CURR_PIN                    PA1
 
-#define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     410
+#define DEFAULT_VOLTAGE_METER_SCALE     110
+#define DEFAULT_CURRENT_METER_SCALE     410
+#define DEFAULT_CURRENT_METER_OFFSET    0
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -105,6 +106,8 @@
 #define USE_ESCSERIAL
 
 /* ======== System ======== */
+#define SYSTEM_HSE_MHZ                  8
+
 #undef USE_SDCARD
 #define USE_EXTI
 #define USE_PID_DENOM_CHECK

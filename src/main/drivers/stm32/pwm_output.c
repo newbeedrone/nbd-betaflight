@@ -152,9 +152,17 @@ bool pwmEnableMotors(void)
 void pwmReverseMotors(bool status)
 {
     if (status == true) {
-        IOHi(ioBrushedReverse);
-    } else {
+#ifdef BRUSHED_FLIPOVERAFTERCRASH_LOW_ACTIVE
         IOLo(ioBrushedReverse);
+#else
+        IOHi(ioBrushedReverse);
+#endif
+    } else {
+#ifdef BRUSHED_FLIPOVERAFTERCRASH_LOW_ACTIVE
+        IOHi(ioBrushedReverse);
+#else
+        IOLo(ioBrushedReverse);
+#endif
     }
 }
 #endif
@@ -240,6 +248,9 @@ motorDevice_t *motorPwmDevInit(const motorDevConfig_t *motorConfig, uint16_t idl
     ioBrushedReverse = IOGetByTag(motorConfig->reverseTag);
     IOInit(ioBrushedReverse, OWNER_BRUSHED_REVERSE, 0);
     IOConfigGPIO(ioBrushedReverse, IOCFG_OUT_PP);
+#ifdef BRUSHED_FLIPOVERAFTERCRASH_LOW_ACTIVE
+    IOHi(ioBrushedReverse);
+#endif
 #endif
 
     for (int motorIndex = 0; motorIndex < MAX_SUPPORTED_MOTORS && motorIndex < motorCount; motorIndex++) {
