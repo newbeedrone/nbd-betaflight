@@ -25,7 +25,7 @@
 
 #include "platform.h"
 
-// #ifdef USE_TARGET_CONFIG
+#ifdef USE_TARGET_CONFIG
 
 #include "blackbox/blackbox.h"
 
@@ -205,6 +205,9 @@ void targetConfiguration(void) {
     batteryConfigMutable()->vbatmincellvoltage = 320;
     batteryConfigMutable()->vbatwarningcellvoltage = 340;
 
+    /* Configuration -> Arming */
+    imuConfigMutable()->small_angle = 90;
+
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);
     osdWarnSetState(OSD_WARNING_VISUAL_BEEPER, false);
@@ -219,6 +222,9 @@ void targetConfiguration(void) {
     osdElementConfigMutable()->item_pos[OSD_WARNINGS]           = OSD_PROFILE_1_FLAG | OSD_PROFILE_FLAG(2) | OSD_PROFILE_FLAG(3) | OSD_POS(9, 6);
 
     osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MAX7456;
+
+    /* CPU Frequency */
+    systemConfigMutable()->cpu_overclock = 2;
 
     /* Video Transmitter -> Select Mode */
     vtxSettingsConfigMutable()->band = 4;
@@ -254,4 +260,4 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->simplified_pitch_pi_gain = 110;
 }
 
-// #endif /* USE_TARGET_CONFIG */
+#endif /* USE_TARGET_CONFIG */
