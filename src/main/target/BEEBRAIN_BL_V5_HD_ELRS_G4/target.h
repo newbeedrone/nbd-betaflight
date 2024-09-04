@@ -26,7 +26,7 @@
 /* ======== LED ======== */
 #define USE_LED_STRIP
 #define USE_LED_STRIP_STATUS_MODE
-#define LED_STRIP_PIN                   PB4
+#define LED_STRIP_PIN                   PB9
 
 #define LED0_PIN                        PB2
 #define LED1_PIN                        PA3
@@ -61,31 +61,40 @@
 #define USE_SPI
 #define USE_SPI_DMA_ENABLE_LATE
 
-#define USE_SPI_DEVICE_3
-#define SPI3_SCK_PIN                   PB13
-#define SPI3_SDI_PIN                   PB14
-#define SPI3_SDO_PIN                   PB15
+#define USE_SPI_DEVICE_2
+#define SPI2_NSS_PIN                    PB12
+#define SPI2_SCK_PIN                    PB13
+#define SPI2_SDI_PIN                    PB14
+#define SPI2_SDO_PIN                    PB15
 
-/* ======== GYRO & ACC ======== */
-#define USE_ACC
+/* ======== GYRO ======== */
 #define USE_GYRO
-#define USE_ACCGYRO_BMI270
+#define USE_GYRO_SPI_MPU6000
 
 #define GYRO_1_EXTI_PIN                 PC14
-#define GYRO_1_CS_PIN                   PB12
-#define GYRO_1_SPI_INSTANCE             SPI1
+#define GYRO_1_CS_PIN                   SPI2_NSS_PIN
+#define GYRO_1_SPI_INSTANCE             SPI2
 
 #define GYRO_1_ALIGN                    CW90_DEG
+
+/* ======== ACC ======== */
+#define USE_ACC
+#define USE_ACC_SPI_MPU6000
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_CRSF
 
+/* ======== GPS ======== */
+#define USE_GPS
+#define USE_GPS_NMEA
+#define USE_GPS_UBLOX
+#define USE_GPS_RESCUE
+
 /* ======== ADC ======== */
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
-#define ADC1_DMA_OPT                    0
 
 #define ADC_VBAT_PIN                    PA0
 #define ADC_CURR_PIN                    PA1
@@ -114,12 +123,12 @@
 #define USE_TIMER_UP_CONFIG
 
 #define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    1, 6) \
-    TIMER_PIN_MAP( 1, MOTOR2_PIN   ,    1, 1) \
-    TIMER_PIN_MAP( 2, MOTOR3_PIN   ,    1, 2) \
-    TIMER_PIN_MAP( 3, MOTOR4_PIN   ,    1, 3) \
-    TIMER_PIN_MAP( 4, LED_STRIP_PIN,    2, 4) \
-    TIMER_PIN_MAP( 5, BEEPER_PIN   ,    2, 5)
+    TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    2, 0) \
+    TIMER_PIN_MAP( 1, MOTOR2_PIN   ,    3, 0) \
+    TIMER_PIN_MAP( 2, MOTOR3_PIN   ,    2, 0) \
+    TIMER_PIN_MAP( 3, MOTOR4_PIN   ,    2, 0) \
+    TIMER_PIN_MAP( 4, LED_STRIP_PIN,    1, 0) \
+    TIMER_PIN_MAP( 5, BEEPER_PIN   ,    3, 0)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff
