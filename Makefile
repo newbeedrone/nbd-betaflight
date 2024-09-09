@@ -319,7 +319,7 @@ ifeq ($(REV),yes)
 TARGET_NAME := $(TARGET_NAME)_$(REVISION)
 endif
 
-TARGET_FULLNAME = $(FORKNAME)_$(FC_VER)_$(TARGET_NAME)
+TARGET_FULLNAME = $(FORKNAME)_$(FC_VER)_$(TARGET_NAME)_KAACK
 #
 # Things we will build
 #
