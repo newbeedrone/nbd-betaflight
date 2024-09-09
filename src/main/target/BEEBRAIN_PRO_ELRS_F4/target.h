@@ -92,11 +92,6 @@
 #define RTC6705_CS_PIN                  PA14
 #define RTC6705_SPI_INSTANCE            SPI2
 
-// #define RTC6705_DYNAMIC_POWER_CTRL
-// #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
-// #define RTC6705_EX_POWER_1_PIN          PA8  // External VTx Power LSB
-// #define RTC6705_EX_POWER_2_PIN          PB1  // External VTx Power MSB
-
 /* ======== RX ======== */
 #define USE_RX_SPI
 #undef  USE_RX_SX127X
