@@ -90,11 +90,12 @@
 #define RTC6705_SPI_INSTANCE            SPI2
 
 /* ======== RX ======== */
+#define USE_RX_SPI
 #define USE_RX_EXPRESSLRS
 #define USE_RX_SX1280
-#undef USE_RX_SX127X
+#undef  USE_RX_SX127X
 
-#define RX_NSS_PIN                      SPI3_NSS_PIN
+#define RX_SPI_CS_PIN                   SPI3_NSS_PIN
 #define RX_SPI_LED_PIN                  PC15
 #define RX_SPI_EXTI_PIN                 PC13
 #define RX_SPI_BIND_PIN                 PB2
@@ -105,6 +106,9 @@
 #define RX_EXPRESSLRS_TIMER_INSTANCE    TIM9
 
 #define RX_SPI_LED_INVERTED
+
+#define DEFAULT_RX_FEATURE              FEATURE_RX_SPI
+#define RX_SPI_DEFAULT_PROTOCOL         RX_SPI_EXPRESSLRS
 
 /* ======== ADC ======== */
 #define USE_ADC
