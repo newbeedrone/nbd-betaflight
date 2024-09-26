@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "Beebrain BL V5 HD ELRS Rev_A"
-#define USBD_PRODUCT_STRING             "Beebrain BL V5 HD ELRS G4"
+#define USBD_PRODUCT_STRING             "SavageBee Pusher"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -75,11 +75,14 @@
 #define GYRO_1_CS_PIN                   SPI2_NSS_PIN
 #define GYRO_1_SPI_INSTANCE             SPI2
 
-#define GYRO_1_ALIGN                    CW90_DEG
+#define GYRO_1_ALIGN                    CW90_DEG_FLIP
 
 /* ======== ACC ======== */
 #define USE_ACC
 #define USE_ACC_SPI_MPU6000
+
+/* ======== VTX ======== */
+#define VTX_MSP_UART                    SERIAL_PORT_USART1
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
@@ -101,7 +104,7 @@
 
 #define DEFAULT_VOLTAGE_METER_SCALE     110
 #define DEFAULT_CURRENT_METER_SCALE     410
-#define DEFAULT_CURRENT_METER_OFFSET    0
+#define DEFAULT_CURRENT_METER_OFFSET    145
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -119,6 +122,8 @@
 #define USE_GPS_NMEA
 #define USE_GPS_UBLOX
 #define USE_GPS_RESCUE
+
+#define GPS_UART                        SERIAL_PORT_UART4
 
 /* ======== System ======== */
 #define SYSTEM_HSE_MHZ                  8
@@ -142,3 +147,5 @@
 #define TARGET_IO_PORTD                 0xffff
 #define TARGET_IO_PORTE                 0xffff
 #define TARGET_IO_PORTF                 0xffff
+
+#define USE_TARGET_CONFIG
