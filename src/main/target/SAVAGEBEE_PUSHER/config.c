@@ -101,7 +101,7 @@
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_LED_STRIP | FEATURE_OSD);
+    featureConfigMutable()->enabledFeatures |= (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_GPS);
 
     /* Modes */
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
@@ -129,12 +129,17 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(5)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
     modeActivationConditionsMutable(5)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
+    modeActivationConditionsMutable(5)->modeId          = BOXGPSRESCUE;
+    modeActivationConditionsMutable(5)->auxChannelIndex = AUX4 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(5)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
+    modeActivationConditionsMutable(5)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
+
     /* PID Tuning -> Filter Setting */
     dynNotchConfigMutable()->dyn_notch_count = 1;
     dynNotchConfigMutable()->dyn_notch_q = 500;
 
     /* Motors */
-    motorConfigMutable()->digitalIdleOffsetValue = 1000;
+    motorConfigMutable()->digitalIdleOffsetValue = 800;
     motorConfigMutable()->dev.useBurstDshot = DSHOT_DMAR_ON;
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;

@@ -82,7 +82,7 @@
 #define USE_ACC_SPI_MPU6000
 
 /* ======== VTX ======== */
-#define VTX_MSP_UART                    SERIAL_PORT_USART1
+#define MSP_DISPLAYPORT_UART            SERIAL_PORT_USART1
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
