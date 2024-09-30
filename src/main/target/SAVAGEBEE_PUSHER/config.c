@@ -165,7 +165,7 @@ void targetConfiguration(void) {
     osdElementConfigMutable()->item_pos[OSD_WARNINGS]           = OSD_PROFILE_1_FLAG | OSD_POS(21, 9);
 
     /* CPU Frequency */
-    systemConfigMutable()->cpu_overclock = 2;
+    systemConfigMutable()->cpu_overclock = 1;
 
     /* PID Tuning -> Filter Settings -> Gyro RPM Filter */
     rpmFilterConfigMutable()->rpm_filter_harmonics = 2;

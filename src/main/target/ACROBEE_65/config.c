@@ -224,7 +224,7 @@ void targetConfiguration(void) {
     osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MAX7456;
 
     /* CPU Frequency */
-    systemConfigMutable()->cpu_overclock = 2;
+    systemConfigMutable()->cpu_overclock = 1;
 
     /* Video Transmitter -> Select Mode */
     vtxSettingsConfigMutable()->band = 4;
