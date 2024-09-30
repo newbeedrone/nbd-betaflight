@@ -76,6 +76,7 @@
 #include "pg/beeper_dev.h"
 #include "pg/displayport_profiles.h"
 #include "pg/dyn_notch.h"
+#include "pg/gps_rescue.h"
 #include "pg/gyrodev.h"
 #include "pg/motor.h"
 #include "pg/pg.h"
@@ -124,13 +125,13 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(3)->range.startStep = CHANNEL_VALUE_TO_STEP(1300);
     modeActivationConditionsMutable(3)->range.endStep   = CHANNEL_VALUE_TO_STEP(1700);
 
+    modeActivationConditionsMutable(4)->modeId          = BOXGPSRESCUE;
+    modeActivationConditionsMutable(4)->auxChannelIndex = AUX4 - NON_AUX_CHANNEL_COUNT;
+    modeActivationConditionsMutable(4)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
+    modeActivationConditionsMutable(4)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
+
     modeActivationConditionsMutable(5)->modeId          = BOXFLIPOVERAFTERCRASH;
     modeActivationConditionsMutable(5)->auxChannelIndex = AUX3 - NON_AUX_CHANNEL_COUNT;
-    modeActivationConditionsMutable(5)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
-    modeActivationConditionsMutable(5)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
-
-    modeActivationConditionsMutable(5)->modeId          = BOXGPSRESCUE;
-    modeActivationConditionsMutable(5)->auxChannelIndex = AUX4 - NON_AUX_CHANNEL_COUNT;
     modeActivationConditionsMutable(5)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
     modeActivationConditionsMutable(5)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
@@ -144,6 +145,9 @@ void targetConfiguration(void) {
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
+
+    /* Failsafe -> Stage 2 - Setting */
+    gpsRescueConfigMutable()->allowArmingWithoutFix = true;
 
     /* Motors -> Mixer */
     mixerConfigMutable()->yaw_motors_reversed = true;
