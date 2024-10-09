@@ -201,6 +201,7 @@ void targetConfiguration(void) {
     motorConfigMutable()->digitalIdleOffsetValue = 800;
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
+    motorConfigMutable()->motorPoleCount = 12;
 
     /* Power & Battery */
     batteryConfigMutable()->vbatmincellvoltage = 320;
@@ -236,7 +237,7 @@ void targetConfiguration(void) {
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "Acrobee Racespec");
+    strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
     /* PID Tuning */
     pidProfilesMutable(0)->vbat_sag_compensation = 100;

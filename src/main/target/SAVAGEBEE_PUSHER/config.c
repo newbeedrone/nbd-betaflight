@@ -175,7 +175,7 @@ void targetConfiguration(void) {
     rpmFilterConfigMutable()->rpm_filter_harmonics = 2;
 
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "Savagebee Pusher");
+    strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
     /* PID Tuning */
     pidProfilesMutable(0)->pid[PID_PITCH].P = 111;

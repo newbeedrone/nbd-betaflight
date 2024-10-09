@@ -98,6 +98,7 @@
 /* ======== ADC ======== */
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
 
 #define ADC_VBAT_PIN                    PA0
 #define ADC_CURR_PIN                    PA1

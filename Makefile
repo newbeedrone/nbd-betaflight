@@ -16,7 +16,7 @@
 #
 
 # The target to build, see BASE_TARGETS below
-DEFAULT_TARGET ?= ACROBEE_65
+DEFAULT_TARGET ?= ACROBEE65_BLV5
 TARGET    ?=
 CONFIG    ?=
 

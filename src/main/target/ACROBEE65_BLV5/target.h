@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "Beebrain BL V5 ELRS Rev_A"
-#define USBD_PRODUCT_STRING             "Acrobee 75"
+#define USBD_PRODUCT_STRING             "Acrobee65 BLV5"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
