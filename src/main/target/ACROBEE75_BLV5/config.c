@@ -206,6 +206,9 @@ void targetConfiguration(void) {
     batteryConfigMutable()->vbatmincellvoltage = 320;
     batteryConfigMutable()->vbatwarningcellvoltage = 340;
 
+    /* Configuration -> Dshot Beacon Configuration */
+    beeperConfigMutable()->dshotBeaconTone = DSHOT_CMD_BEACON2;
+
     /* Configuration -> Arming */
     imuConfigMutable()->small_angle = 180;
 
@@ -238,7 +241,7 @@ void targetConfiguration(void) {
     /* Configuration -> Personalization */
     strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
-    /* PID Tuning */
+    /* PID Tuning -> PID Profile Settings */
     pidProfilesMutable(0)->vbat_sag_compensation = 100;
     pidProfilesMutable(0)->pid[PID_PITCH].P = 72;
     pidProfilesMutable(0)->pid[PID_PITCH].I = 129;
@@ -259,6 +262,14 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->simplified_dmin_ratio = 0;
     pidProfilesMutable(0)->simplified_feedforward_gain = 30;
     pidProfilesMutable(0)->simplified_pitch_pi_gain = 110;
+
+    /* PID Tuning -> Rateprofile Settings */
+    controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 8;
+    controlRateProfilesMutable(0)->rcRates[FD_PITCH] = 8;
+    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 8;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 70;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 70;
+    controlRateProfilesMutable(0)->rates[FD_YAW] = 70;
 }
 
 #endif /* USE_TARGET_CONFIG */
