@@ -27,6 +27,8 @@
 #define USE_LED_STRIP
 #define USE_LED_STRIP_STATUS_MODE
 #define LED_STRIP_PIN                   PB1
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5) 
 
 #define LED0_PIN                        PC14
 
@@ -122,7 +124,7 @@
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
-#define SERIALRX_PROVIDER               SERIALRX_SBUS
+#define SERIALRX_PROVIDER               SERIALRX_CRSF
 
 // #define USE_TELEMETRY
 // #define USE_RX_EXPRESSLRS
@@ -141,6 +143,10 @@
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
+
+/* ======== GPIO ======== */
+#define USE_BRUSHED_FLIPOVERAFTERCRASH
+#define BRUSHED_REVERSE_PIN             PC15
 
 /* ======== ESC ======== */
 #define MOTOR1_PIN                      PA8
