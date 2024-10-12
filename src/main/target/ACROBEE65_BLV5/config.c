@@ -101,7 +101,7 @@
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_CHANNEL_FORWARDING);
+    featureConfigMutable()->enabledFeatures |= ( FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_CHANNEL_FORWARDING );
 
     /* Configuration -> Dshot Beacon Configuration */
     beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_SET;
@@ -207,7 +207,7 @@ void targetConfiguration(void) {
     batteryConfigMutable()->vbatwarningcellvoltage = 340;
 
     /* Configuration -> Arming */
-    imuConfigMutable()->small_angle = 90;
+    imuConfigMutable()->small_angle = 180;
 
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);

@@ -102,7 +102,7 @@
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_GPS);
+    featureConfigMutable()->enabledFeatures |= ( FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_GPS );
 
     /* Modes */
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
@@ -156,7 +156,7 @@ void targetConfiguration(void) {
     pidConfigMutable()->pid_process_denom = 2;
 
     /* Configuration -> Arming */
-    imuConfigMutable()->small_angle = 90;
+    imuConfigMutable()->small_angle = 180;
 
     /* OSD */
     osdElementConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE]  = OSD_PROFILE_1_FLAG | OSD_POS(47,16);
