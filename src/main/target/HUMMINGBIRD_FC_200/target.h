@@ -27,8 +27,6 @@
 #define USE_LED_STRIP
 #define USE_LED_STRIP_STATUS_MODE
 #define LED_STRIP_PIN                   PB1
-#define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5) 
 
 #define LED0_PIN                        PC14
 
@@ -73,17 +71,16 @@
 #define SPI1_SCK_PIN                    PB3
 #define SPI1_SDI_PIN                    PB4
 #define SPI1_SDO_PIN                    PB5
-#define SPI1_NSS_PIN                    PA15
 
 #define USE_SPI_DEVICE_2
 #define SPI2_SCK_PIN                    PB13
 #define SPI2_SDI_PIN                    PB14
 #define SPI2_SDO_PIN                    PB15
 
-#define USE_SPI_DEVICE_3
-#define SPI3_SCK_PIN                    PB7
-#define SPI3_SDI_PIN                    PB8
-#define SPI3_SDO_PIN                    PB9
+#define USE_SPI_DEVICE_4
+#define SPI4_SCK_PIN                    PB7
+#define SPI4_SDI_PIN                    PB8
+#define SPI4_SDO_PIN                    PB9
 
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
@@ -101,12 +98,15 @@
 #define USE_MAX7456
 
 #define MAX7456_SPI_CS_PIN              PB6
-#define MAX7456_SPI_INSTANCE            SPI3
+#define MAX7456_SPI_INSTANCE            SPI4
 
 /* ======== FLASH ======== */
-#define USE_FLASH_W25Q128FV
+#define USE_FLASH
+#define USE_FLASH_SPI
+#define USE_FLASH_M25P16
+#define DEFAULT_BLACKBOX_DEVICE         BLACKBOX_DEVICE_FLASH
 
-#define FLASH_CS_PIN                    SPI1_NSS_PIN
+#define FLASH_CS_PIN                    PA15
 #define FLASH_SPI_INSTANCE              SPI1
 
 /* ======== VTX ======== */
@@ -126,10 +126,6 @@
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_CRSF
 
-// #define USE_TELEMETRY
-// #define USE_RX_EXPRESSLRS
-// #define USE_RX_SX1280
-
 /* ======== ADC ======== */
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
@@ -144,9 +140,9 @@
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 
-/* ======== GPIO ======== */
-#define USE_BRUSHED_FLIPOVERAFTERCRASH
-#define BRUSHED_REVERSE_PIN             PC15
+/* ======== PINBOX ======== */
+// #define USE_BRUSHED_FLIPOVERAFTERCRASH
+// #define BRUSHED_REVERSE_PIN             PC15
 
 /* ======== ESC ======== */
 #define MOTOR1_PIN                      PA8
@@ -160,6 +156,8 @@
 
 #define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
 
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5) 
 /* ======== System ======== */
 #undef USE_TRANSPONDER
 #undef USE_RX_PPM
