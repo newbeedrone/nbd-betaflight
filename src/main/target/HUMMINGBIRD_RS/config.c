@@ -193,6 +193,11 @@ void targetConfiguration(void) {
     motorConfigMutable()->dev.useDshotTelemetry  = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol   = PWM_TYPE_DSHOT300;
     motorConfigMutable()->kv                     = 30000;
+    motorConfigMutable()->motorPoleCount         = 12;
+
+    /* Power & Battery */
+    batteryConfigMutable()->vbatmaxcellvoltage     = 440;
+    batteryConfigMutable()->vbatwarningcellvoltage = 340;
 
     /* Mixer */   
     mixerConfigMutable()->rpm_limit              = true;
@@ -201,7 +206,7 @@ void targetConfiguration(void) {
     /* OSD */
     osdElementConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE]  = OSD_PROFILE_1_FLAG | OSD_POS(24,10); //2392
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]         = OSD_PROFILE_1_FLAG | OSD_POS(0, 10); //2368
-    osdElementConfigMutable()->item_pos[OSD_ITEM_TIMER_2]       = OSD_PROFILE_1_FLAG | OSD_POS(1, 11); //2400
+    osdElementConfigMutable()->item_pos[OSD_ITEM_TIMER_2]       = OSD_PROFILE_1_FLAG | OSD_POS(0, 11); //2400
     osdElementConfigMutable()->item_pos[OSD_FLYMODE]            = OSD_PROFILE_1_FLAG | OSD_POS(18,10); //2386
     osdElementConfigMutable()->item_pos[OSD_VTX_CHANNEL]        = OSD_PROFILE_1_FLAG | OSD_POS(8, 10); //2376
     osdElementConfigMutable()->item_pos[OSD_CURRENT_DRAW]       = OSD_PROFILE_1_FLAG | OSD_POS(23,11); //2423
@@ -211,8 +216,8 @@ void targetConfiguration(void) {
     osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MAX7456;
 
     /* Video Transmitter -> Select Mode */
-    vtxSettingsConfigMutable()->band = 3;
-    vtxSettingsConfigMutable()->channel = 3;
+    vtxSettingsConfigMutable()->band = 4;
+    vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;
 
     /* OSD -> Video Format */
@@ -222,27 +227,47 @@ void targetConfiguration(void) {
     strcpy(pilotConfigMutable()->craftName, "Hummingbird RS");
 
     /* PID Tuning */
-    pidProfilesMutable(0)->pid[PID_PITCH].P             = 56;
-    pidProfilesMutable(0)->pid[PID_PITCH].I             = 91;
-    pidProfilesMutable(0)->pid[PID_PITCH].D             = 52;
-    pidProfilesMutable(0)->pid[PID_PITCH].F             = 0;
-    pidProfilesMutable(0)->pid[PID_ROLL].P              = 54;
-    pidProfilesMutable(0)->pid[PID_ROLL].I              = 87;
-    pidProfilesMutable(0)->pid[PID_ROLL].D              = 38;
-    pidProfilesMutable(0)->pid[PID_ROLL].F              = 0;
+    pidProfilesMutable(0)->dterm_lpf1_dyn_expo          = 7;
+    pidProfilesMutable(0)->vbat_sag_compensation        = 100;
+    pidProfilesMutable(0)->iterm_relax_cutoff           = 45;
+    pidProfilesMutable(0)->pid[PID_PITCH].P             = 49;
+    pidProfilesMutable(0)->pid[PID_PITCH].I             = 87;
+    pidProfilesMutable(0)->pid[PID_PITCH].D             = 38;
+    pidProfilesMutable(0)->pid[PID_PITCH].F             = 144;
+    pidProfilesMutable(0)->pid[PID_ROLL].P              = 47;
+    pidProfilesMutable(0)->pid[PID_ROLL].I              = 83;
+    pidProfilesMutable(0)->pid[PID_ROLL].D              = 33;
+    pidProfilesMutable(0)->pid[PID_ROLL].F              = 138;
     pidProfilesMutable(0)->pid[PID_YAW].P               = 38;
     pidProfilesMutable(0)->pid[PID_YAW].I               = 60;
     pidProfilesMutable(0)->pid[PID_YAW].F               = 24;
-    pidProfilesMutable(0)->d_min[FD_ROLL]               = 36;
-    pidProfilesMutable(0)->d_min[FD_PITCH]              = 49;
+    pidProfilesMutable(0)->d_min[FD_ROLL]               = 31;
+    pidProfilesMutable(0)->d_min[FD_PITCH]              = 35;
     pidProfilesMutable(0)->simplified_pids_mode         = PID_SIMPLIFIED_TUNING_RP;
+    pidProfilesMutable(0)->feedforward_averaging        = FEEDFORWARD_AVERAGING_2_POINT;
+    pidProfilesMutable(0)->feedforward_smooth_factor    = 65;
+    pidProfilesMutable(0)->feedforward_jitter_factor    = 0;
+    pidProfilesMutable(0)->feedforward_max_rate_limit   = 100;
+    pidProfilesMutable(0)->dyn_idle_min_rpm             = 150;
+    pidProfilesMutable(0)->dyn_idle_start_increase      = 60;
     pidProfilesMutable(0)->simplified_master_multiplier = 110;
-    pidProfilesMutable(0)->simplified_i_gain            = 90;
-    pidProfilesMutable(0)->simplified_d_gain            = 110;
-    pidProfilesMutable(0)->simplified_pi_gain           = 110;
+    pidProfilesMutable(0)->simplified_i_gain            = 100;
+    pidProfilesMutable(0)->simplified_d_gain            = 95;
+    pidProfilesMutable(0)->simplified_pi_gain           = 95;
     pidProfilesMutable(0)->simplified_dmin_ratio        = 20;
-    pidProfilesMutable(0)->simplified_feedforward_gain  = 0;
+    pidProfilesMutable(0)->simplified_feedforward_gain  = 105;
     pidProfilesMutable(0)->simplified_roll_pitch_ratio  = 120;
-}
 
+    /* PID Tuning -> Rateprofile Settings */
+    controlRateProfilesMutable(0)->thrMid8               = 30;
+    controlRateProfilesMutable(0)->thrExpo8              = 65;
+    controlRateProfilesMutable(0)->rcExpo[0]             = 54;
+    controlRateProfilesMutable(0)->rcExpo[1]             = 54;
+    controlRateProfilesMutable(0)->rcExpo[2]             = 54;
+    controlRateProfilesMutable(0)->rates[0]              = 52; 
+    controlRateProfilesMutable(0)->rates[1]              = 52; 
+    controlRateProfilesMutable(0)->rates[2]              = 57; 
+    controlRateProfilesMutable(0)->throttle_limit_type   = THROTTLE_LIMIT_TYPE_SCALE;
+    controlRateProfilesMutable(0)->throttle_limit_percent= 98;
+}
 #endif /* USE_TARGET_CONFIG */
