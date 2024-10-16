@@ -227,36 +227,42 @@ void targetConfiguration(void) {
     strcpy(pilotConfigMutable()->craftName, "Hummingbird RS");
 
     /* PID Tuning */
+    pidProfilesMutable(0)->dterm_lpf1_dyn_min_hz        = 67;
+    pidProfilesMutable(0)->dterm_lpf1_dyn_max_hz        = 135;    
+    pidProfilesMutable(0)->dterm_lpf1_static_hz         = 67;
+    pidProfilesMutable(0)->dterm_lpf2_static_hz         = 135;
     pidProfilesMutable(0)->dterm_lpf1_dyn_expo          = 7;
     pidProfilesMutable(0)->vbat_sag_compensation        = 100;
     pidProfilesMutable(0)->iterm_relax_cutoff           = 45;
-    pidProfilesMutable(0)->pid[PID_PITCH].P             = 49;
+    pidProfilesMutable(0)->pid[PID_PITCH].P             = 44;
     pidProfilesMutable(0)->pid[PID_PITCH].I             = 87;
-    pidProfilesMutable(0)->pid[PID_PITCH].D             = 38;
-    pidProfilesMutable(0)->pid[PID_PITCH].F             = 144;
-    pidProfilesMutable(0)->pid[PID_ROLL].P              = 47;
+    pidProfilesMutable(0)->pid[PID_PITCH].D             = 39;
+    pidProfilesMutable(0)->pid[PID_PITCH].F             = 143;
+    pidProfilesMutable(0)->pid[PID_ROLL].P              = 42;
     pidProfilesMutable(0)->pid[PID_ROLL].I              = 83;
-    pidProfilesMutable(0)->pid[PID_ROLL].D              = 33;
+    pidProfilesMutable(0)->pid[PID_ROLL].D              = 32;
     pidProfilesMutable(0)->pid[PID_ROLL].F              = 138;
-    pidProfilesMutable(0)->pid[PID_YAW].P               = 38;
-    pidProfilesMutable(0)->pid[PID_YAW].I               = 60;
-    pidProfilesMutable(0)->pid[PID_YAW].F               = 24;
-    pidProfilesMutable(0)->d_min[FD_ROLL]               = 31;
-    pidProfilesMutable(0)->d_min[FD_PITCH]              = 35;
+    pidProfilesMutable(0)->pid[PID_YAW].P               = 45;
+    pidProfilesMutable(0)->pid[PID_YAW].I               = 80;
+    pidProfilesMutable(0)->pid[PID_YAW].F               = 120;
+    pidProfilesMutable(0)->d_min[FD_ROLL]               = 25;
+    pidProfilesMutable(0)->d_min[FD_PITCH]              = 30;
+    pidProfilesMutable(0)->thrustLinearization          = 20;
     pidProfilesMutable(0)->simplified_pids_mode         = PID_SIMPLIFIED_TUNING_RP;
     pidProfilesMutable(0)->feedforward_averaging        = FEEDFORWARD_AVERAGING_2_POINT;
     pidProfilesMutable(0)->feedforward_smooth_factor    = 65;
-    pidProfilesMutable(0)->feedforward_jitter_factor    = 0;
+    pidProfilesMutable(0)->feedforward_jitter_factor    = 1;
     pidProfilesMutable(0)->feedforward_max_rate_limit   = 100;
     pidProfilesMutable(0)->dyn_idle_min_rpm             = 150;
     pidProfilesMutable(0)->dyn_idle_start_increase      = 60;
-    pidProfilesMutable(0)->simplified_master_multiplier = 110;
+    pidProfilesMutable(0)->simplified_master_multiplier = 100;
     pidProfilesMutable(0)->simplified_i_gain            = 100;
-    pidProfilesMutable(0)->simplified_d_gain            = 95;
+    pidProfilesMutable(0)->simplified_d_gain            = 85;
     pidProfilesMutable(0)->simplified_pi_gain           = 95;
-    pidProfilesMutable(0)->simplified_dmin_ratio        = 20;
-    pidProfilesMutable(0)->simplified_feedforward_gain  = 105;
-    pidProfilesMutable(0)->simplified_roll_pitch_ratio  = 120;
+    pidProfilesMutable(0)->simplified_dmin_ratio        = 85;
+    pidProfilesMutable(0)->simplified_feedforward_gain  = 115;
+    pidProfilesMutable(0)->simplified_roll_pitch_ratio  = 105;
+    pidProfilesMutable(0)->simplified_dterm_filter_multiplier=90;
 
     /* PID Tuning -> Rateprofile Settings */
     controlRateProfilesMutable(0)->thrMid8               = 30;
