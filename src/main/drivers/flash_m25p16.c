@@ -109,6 +109,9 @@ struct {
     { 0xEF6017, 133, 50, 128, 256 }, // W25Q64JW-IQ
     { 0xEF8017, 133, 50, 128, 256 }, // W25Q64JW-IM*
     // Winbond W25Q128
+    // Datasheet:https://www.boyamicro.com/download/SPI_NOR_Flash/BY25Q64ES.pdf
+    { 0x684017, 108, 54, 128, 256 }, // BY25Q64
+    // Boya BY25Q64
     // Datasheet: https://www.winbond.com/resource-files/w25q128fv%20rev.l%2008242015.pdf
     { 0xEF4018, 104, 50, 256, 256 },
     // PUYA PY25Q128
