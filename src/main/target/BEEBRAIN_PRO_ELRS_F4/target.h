@@ -56,11 +56,6 @@
 #define SPI1_SDI_PIN                    PA6
 #define SPI1_SDO_PIN                    PA7
 
-#define USE_SPI_DEVICE_2
-#define SPI2_SCK_PIN                    PB13
-#define SPI2_SDI_PIN                    PB14
-#define SPI2_SDO_PIN                    PB15
-
 #define USE_SPI_DEVICE_3
 #define SPI3_SCK_PIN                    PB3
 #define SPI3_SDI_PIN                    PB4
@@ -84,18 +79,18 @@
 #define USE_MAX7456
 
 #define MAX7456_SPI_CS_PIN              PB12
-#define MAX7456_SPI_INSTANCE            SPI2
+#define MAX7456_SPI_INSTANCE            SPI1
 
 /* ======== VTX ======== */
 #define USE_VTX_RTC6705
 
 #define RTC6705_CS_PIN                  PA14
-#define RTC6705_SPI_INSTANCE            SPI2
+#define RTC6705_SPI_INSTANCE            SPI1
 
-// #define RTC6705_DYNAMIC_POWER_CTRL
-// #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
-// #define RTC6705_EX_POWER_1_PIN          PA8  // External VTx Power LSB
-// #define RTC6705_EX_POWER_2_PIN          PB1  // External VTx Power MSB
+#define RTC6705_DYNAMIC_POWER_CTRL
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+#define RTC6705_EX_POWER_1_PIN          PB13  // External VTx Power LSB
+#define RTC6705_EX_POWER_2_PIN          PB14  // External VTx Power MSB
 
 /* ======== RX ======== */
 #define USE_RX_SPI
