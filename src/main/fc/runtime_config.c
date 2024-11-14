@@ -60,6 +60,7 @@ const char *armingDisableFlagNames[]= {
     "NO_ACC_CAL",
     "MOTOR_PROTO",
     "ARMSWITCH",
+
 };
 
 static armingDisableFlags_e armingDisableFlags = 0;

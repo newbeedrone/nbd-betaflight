@@ -69,7 +69,6 @@ typedef enum {
 } armingDisableFlags_e;
 
 #define ARMING_DISABLE_FLAGS_COUNT (LOG2(ARMING_DISABLED_ARM_SWITCH) + 1)
-
 extern const char *armingDisableFlagNames[ARMING_DISABLE_FLAGS_COUNT];
 
 void setArmingDisabled(armingDisableFlags_e flag);

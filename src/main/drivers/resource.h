@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "platform.h"
+
 typedef enum {
     OWNER_FREE = 0,
     OWNER_PWMINPUT,

@@ -450,7 +450,7 @@ void bmi160SpiGyroInit(gyroDev_t *gyro)
     BMI160_Init(dev);
     bmi160IntExtiInit(gyro);
 
-    spiSetClkDivisor(&gyro->dev, spiCalculateDivider(BMI160_MAX_SPI_CLK_HZ));
+    spiSetClkDivisor(dev, spiCalculateDivider(BMI160_MAX_SPI_CLK_HZ));
 }
 
 void bmi160SpiAccInit(accDev_t *acc)

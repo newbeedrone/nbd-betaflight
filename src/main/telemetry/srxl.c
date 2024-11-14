@@ -41,7 +41,6 @@
 
 #include "drivers/dshot.h"
 #include "drivers/vtx_common.h"
-#include "drivers/beesign.h"
 
 #include "fc/rc_controls.h"
 #include "fc/runtime_config.h"
@@ -54,7 +53,6 @@
 #include "io/serial.h"
 #include "io/vtx_smartaudio.h"
 #include "io/vtx_tramp.h"
-#include "io/vtx_beesign.h"
 
 #include "pg/rx.h"
 #include "pg/motor.h"
@@ -588,11 +586,6 @@ static void convertVtxPower(spektrumVtx_t * vtx)
 #if defined(USE_VTX_RTC6705)
         case VTXDEV_RTC6705:
             powerIndexTable = vtxRTC6705Pi;
-            break;
-#endif
-#if defined(USE_VTX_BEESIGN)
-        case VTXDEV_BEESIGN:
-            powerIndexTable = vtxBsPi;
             break;
 #endif
 

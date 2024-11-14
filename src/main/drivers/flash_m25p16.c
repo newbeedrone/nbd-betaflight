@@ -106,8 +106,16 @@ struct {
     // Datasheet: https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf
     { 0xEF4017, 133, 50, 128, 256 }, // W25Q64JV-IQ/JQ
     { 0xEF7017, 133, 50, 128, 256 }, // W25Q64JV-IM/JM*
+<<<<<<< HEAD
     { 0xEF6017, 133, 50, 128, 256 }, // W25Q64JW-IQ
     { 0xEF8017, 133, 50, 128, 256 }, // W25Q64JW-IM*
+=======
+<<<<<<< Updated upstream
+=======
+    { 0xEF6017, 104, 50, 128, 256 }, // W25Q64JW-IQ
+    { 0xEF8017, 104, 50, 128, 256 }, // W25Q64JW-IM*
+>>>>>>> Stashed changes
+>>>>>>> 8086b033939d73f85fd8dad4b7d4dc71f0b351d0
     // Winbond W25Q128
     // Datasheet:https://www.boyamicro.com/download/SPI_NOR_Flash/BY25Q64ES.pdf
     { 0x684017, 108, 54, 128, 256 }, // BY25Q64

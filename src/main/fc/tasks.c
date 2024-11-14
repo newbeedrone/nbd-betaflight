@@ -45,7 +45,6 @@
 #include "drivers/transponder_ir.h"
 #include "drivers/usb_io.h"
 #include "drivers/vtx_common.h"
-#include "drivers/beesign.h"
 
 #include "config/config.h"
 #include "fc/core.h"
@@ -427,10 +426,6 @@ task_attribute_t task_attributes[TASK_COUNT] = {
     [TASK_VTXCTRL] = DEFINE_TASK("VTXCTRL", NULL, NULL, vtxUpdate, TASK_PERIOD_HZ(5), TASK_PRIORITY_LOWEST),
 #endif
 
-#ifdef USE_BEESIGN
-    [TASK_BEESIGN] = DEFINE_TASK("BEESIGN", NULL, NULL, beesignUpdate, TASK_PERIOD_HZ(60), TASK_PRIORITY_LOW),
-#endif
-
 #ifdef USE_RCDEVICE
     [TASK_RCDEVICE] = DEFINE_TASK("RCDEVICE", NULL, NULL, rcdeviceUpdate, TASK_PERIOD_HZ(20), TASK_PRIORITY_MEDIUM),
 #endif
@@ -600,10 +595,6 @@ void tasksInit(void)
     pinioBoxTaskControl();
 #endif
 
-#ifdef USE_BEESIGN
-    setTaskEnabled(TASK_BEESIGN, true);
-#endif
-
 #ifdef USE_CMS
 #ifdef USE_MSP_DISPLAYPORT
     setTaskEnabled(TASK_CMS, true);
@@ -613,7 +604,7 @@ void tasksInit(void)
 #endif
 
 #ifdef USE_VTX_CONTROL
-#if defined(USE_VTX_RTC6705) || defined(USE_VTX_SMARTAUDIO) || defined(USE_VTX_TRAMP) || defined(USE_VTX_MSP) || defined(USE_VTX_BEESIGN)
+#if defined(USE_VTX_RTC6705) || defined(USE_VTX_SMARTAUDIO) || defined(USE_VTX_TRAMP) || defined(USE_VTX_MSP)
     setTaskEnabled(TASK_VTXCTRL, true);
 #endif
 #endif

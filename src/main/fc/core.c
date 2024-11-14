@@ -1209,7 +1209,7 @@ static FAST_CODE void subTaskMotorUpdate(timeUs_t currentTimeUs)
     } else if (debugMode == DEBUG_PIDLOOP) {
         startTime = micros();
     }
-
+   
     mixTable(currentTimeUs);
 
 #ifdef USE_SERVOS
@@ -1218,7 +1218,6 @@ static FAST_CODE void subTaskMotorUpdate(timeUs_t currentTimeUs)
         writeServos();
     }
 #endif
-
     writeMotors();
 
 #ifdef USE_DSHOT_TELEMETRY_STATS
@@ -1294,7 +1293,6 @@ FAST_CODE void taskFiltering(timeUs_t currentTimeUs)
 // Function for loop trigger
 FAST_CODE void taskMainPidLoop(timeUs_t currentTimeUs)
 {
-
 #if defined(SIMULATOR_BUILD) && defined(SIMULATOR_GYROPID_SYNC)
     if (lockMainPID() != 0) return;
 #endif
@@ -1308,6 +1306,13 @@ FAST_CODE void taskMainPidLoop(timeUs_t currentTimeUs)
 
     subTaskRcCommand(currentTimeUs);
     subTaskPidController(currentTimeUs);
+    #ifdef USE_MOTOR_CURRENT_LITMIT
+        if ((getAmperage()/100) > CURRENT_LITMIT_AMPERAGE)
+        {
+            setArmingDisabled(ARMING_DISABLED_ARM_SWITCH);
+            disarm(DISARM_REASON_SWITCH);
+        }
+    #endif
     subTaskMotorUpdate(currentTimeUs);
     subTaskPidSubprocesses(currentTimeUs);
 
