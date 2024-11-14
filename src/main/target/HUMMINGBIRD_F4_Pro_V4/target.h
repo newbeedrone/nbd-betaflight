@@ -62,7 +62,8 @@
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_ACCGYRO_BMI270
+#define USE_ACC_SPI_ICM42688P
+#define USE_GYRO_SPI_ICM42688P
 
 #define GYRO_1_EXTI_PIN                 PB6
 
