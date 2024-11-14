@@ -198,6 +198,9 @@ void targetConfiguration(void) {
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->dev.useDshotBitbang  = DSHOT_BITBANG_OFF;
 
+    /* CPU Frequency */
+    systemConfigMutable()->cpu_overclock = 2;
+
     /* OSD -> Video Format */
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
@@ -208,7 +211,7 @@ void targetConfiguration(void) {
     ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9, 7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-
+    ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 10, 7, 12, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     /* PID Tuning */
     // pidProfilesMutable(0)->vbat_sag_compensation = 0;
     // pidProfilesMutable(0)->pid[PID_PITCH].P = 42;
