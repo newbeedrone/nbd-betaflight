@@ -100,7 +100,7 @@
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_LED_STRIP  | FEATURE_CHANNEL_FORWARDING);
+    featureConfigMutable()->enabledFeatures |= (FEATURE_SERVO_TILT | FEATURE_GPS | FEATURE_TELEMETRY | FEATURE_LED_STRIP  | FEATURE_CHANNEL_FORWARDING);
 
     /* Configuration -> Dshot Beacon Configuration */
     beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_SET;
