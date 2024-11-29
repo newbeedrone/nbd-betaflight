@@ -192,14 +192,22 @@ void targetConfiguration(void) {
     vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;
 
+    /* Power & Battery */
+    batteryConfigMutable()->vbatmincellvoltage = 320;
+    batteryConfigMutable()->vbatwarningcellvoltage = 340;
+
     /* Motors */
     motorConfigMutable()->digitalIdleOffsetValue = 800;
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->dev.useDshotBitbang  = DSHOT_BITBANG_OFF;
 
-    /* CPU Frequency */
-    systemConfigMutable()->cpu_overclock = 2;
+    /* Motors -> Mixer */
+    mixerConfigMutable()->yaw_motors_reversed = true;
+
+    /* Configuration -> Dshot Beacon Configuration */
+    beeperConfigMutable()->dshotBeaconTone = DSHOT_CMD_BEACON2;
+    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_SILENCE;
 
     /* OSD -> Video Format */
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
@@ -211,27 +219,39 @@ void targetConfiguration(void) {
     ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9, 7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-    ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 10, 7, 12, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-    /* PID Tuning */
-    // pidProfilesMutable(0)->vbat_sag_compensation = 0;
-    // pidProfilesMutable(0)->pid[PID_PITCH].P = 42;
-    // pidProfilesMutable(0)->pid[PID_PITCH].I = 22;
-    // pidProfilesMutable(0)->pid[PID_PITCH].D = 55;
-    // pidProfilesMutable(0)->pid[PID_PITCH].F = 22;
-    // pidProfilesMutable(0)->pid[PID_ROLL].P = 40;
-    // pidProfilesMutable(0)->pid[PID_ROLL].I = 21;
-    // pidProfilesMutable(0)->pid[PID_ROLL].D = 54;
-    // pidProfilesMutable(0)->pid[PID_ROLL].F = 22;
-    // pidProfilesMutable(0)->pid[PID_YAW].P = 60;
-    // pidProfilesMutable(0)->pid[PID_YAW].I = 30;
-    // pidProfilesMutable(0)->pid[PID_YAW].F = 0;
-    // pidProfilesMutable(0)->d_min[FD_ROLL] = 54;
-    // pidProfilesMutable(0)->d_min[FD_PITCH] = 55;
-    // pidProfilesMutable(0)->thrustLinearization = 0;
-    // pidProfilesMutable(0)->simplified_pids_mode = PID_SIMPLIFIED_TUNING_RPY;
-    // pidProfilesMutable(0)->simplified_master_multiplier = 100;
-    // pidProfilesMutable(0)->simplified_dmin_ratio = 0;   //
-    // pidProfilesMutable(0)->simplified_feedforward_gain = 100;
-    // pidProfilesMutable(0)->simplified_pitch_pi_gain = 100;
+    ledStripStatusModeConfigMutable()->ledConfigs[3] = DEFINE_LED( 10, 7, 12, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
+
+    /* PID Tuning -> PID Profile Settings */
+    pidProfilesMutable(0)->vbat_sag_compensation = 0;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 86;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 155;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 44;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 62;
+    pidProfilesMutable(0)->pid[PID_ROLL].P = 59;
+    pidProfilesMutable(0)->pid[PID_ROLL].I = 105;
+    pidProfilesMutable(0)->pid[PID_ROLL].D = 35;
+    pidProfilesMutable(0)->pid[PID_ROLL].F = 43;
+    pidProfilesMutable(0)->pid[PID_YAW].P = 45;
+    pidProfilesMutable(0)->pid[PID_YAW].I = 80;
+    pidProfilesMutable(0)->pid[PID_YAW].F = 120;
+    pidProfilesMutable(0)->thrustLinearization =0;
+    pidProfilesMutable(0)->d_min[FD_ROLL] = 35;
+    pidProfilesMutable(0)->d_min[FD_PITCH] = 44;
+    pidProfilesMutable(0)->thrustLinearization = 20;
+    pidProfilesMutable(0)->simplified_pids_mode = PID_SIMPLIFIED_TUNING_RP;
+    pidProfilesMutable(0)->simplified_master_multiplier = 120;
+    pidProfilesMutable(0)->simplified_pi_gain = 110;
+    pidProfilesMutable(0)->simplified_dmin_ratio = 0;
+    pidProfilesMutable(0)->simplified_feedforward_gain = 30;
+    pidProfilesMutable(0)->simplified_roll_pitch_ratio =110;
+    pidProfilesMutable(0)->simplified_pitch_pi_gain =140; 
+
+    /* PID Tuning -> Rateprofile Settings */
+    controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 8;
+    controlRateProfilesMutable(0)->rcRates[FD_PITCH] = 8;
+    controlRateProfilesMutable(0)->rcRates[FD_YAW] = 8;
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 73;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 73;
+    controlRateProfilesMutable(0)->rates[FD_YAW] = 73;
 }
 #endif

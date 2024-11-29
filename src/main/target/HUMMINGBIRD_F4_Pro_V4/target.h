@@ -31,6 +31,10 @@
 
 #define LED0_PIN                        PC14
 
+/* ======== BUZZER ======== */
+#define USE_BEEPER
+#define BEEPER_INVERTED
+
 /* ======== UART ======== */
 #define USE_UART
 #define USE_VCP
@@ -62,15 +66,14 @@
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_ACC_SPI_ICM42688P
-#define USE_GYRO_SPI_ICM42688P
+#define USE_ACCGYRO_BMI270
 
 #define GYRO_1_EXTI_PIN                 PB6
 
 #define GYRO_1_CS_PIN                   PA4
 #define GYRO_1_SPI_INSTANCE             SPI1
 
-#define GYRO_1_ALIGN                    CW270_DEG
+#define GYRO_1_ALIGN                    CW180_DEG
 
 /* ======== OSD ======== */
 #define USE_MAX7456
