@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "Beebrain BL V5 HD ELRS Rev_B"
-#define USBD_PRODUCT_STRING             "Beebrain BL V5 HD ELRS G4"
+#define USBD_PRODUCT_STRING             "Acrobee 75 HD O3"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -116,6 +116,9 @@
 
 #define FLASH_CS_PIN                    PB6
 #define FLASH_SPI_INSTANCE              SPI1
+
+/* ======== VTX ======== */
+#define MSP_DISPLAYPORT_UART            SERIAL_PORT_USART1
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
