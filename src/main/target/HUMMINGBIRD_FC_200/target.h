@@ -48,7 +48,7 @@
 
 #define USE_UART3
 #define UART3_RX_PIN                    PB11
-#define UART3_TX_PIN                    PB10
+// #define UART3_TX_PIN                    PB10
 
 #define USE_UART6
 #define UART6_RX_PIN                    PA5
@@ -60,8 +60,8 @@
 #define USE_I2C
 #define USE_I2C_DEVICE_2
 
-#define I2C2_SCL_PIN         PH3
-#define I2C2_SDA_PIN         PB11
+#define I2C2_SCL_PIN                    PH2
+#define I2C2_SDA_PIN                    PH3
 
 /* ======== SPI ======== */
 #define USE_SPI
@@ -89,8 +89,8 @@
 #define USE_GYRO_SPI_ICM42688P
 
 #define GYRO_1_EXTI_PIN                 PC13
-#define GYRO_1_CS_PIN                   PB12
-#define GYRO_1_SPI_INSTANCE             SPI2
+#define GYRO_1_CS_PIN                   PA15
+#define GYRO_1_SPI_INSTANCE             SPI1
 
 #define GYRO_1_ALIGN                    CW90_DEG
 
@@ -106,20 +106,13 @@
 #define USE_FLASH_M25P16
 #define DEFAULT_BLACKBOX_DEVICE         BLACKBOX_DEVICE_FLASH
 
-#define FLASH_CS_PIN                    PA15
-#define FLASH_SPI_INSTANCE              SPI1
+#define FLASH_CS_PIN                    PB12
+#define FLASH_SPI_INSTANCE              SPI2
 
-/* ======== VTX ======== */
-// #define USE_VTX_RTC6705
-
-// #define RTC6705_CS_PIN                  PA14
-// #define RTC6705_SPI_INSTANCE            SPI2
-
-// #define RTC6705_EX_POWER_1_PIN          PC15 // External VTx Power LSB
-// #define RTC6705_EX_POWER_2_PIN          PA5  // External VTx Power MSB
-
-// #define RTC6705_DYNAMIC_POWER_CTRL // For External VTx Power Controller
-// #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+// USERS
+#define PINIO1_PIN                      PC15
+#define PINIO1_BOX 40
+#define PINIO1_CONFIG 129
 
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
@@ -129,7 +122,7 @@
 /* ======== ADC ======== */
 #define USE_ADC
 #define ADC_INSTANCE                    ADC1
-#define ADC1_DMA_OPT                    0
+#define ADC1_DMA_OPT                    12
 
 #define ADC_VBAT_PIN                    PA6
 #define ADC_CURR_PIN                    PA7
@@ -137,8 +130,8 @@
 #define VBAT_SCALE_DEFAULT              110
 #define CURRENT_METER_SCALE_DEFAULT     410
 
-#define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
+#define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 
 /* ======== PINBOX ======== */
 // #define USE_BRUSHED_FLIPOVERAFTERCRASH
@@ -146,16 +139,13 @@
 
 /* ======== ESC ======== */
 #define MOTOR1_PIN                      PA8
-#define MOTOR2_PIN                      PB2
+#define MOTOR2_PIN                      PB10
 #define MOTOR3_PIN                      PA0
 #define MOTOR4_PIN                      PA1
 
 #undef USE_DSHOT_DMAR
 #define USE_DSHOT_BITBAND
 #define USE_DSHOT_TELEMETRY
-// #define USE_ESCSERIAL
-
-// #define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
 
 #define TIMER_PIN_MAPPING \
     TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5) 
@@ -178,3 +168,5 @@
 #define TARGET_IO_PORTH                 0xffff
 
 #define FLASH_PAGE_SIZE                 ((uint32_t)0x0800) // 2K sectors
+
+#define USE_TARGET_CONFIG
