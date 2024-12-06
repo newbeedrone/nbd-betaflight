@@ -20,10 +20,13 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird AT FC 200"
-#define USBD_PRODUCT_STRING             "HummingBird AT FC 200"
+#define TARGET_BOARD_IDENTIFIER         "HummingBird V4.1"
+#define USBD_PRODUCT_STRING             "HummingBird V4 RS"
 
 /* ======== LED ======== */
+#define USE_LED_STRIP
+#define USE_LED_STRIP_STATUS_MODE
+#define LED_STRIP_PIN                   PH2
 
 #define LED0_PIN                        PA9
 /* ======== UART ======== */
@@ -33,11 +36,24 @@
 #define UART2_RX_PIN                    PA3
 #define UART2_TX_PIN                    PA2
 
-#define SERIAL_PORT_COUNT               2
+#define USE_UART4
+#define UART4_RX_PIN                    PA1
+#define UART4_TX_PIN                    PA0
+
+#define USE_UART5
+#define UART5_RX_PIN                    PB8
+#define UART5_TX_PIN                    PB9
+
+#define SERIAL_PORT_COUNT               4
 
 /* ======== SPI ======== */
 #define USE_SPI
 #define USE_SPI_DMA_ENABLE_LATE
+
+#define USE_SPI_DEVICE_1
+#define SPI1_SCK_PIN                    PB3
+#define SPI1_SDI_PIN                    PB4
+#define SPI1_SDO_PIN                    PB5
 
 #define USE_SPI_DEVICE_2
 #define SPI2_SCK_PIN                    PB13
@@ -56,9 +72,42 @@
 
 #define GYRO_1_ALIGN                    CW90_DEG
 
-/* ======== PINBOX ======== */
-// #define USE_BRUSHED_FLIPOVERAFTERCRASH
-// #define BRUSHED_REVERSE_PIN             PC15
+/* ======== VTX ======== */
+#define USE_VTX_RTC6705
+
+#define RTC6705_CS_PIN                  PC15
+#define RTC6705_SPI_INSTANCE            SPI1
+
+#define RTC6705_EX_POWER_1_PIN          PC13 // External VTx Power LSB
+#define RTC6705_EX_POWER_2_PIN          PC14  // External VTx Power MSB
+
+#define RTC6705_DYNAMIC_POWER_CTRL // For External VTx Power Controller
+#define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
+
+/* ======== OSD ======== */
+#define USE_MAX7456
+
+#define MAX7456_SPI_CS_PIN              PA4
+#define MAX7456_SPI_INSTANCE            SPI1
+
+/* ======== RX ======== */
+#define SERIALRX_UART                   SERIAL_PORT_UART4
+#define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
+#define SERIALRX_PROVIDER               SERIALRX_CRSF
+
+/* ======== ADC ======== */
+#define USE_ADC
+#define ADC_INSTANCE                    ADC1
+#define ADC1_DMA_OPT                    0
+
+#define ADC_VBAT_PIN                    PB0
+#define ADC_CURR_PIN                    PB1
+
+#define VBAT_SCALE_DEFAULT              110
+#define CURRENT_METER_SCALE_DEFAULT     410
+
+#define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
+#define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 
 /* ======== ESC ======== */
 #define MOTOR1_PIN                      PB10
@@ -69,9 +118,9 @@
 #undef USE_DSHOT_DMAR
 #define USE_DSHOT_BITBAND
 #define USE_DSHOT_TELEMETRY
-// #define USE_ESCSERIAL
 
-// #define DEFAULT_MOTOR_DSHOT_SPEED       PWM_TYPE_DSHOT300
+#define TIMER_PIN_MAPPING \
+    TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5) 
 /* ======== System ======== */
 #undef USE_TRANSPONDER
 #undef USE_RX_PPM
@@ -91,3 +140,5 @@
 #define TARGET_IO_PORTH                 0xffff
 
 #define FLASH_PAGE_SIZE                 ((uint32_t)0x0800) // 2K sectors
+
+#define USE_TARGET_CONFIG

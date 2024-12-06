@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "Beebrain BL V5 HD ELRS Rev_B"
+#define TARGET_BOARD_IDENTIFIER         "Beebrain G4 HD V2 ELRS"
 #define USBD_PRODUCT_STRING             "Acrobee 75 HD O3"
 
 /* ======== LED ======== */
@@ -99,8 +99,12 @@
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
-#define USE_GYRO_SPI_MPU6000
-#define USE_ACC_SPI_MPU6000
+
+#define USE_ACC_SPI_MPU6000 // For MPU6000 variation
+#define USE_GYRO_SPI_MPU6000 // For MPU6000 variation
+
+#define USE_ACC_SPI_ICM42688P // For ICM42688P variation
+#define USE_GYRO_SPI_ICM42688P // For ICM42688P variation
 
 #define GYRO_1_EXTI_PIN                 PC14
 #define GYRO_1_CS_PIN                   PB12
