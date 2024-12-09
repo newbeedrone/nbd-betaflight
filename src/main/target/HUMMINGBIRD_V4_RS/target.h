@@ -21,14 +21,14 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "HummingBird V4.1"
-#define USBD_PRODUCT_STRING             "HummingBird V4 RS"
+#define USBD_PRODUCT_STRING             "HMB V4.1 RS"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
 #define USE_LED_STRIP_STATUS_MODE
 #define LED_STRIP_PIN                   PH2
-
 #define LED0_PIN                        PA9
+
 /* ======== UART ======== */
 #define USE_VCP
 
@@ -51,9 +51,9 @@
 #define USE_SPI_DMA_ENABLE_LATE
 
 #define USE_SPI_DEVICE_1
-#define SPI1_SCK_PIN                    PB3
-#define SPI1_SDI_PIN                    PB4
-#define SPI1_SDO_PIN                    PB5
+#define SPI1_SCK_PIN                    PA5
+#define SPI1_SDI_PIN                    PA6
+#define SPI1_SDO_PIN                    PA7
 
 #define USE_SPI_DEVICE_2
 #define SPI2_SCK_PIN                    PB13
@@ -104,8 +104,8 @@
 #define ADC_CURR_PIN                    PB1
 
 #define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     410
-
+#define DEFAULT_CURRENT_METER_SCALE     680
+#define DEFAULT_CURRENT_METER_OFFSET    120
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 

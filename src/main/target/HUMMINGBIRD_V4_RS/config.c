@@ -85,6 +85,9 @@ void targetConfiguration(void) {
     /* Configuration -> Other Features */
     featureConfigMutable()->enabledFeatures |= (FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_OSD | FEATURE_CHANNEL_FORWARDING);
 
+    /* Configuration -> Dshot Beacon Configuration */
+    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_SET;
+    
     /* PID Frequency */
     pidConfigMutable()->pid_process_denom=2;
 
@@ -171,6 +174,11 @@ void targetConfiguration(void) {
 
     /* Motors */
     motorConfigMutable()->minthrottle  = 1030;
+
+    /* Power & Battery */
+    batteryConfigMutable()->vbatmincellvoltage = 330;
+    batteryConfigMutable()->vbatwarningcellvoltage = 350;
+    batteryConfigMutable()->vbatmaxcellvoltage  = 440;
 
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);
