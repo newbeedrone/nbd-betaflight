@@ -85,6 +85,7 @@ void targetConfiguration(void) {
     /* Configuration -> Other Features */
     featureConfigMutable()->enabledFeatures |= (FEATURE_RX_SPI);
     featureConfigMutable()->enabledFeatures &= ~(FEATURE_RX_SERIAL);
+
     /* PID Frequency */
     pidConfigMutable()->pid_process_denom=2;
 
@@ -175,6 +176,14 @@ void targetConfiguration(void) {
     /* Motors */
     motorConfigMutable()->minthrottle  = 1030;
 
+    /* Power & Battery */
+    batteryConfigMutable()->vbatmincellvoltage = 330;
+    batteryConfigMutable()->vbatwarningcellvoltage = 350;
+    batteryConfigMutable()->vbatmaxcellvoltage  = 440;
+
+    /* Configuration -> Arming */
+    imuConfigMutable()->small_angle = 180;
+
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);
     osdWarnSetState(OSD_WARNING_VISUAL_BEEPER, false);
@@ -199,15 +208,20 @@ void targetConfiguration(void) {
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "BeeBrain Brushed");
+    strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
     /* Configuration -> Ws2811strip */
     ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9, 7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
 
+    /* rate */
+    controlRateProfilesMutable(0)->rates[FD_ROLL] = 68;
+    controlRateProfilesMutable(0)->rates[FD_PITCH] = 68;
+    controlRateProfilesMutable(0)->rates[FD_YAW] =68;
+    
     /* PID Tuning */
-    pidProfilesMutable(0)->vbat_sag_compensation = 0;
+    pidProfilesMutable(0)->vbat_sag_compensation = 60;
     pidProfilesMutable(0)->pid[PID_PITCH].P = 42;
     pidProfilesMutable(0)->pid[PID_PITCH].I = 22;
     pidProfilesMutable(0)->pid[PID_PITCH].D = 55;
@@ -222,9 +236,9 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->d_min[FD_ROLL] = 54;
     pidProfilesMutable(0)->d_min[FD_PITCH] = 55;
     pidProfilesMutable(0)->thrustLinearization = 0;
-    pidProfilesMutable(0)->simplified_pids_mode = PID_SIMPLIFIED_TUNING_RPY;
+    pidProfilesMutable(0)->simplified_pids_mode = PID_SIMPLIFIED_TUNING_OFF;
     pidProfilesMutable(0)->simplified_master_multiplier = 100;
-    pidProfilesMutable(0)->simplified_dmin_ratio = 0;   //
+    pidProfilesMutable(0)->simplified_dmin_ratio = 0;   
     pidProfilesMutable(0)->simplified_feedforward_gain = 100;
     pidProfilesMutable(0)->simplified_pitch_pi_gain = 100;
 }

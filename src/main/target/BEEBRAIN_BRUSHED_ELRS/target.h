@@ -21,8 +21,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "BeeBrain Pro ELRS"
-#define USBD_PRODUCT_STRING             "BeeBrain Pro ELRS"
+#define TARGET_BOARD_IDENTIFIER         "BeeBrain BRUSHED ELRS"
+#define USBD_PRODUCT_STRING             "BeeBrain BRUSHED"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -148,7 +148,7 @@
 #define BRUSHED_FLIPOVERAFTERCRASH_LOW_ACTIVE 
 
 #define USE_MOTOR_CURRENT_LITMIT
-#define CURRENT_LITMIT_AMPERAGE         9.5   
+#define CURRENT_LITMIT_AMPERAGE         16
 
 #undef USE_LATE_TASK_STATISTICS
 /* ======== System ======== */
