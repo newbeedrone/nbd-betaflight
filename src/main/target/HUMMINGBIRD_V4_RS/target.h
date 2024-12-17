@@ -29,6 +29,10 @@
 #define LED_STRIP_PIN                   PH2
 #define LED0_PIN                        PA9
 
+/* ======== BUZZER ======== */
+#define USE_BEEPER
+#define BEEPER_INVERTED
+
 /* ======== UART ======== */
 #define USE_VCP
 
@@ -78,8 +82,8 @@
 #define RTC6705_CS_PIN                  PC15
 #define RTC6705_SPI_INSTANCE            SPI1
 
-#define RTC6705_EX_POWER_1_PIN          PC13 // External VTx Power LSB
-#define RTC6705_EX_POWER_2_PIN          PC14  // External VTx Power MSB
+#define RTC6705_EX_POWER_1_PIN          PC14  // External VTx Power LSB
+#define RTC6705_EX_POWER_2_PIN          PC13  // External VTx Power MSB
 
 #define RTC6705_DYNAMIC_POWER_CTRL // For External VTx Power Controller
 #define CMS_SKIP_EMPTY_VTX_TABLE_ENTRIES
