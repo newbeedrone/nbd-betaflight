@@ -297,7 +297,7 @@ void adcInit(const adcConfig_t *config)
 
         adcOperatingConfig[i].adcDevice = dev;
         adcOperatingConfig[i].adcChannel = adcTagMap[map].channel;
-        adcOperatingConfig[i].sampleTime = ADC_SAMPLETIME_92_5;
+        adcOperatingConfig[i].sampleTime = ADC_SAMPLETIME_640_5;
         adcOperatingConfig[i].enabled = true;
 
         nChannelsUsed[dev] += 1;    // increase the active channel count for this device
@@ -347,7 +347,7 @@ void adcInit(const adcConfig_t *config)
         adcInitDevice(adc->ADCx, nChannelsUsed[dev]);
 
         // Set the oversampling ratio and matching shift
-        adc_oversample_ratio_shift_set(adc->ADCx, ADC_OVERSAMPLE_RATIO_64, ADC_OVERSAMPLE_SHIFT_6);
+        adc_oversample_ratio_shift_set(adc->ADCx, ADC_OVERSAMPLE_RATIO_256, ADC_OVERSAMPLE_SHIFT_8);
 
 
         #ifdef USE_DMA_SPEC
