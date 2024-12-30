@@ -141,12 +141,20 @@ void targetConfiguration(void) {
     dynNotchConfigMutable()->dyn_notch_q = 500;
 
     /* Motors */
-    motorConfigMutable()->digitalIdleOffsetValue = 800;
+    motorConfigMutable()->digitalIdleOffsetValue = 1000;
     motorConfigMutable()->dev.useBurstDshot = DSHOT_DMAR_ON;
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
-
+    motorConfigMutable()->dev.motorOutputReordering[0] = 2;
+    motorConfigMutable()->dev.motorOutputReordering[1] = 3;
+    motorConfigMutable()->dev.motorOutputReordering[2] = 0;
+    motorConfigMutable()->dev.motorOutputReordering[3] = 1;
+    motorConfigMutable()->dev.motorOutputReordering[4] = 4;
+    motorConfigMutable()->dev.motorOutputReordering[5] = 5;
+    motorConfigMutable()->dev.motorOutputReordering[6] = 6;
+    motorConfigMutable()->dev.motorOutputReordering[7] = 7;
+    
     /* Power & Battery */
     batteryConfigMutable()->vbatmincellvoltage = 330;
     batteryConfigMutable()->vbatwarningcellvoltage = 350;
@@ -168,7 +176,6 @@ void targetConfiguration(void) {
     osdElementConfigMutable()->item_pos[OSD_FLYMODE]            = OSD_PROFILE_1_FLAG | OSD_POS(25,16);
     osdElementConfigMutable()->item_pos[OSD_CURRENT_DRAW]       = OSD_PROFILE_1_FLAG | OSD_POS(46,17);
     osdElementConfigMutable()->item_pos[OSD_CRAFT_NAME]         = OSD_PROFILE_1_FLAG | OSD_POS(18,17);
-    osdElementConfigMutable()->item_pos[OSD_GPS_SATS]           = OSD_PROFILE_1_FLAG | OSD_POS(1, 15);
     osdElementConfigMutable()->item_pos[OSD_WARNINGS]           = OSD_PROFILE_1_FLAG | OSD_POS(21, 9);
 
     /* CPU Frequency */
@@ -184,27 +191,38 @@ void targetConfiguration(void) {
     strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
     /* PID Tuning */
-    // pidProfilesMutable(0)->pid[PID_PITCH].P = 111;
-    // pidProfilesMutable(0)->pid[PID_PITCH].I = 169;
-    // pidProfilesMutable(0)->pid[PID_PITCH].D = 159;
-    // pidProfilesMutable(0)->pid[PID_PITCH].F = 74;
-    // pidProfilesMutable(0)->pid[PID_ROLL].P = 76;
-    // pidProfilesMutable(0)->pid[PID_ROLL].I = 115;
-    // pidProfilesMutable(0)->pid[PID_ROLL].D = 116;
-    // pidProfilesMutable(0)->pid[PID_ROLL].F = 50;
-    // pidProfilesMutable(0)->pid[PID_YAW].P = 130;
-    // pidProfilesMutable(0)->pid[PID_YAW].I = 60;
-    // pidProfilesMutable(0)->pid[PID_YAW].F = 0;
-    // pidProfilesMutable(0)->pid[PID_LEVEL].I = 50;
-    // pidProfilesMutable(0)->d_min[FD_ROLL] = 96;
-    // pidProfilesMutable(0)->d_min[FD_PITCH] = 131;
-    // pidProfilesMutable(0)->simplified_pids_mode = PID_SIMPLIFIED_TUNING_RP;
-    // pidProfilesMutable(0)->simplified_master_multiplier = 170;
-    // pidProfilesMutable(0)->simplified_i_gain = 85;
-    // pidProfilesMutable(0)->simplified_d_gain = 190;
-    // pidProfilesMutable(0)->simplified_dmin_ratio = 60;
-    // pidProfilesMutable(0)->simplified_feedforward_gain = 25;
-    // pidProfilesMutable(0)->simplified_roll_pitch_ratio = 120;
-    // pidProfilesMutable(0)->simplified_pitch_pi_gain = 140;
+    gyroConfigMutable()->gyro_lpf1_static_hz = 0;
+    gyroConfigMutable()->gyro_lpf1_dyn_min_hz = 0;
+    rpmFilterConfigMutable()->rpm_filter_harmonics = 3;
+    rpmFilterConfigMutable()->rpm_filter_weights[0] = 100;
+    rpmFilterConfigMutable()->rpm_filter_weights[1] = 20;
+    rpmFilterConfigMutable()->rpm_filter_weights[2] = 100;
+    rpmFilterConfigMutable()->rpm_filter_fade_range_hz = 150;    
+    pidProfilesMutable(0)->vbat_sag_compensation = 100;
+    pidProfilesMutable(0)->iterm_relax_cutoff  = 45;
+    pidProfilesMutable(0)->pid[PID_PITCH].P = 105;
+    pidProfilesMutable(0)->pid[PID_PITCH].I = 189;
+    pidProfilesMutable(0)->pid[PID_PITCH].D = 57;
+    pidProfilesMutable(0)->pid[PID_PITCH].F = 73;
+    pidProfilesMutable(0)->pid[PID_ROLL].P = 72;
+    pidProfilesMutable(0)->pid[PID_ROLL].I = 128;
+    pidProfilesMutable(0)->pid[PID_ROLL].D = 46;
+    pidProfilesMutable(0)->pid[PID_ROLL].F = 50;
+    pidProfilesMutable(0)->pid[PID_YAW].P = 72;
+    pidProfilesMutable(0)->pid[PID_YAW].I = 128;
+    pidProfilesMutable(0)->pid[PID_YAW].F = 50;
+    pidProfilesMutable(0)->d_min[FD_ROLL] = 46;
+    pidProfilesMutable(0)->d_min[FD_PITCH] = 57;
+    pidProfilesMutable(0)->thrustLinearization = 20;
+    pidProfilesMutable(0)->feedforward_averaging = FEEDFORWARD_AVERAGING_2_POINT;
+    pidProfilesMutable(0)->feedforward_smooth_factor = 65;
+    pidProfilesMutable(0)->feedforward_jitter_factor = 10;
+    pidProfilesMutable(0)->simplified_master_multiplier = 140;
+    pidProfilesMutable(0)->simplified_d_gain = 110;
+    pidProfilesMutable(0)->simplified_pi_gain = 115;
+    pidProfilesMutable(0)->simplified_dmin_ratio = 0;
+    pidProfilesMutable(0)->simplified_feedforward_gain = 30;
+    pidProfilesMutable(0)->simplified_roll_pitch_ratio = 110;
+    pidProfilesMutable(0)->simplified_pitch_pi_gain  = 140;
 }
 #endif /* USE_TARGET_CONFIG */

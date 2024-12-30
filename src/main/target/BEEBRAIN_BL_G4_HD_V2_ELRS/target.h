@@ -21,7 +21,7 @@
 #pragma once
 
 #define TARGET_BOARD_IDENTIFIER         "Beebrain G4 HD V2 ELRS"
-#define USBD_PRODUCT_STRING             "Acrobee 75 HD O3"
+#define USBD_PRODUCT_STRING             "AcroBee75 HD O4"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -110,7 +110,7 @@
 #define GYRO_1_CS_PIN                   PB12
 #define GYRO_1_SPI_INSTANCE             SPI2
 
-#define GYRO_1_ALIGN                    CW90_DEG
+#define GYRO_1_ALIGN                    CW90_DEG_FLIP
 
 /* ======== FLASH ======== */
 #define USE_FLASH
