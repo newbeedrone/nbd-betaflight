@@ -125,66 +125,6 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(3)->range.startStep = CHANNEL_VALUE_TO_STEP(1700);
     modeActivationConditionsMutable(3)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
-    /* Video Transmitter -> VTX Table */
-#define _USER_VTX_TABLE_MAX_BANDS           6
-#define _USER_VTX_TABLE_MAX_CHANNELS        8
-#define _USER_VTX_TABLE_MAX_POWER_LEVELS    3
-
-    uint16_t vtxTableFrequency[_USER_VTX_TABLE_MAX_BANDS][_USER_VTX_TABLE_MAX_CHANNELS] = {
-        { 5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725 }, // Boscam A
-        { 5733, 5752, 5771, 5790, 5809, 5828, 5847, 5866 }, // Boscam B
-        { 5705, 5685, 5665,    0, 5885, 5905,    0,    0 }, // Boscam E
-        { 5740, 5760, 5780, 5800, 5820, 5840, 5860, 5880 }, // FatShark
-        { 5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917 }, // RaceBand
-        { 5732, 5765, 5828, 5840, 5866, 5740,    0,    0 }, // IMD6
-    };
-
-    const char *vtxTableBandNames[_USER_VTX_TABLE_MAX_BANDS + 1] = {
-        "BOSCAM A",
-        "BOSCAM B",
-        "BOSCAM E",
-        "FATSHARK",
-        "RACEBAND",
-        "IMD6    ",
-    };
-
-    char vtxTableBandLetters[_USER_VTX_TABLE_MAX_BANDS + 1] = {
-        "ABEFRI",
-    };
-
-    const char *vtxTableChannelNames[_USER_VTX_TABLE_MAX_CHANNELS + 1] = {
-        "1", "2", "3", "4", "5", "6", "7", "8",
-    };
-
-    const char *rtc6705PowerNames[_USER_VTX_TABLE_MAX_POWER_LEVELS + 1] = {
-        "25 ", "100", "MAX",
-    };
-
-    vtxTableConfigMutable()->bands = _USER_VTX_TABLE_MAX_BANDS;
-    vtxTableConfigMutable()->channels = _USER_VTX_TABLE_MAX_CHANNELS;
-    vtxTableConfigMutable()->powerLevels = _USER_VTX_TABLE_MAX_POWER_LEVELS;
-
-    for (uint8_t i = 0; i < _USER_VTX_TABLE_MAX_BANDS; i++) {
-        for (uint8_t j = 0; j < _USER_VTX_TABLE_MAX_CHANNELS; j++) {
-            vtxTableConfigMutable()->frequency[i][j] = vtxTableFrequency[i][j];
-        }
-    }
-    for (uint8_t i = 0; i < _USER_VTX_TABLE_MAX_BANDS; i++) {
-        strcpy(vtxTableConfigMutable()->bandNames[i], vtxTableBandNames[i]);
-        vtxTableConfigMutable()->bandLetters[i] = vtxTableBandLetters[i];
-    }
-    for (uint8_t i = 0; i < _USER_VTX_TABLE_MAX_CHANNELS; i++) {
-        strcpy(vtxTableConfigMutable()->channelNames[i], vtxTableChannelNames[i]);
-    }
-    for (uint8_t i = 0; i < _USER_VTX_TABLE_MAX_POWER_LEVELS; i++) {
-        vtxTableConfigMutable()->powerValues[i] = i;
-        strcpy(vtxTableConfigMutable()->powerLabels[i], rtc6705PowerNames[i]);
-    }
-
-#undef _USER_VTX_TABLE_MAX_BANDS
-#undef _USER_VTX_TABLE_MAX_CHANNELS
-#undef _USER_VTX_TABLE_MAX_POWER_LEVELS
-
     /* Motors */
     motorConfigMutable()->minthrottle = 1030;
 
@@ -201,10 +141,10 @@ void targetConfiguration(void) {
     osdElementConfigMutable()->item_pos[OSD_CRAFT_NAME]         = OSD_PROFILE_1_FLAG | OSD_POS(8 ,11);
     osdElementConfigMutable()->item_pos[OSD_WARNINGS]           = OSD_PROFILE_1_FLAG | OSD_PROFILE_FLAG(2) | OSD_PROFILE_FLAG(3) | OSD_POS(9, 6);
 
-    /* Video Transmitter -> Select Mode */
-    vtxSettingsConfigMutable()->band = 4;
-    vtxSettingsConfigMutable()->channel = 4;
-    vtxSettingsConfigMutable()->power = 1;
+    osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_AUTO;
+
+    /* OSD -> Video Format */
+    vcdProfileMutable()->video_system = VIDEO_SYSTEM_AUTO;
 
     /* Configuration -> Personalization */
     strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
