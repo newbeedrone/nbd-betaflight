@@ -48,7 +48,6 @@
 
 #define USE_UART3
 #define UART3_RX_PIN                    PB11
-// #define UART3_TX_PIN                    PB10
 
 #define USE_UART6
 #define UART6_RX_PIN                    PA5
@@ -58,27 +57,11 @@
 
 /* ======== I2C ======== */
 #define USE_I2C
+
 #define USE_I2C_DEVICE_2
-#define I2C_FULL_RECONFIGURABILITY
-#define BARO_BUSTYPE                   BUS_TYPE_I2C
-#define MAG_BUSTYPE                    BUS_TYPE_I2C
-
-#define USE_MAG
-#define USE_BARO
-#undef USE_BARO_SPI_MS5611
-#undef USE_BARO_SPI_BMP280
-#undef USE_BARO_SPI_BMP388
-#undef USE_BARO_SPI_LPS
-#undef USE_BARO_SPI_QMP6988
-#undef USE_BARO_SPI_DPS310
-#undef USE_BARO_SPI_2SMBP_02B
-#undef USE_BARO_SPI_LPS22DF
-
-#define MAG_I2C_INSTANCE              (I2CDEV_2)
-#define BARO_I2C_INSTANCE             (I2CDEV_2)
-
 #define I2C2_SCL_PIN                    PH2
 #define I2C2_SDA_PIN                    PH3
+
 /* ======== SPI ======== */
 #define USE_SPI
 #define USE_SPI_DMA_ENABLE_LATE
@@ -125,18 +108,26 @@
 #define FLASH_CS_PIN                    PB12
 #define FLASH_SPI_INSTANCE              SPI2
 
-// USERS
-#define PINIO1_PIN                      PC15
-#define PINIO1_BOX 40
-#define PINIO1_CONFIG 129
-
 /* ======== RX ======== */
 #define SERIALRX_UART                   SERIAL_PORT_USART2
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_CRSF
 
+/* ======== BARO ======== */
+#define USE_BARO
+
+#define BARO_I2C_INSTANCE               (I2CDEV_2)
+#define BARO_BUSTYPE                    BUS_TYPE_I2C
+
+/* ======== MAG ======== */
+#define USE_MAG
+
+#define MAG_I2C_INSTANCE                (I2CDEV_2)
+#define MAG_BUSTYPE                     BUS_TYPE_I2C
+
 /* ======== ADC ======== */
 #define USE_ADC
+
 #define ADC_INSTANCE                    ADC1
 #define ADC1_DMA_OPT                    12
 
@@ -150,8 +141,9 @@
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 
 /* ======== PINBOX ======== */
-// #define USE_BRUSHED_FLIPOVERAFTERCRASH
-// #define BRUSHED_REVERSE_PIN             PC15
+#define PINIO1_BOX                      40
+#define PINIO1_PIN                      PC15
+#define PINIO1_CONFIG                   (PINIO_CONFIG_MODE_OUT_PP | PINIO_CONFIG_OUT_INVERTED)
 
 /* ======== ESC ======== */
 #define MOTOR1_PIN                      PA8
@@ -164,8 +156,10 @@
 #define USE_DSHOT_TELEMETRY
 
 #define TIMER_PIN_MAPPING \
-    TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5) 
+    TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5)
+
 /* ======== System ======== */
+#define USE_EXTI
 #undef USE_TRANSPONDER
 #undef USE_RX_PPM
 #undef USE_RX_PWM
@@ -174,8 +168,6 @@
 #undef USE_RX_EXPRESSLRS
 // #undef USE_SERIAL_4WAY_BLHELI_BOOTLOADER
 #undef USE_SERIAL_4WAY_SK_BOOTLOADER
-#define USE_EXTI
-// #define USE_PID_DENOM_CHECK
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff

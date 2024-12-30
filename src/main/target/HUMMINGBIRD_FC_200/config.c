@@ -1,3 +1,23 @@
+/*
+ * This file is part of Cleanflight and Betaflight.
+ *
+ * Cleanflight and Betaflight are free software. You can redistribute
+ * this software and/or modify this software under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Cleanflight and Betaflight are distributed in the hope that they
+ * will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.
+ *
+ * If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -76,14 +96,10 @@
 #include "sensors/compass.h"
 #include "sensors/gyro.h"
 
-
-#include "drivers/light_ws2811strip.h"
-#include "drivers/dshot.h"
-
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_OSD | FEATURE_CHANNEL_FORWARDING);
+    featureConfigMutable()->enabledFeatures |= ( FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_OSD | FEATURE_CHANNEL_FORWARDING );
 
     /* PID Frequency */
     pidConfigMutable()->pid_process_denom=2;
@@ -170,7 +186,7 @@ void targetConfiguration(void) {
 #undef _USER_VTX_TABLE_MAX_POWER_LEVELS
 
     /* Motors */
-    motorConfigMutable()->minthrottle  = 1030;
+    motorConfigMutable()->minthrottle = 1030;
 
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);
@@ -185,44 +201,18 @@ void targetConfiguration(void) {
     osdElementConfigMutable()->item_pos[OSD_CRAFT_NAME]         = OSD_PROFILE_1_FLAG | OSD_POS(8 ,11);
     osdElementConfigMutable()->item_pos[OSD_WARNINGS]           = OSD_PROFILE_1_FLAG | OSD_PROFILE_FLAG(2) | OSD_PROFILE_FLAG(3) | OSD_POS(9, 6);
 
-    osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_AUTO;
-
     /* Video Transmitter -> Select Mode */
     vtxSettingsConfigMutable()->band = 4;
     vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;
 
-    /* OSD -> Video Format */
-    vcdProfileMutable()->video_system = VIDEO_SYSTEM_AUTO;
-
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "AT FC 200");
+    strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
-    /* Configuration -> Ws2811strip */
+    /* Configuration -> LED Strip */
     ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
     ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9, 7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-
-    /* PID Tuning */
-    // pidProfilesMutable(0)->vbat_sag_compensation = 0;
-    // pidProfilesMutable(0)->pid[PID_PITCH].P = 42;
-    // pidProfilesMutable(0)->pid[PID_PITCH].I = 22;
-    // pidProfilesMutable(0)->pid[PID_PITCH].D = 55;
-    // pidProfilesMutable(0)->pid[PID_PITCH].F = 22;
-    // pidProfilesMutable(0)->pid[PID_ROLL].P = 40;
-    // pidProfilesMutable(0)->pid[PID_ROLL].I = 21;
-    // pidProfilesMutable(0)->pid[PID_ROLL].D = 54;
-    // pidProfilesMutable(0)->pid[PID_ROLL].F = 22;
-    // pidProfilesMutable(0)->pid[PID_YAW].P = 60;
-    // pidProfilesMutable(0)->pid[PID_YAW].I = 30;
-    // pidProfilesMutable(0)->pid[PID_YAW].F = 0;
-    // pidProfilesMutable(0)->d_min[FD_ROLL] = 54;
-    // pidProfilesMutable(0)->d_min[FD_PITCH] = 55;
-    // pidProfilesMutable(0)->thrustLinearization = 0;
-    // pidProfilesMutable(0)->simplified_pids_mode = PID_SIMPLIFIED_TUNING_RPY;
-    // pidProfilesMutable(0)->simplified_master_multiplier = 100;
-    // pidProfilesMutable(0)->simplified_dmin_ratio = 0;   //
-    // pidProfilesMutable(0)->simplified_feedforward_gain = 100;
-    // pidProfilesMutable(0)->simplified_pitch_pi_gain = 100;
 }
-#endif
+
+#endif /* USE_TARGET_CONFIG */
