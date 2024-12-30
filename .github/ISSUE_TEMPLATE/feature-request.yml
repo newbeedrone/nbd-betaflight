@@ -1,36 +1,33 @@
-name: Feature Request
-description: Suggest an idea for for a new feature for Betaflight.
+name: 功能工单
+description: 提供一个功能请求工单，以便添加新功能。
 labels: ["Template: Feature Request"]
 body:
 
   - type: markdown
     attributes:
       value: |
-        **Please note that feature requests are not 'fire and forget'.**
-        It is a lot more likely that the feature you would like to have will be implemented if you keep watching your feature request, and provide more details to developers looking into implementing your feature, and help them with testing.
+        功能工单需要时间进行评估和开发。请确保你的功能请求是有意义的，并且符合项目的目标。
 
   - type: textarea
     attributes:
-      label: Is your feature request related to a problem? Please describe
-      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...].
+      label: 提交的功能将会解决什么问题？请描述。
+      description: 简单描述你所需的功能。
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: Describe the solution you'd like
-      description: A clear and concise description of what you want to happen.
+      label: 描述你想要实现的功能
+      description: 简单描述你想要实现的功能。
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: Describe alternatives you've considered
-      description: A clear and concise description of any alternative solutions or features you've considered.
-    validations:
-      required: true
+      label: 描述你所考虑的任何替代解决方案或功能
+      description: 简单描述你所考虑的任何替代解决方案或功能。
 
   - type: textarea
     attributes:
-      label: Other information
-      description: Add any other context or screenshots about the feature request that you think might be relevant here.
+      label: 其他信息
+      description: 添加任何其他信息或屏幕截图。

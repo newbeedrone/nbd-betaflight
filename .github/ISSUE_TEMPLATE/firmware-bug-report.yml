@@ -1,83 +1,67 @@
-name: Firmware Bug Report
-description: Create a report to help us fix bugs in the Betaflight firmware.
+name: 错误工单
+description: 创建一个错误描述工单用于修复固件。
 labels: ["Template: Bug"]
 body:
 
   - type: markdown
     attributes:
       value: |
-        # Please fill all the fields with the required information
+        # 请填写所有必须的字段
 
   - type: textarea
     attributes:
-      label: Describe the bug
-      description: A clear and concise description of what the bug is.
+      label: BUG描述
+      description: 请描述BUG的现象。
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: To Reproduce
-      description: Steps to reproduce the behavior.
-    validations:
-      required: true
-
-  - type: textarea
-    attributes:
-      label: Expected behavior
-      description: A clear and concise description of what you expected to happen.
+      label: 复现步骤
+      description: 请描述如何复现BUG。
     validations:
       required: true
 
   - type: markdown
     attributes:
       value: |
-        # Flight controller configuration
+        # 设置/版本信息
 
-  - type: textarea
+  - type: input
     attributes:
-      label: Support ID
-      description: |
-
-        If missing any drivers for GYRO, ACC, MAG, BARO, FLASH or OSD it's required to flash a `Core Only` build for your board.
-
-        Go to CLI tab and use the `Submit Support Data` button to get an `Support ID`. Please post the `Support ID` here.
-
-        Don't add three backticks or any other format symbol at the start or end of the block, they will be added automatically.
-
+      label: 飞控型号
+      description: 填写飞控型号。
       placeholder: |
-          # PASTE HERE THE OUTPUT OF `Support ID` IN THE CLI TAB
+          Hummingbird F4 Pro
       render: txt
     validations:
       required: true
 
-  - type: markdown
-    attributes:
-      value: |
-        # Setup / Versions
-
   - type: input
     attributes:
-      label: Flight controller
-      description: Specify your flight controller model (what type is it, where was it bought from, ...).
+      label: 固件版本
+      description: 填写Betaflight版本号（最好附带固件末尾的哈希码 - 如 xxx_a788wf77.hex）。
+      placeholder: |
+          4.5.1 或 4.5.1_a788wf77
+      render: txt
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: Other components
-      description: Specify other components attached to the flight controller (RX, VTX, brand / model for all of them, firmware version where applicable...).
+      label: 外设信息
+      description: 如果有关外设BUG，填写外设的信息 (接收机, VTX, 品牌/型号, 外设的固件版本等)。
 
   - type: textarea
     attributes:
-      label: How are the different components wired up (including port information)
-      description: Details about how all is wired.
+      label: 外设连接方式
+      description: 如 I2C1/UART2，连接到引脚 PA0/PC3 等。
 
   - type: markdown
     attributes:
       value: |
-        # Other information
+        # 其他信息
 
   - type: textarea
     attributes:
-      label: Add any other context about the problem that you think might be relevant here
+      label: 需要补充的信息
