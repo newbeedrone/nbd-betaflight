@@ -236,6 +236,9 @@ void targetConfiguration(void) {
     /* OSD -> Video Format */
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
+    /* Unknow -> CPU */
+    schedulerConfigMutable()->cpuLatePercentageLimit = 35;
+
     /* Configuration -> Personalization */
     strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
