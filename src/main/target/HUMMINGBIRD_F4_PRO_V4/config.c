@@ -1,3 +1,23 @@
+/*
+ * This file is part of Cleanflight and Betaflight.
+ *
+ * Cleanflight and Betaflight are free software. You can redistribute
+ * this software and/or modify this software under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * Cleanflight and Betaflight are distributed in the hope that they
+ * will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.
+ *
+ * If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -76,18 +96,20 @@
 #include "sensors/compass.h"
 #include "sensors/gyro.h"
 
-
-#include "drivers/light_ws2811strip.h"
-#include "drivers/dshot.h"
-
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_RX_SPI);
-    featureConfigMutable()->enabledFeatures &= ~(FEATURE_RX_SERIAL);
+    featureConfigMutable()->enabledFeatures |= ( FEATURE_SERVO_TILT | FEATURE_TELEMETRY | FEATURE_LED_STRIP | FEATURE_OSD | FEATURE_CHANNEL_FORWARDING );
 
-    /* RX Protocol */
-    rxSpiConfigMutable()->rx_spi_protocol=RX_SPI_EXPRESSLRS;
+    /* Configuration -> Dshot Beacon Configuration */
+    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_LOST;
+    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_SET;
+
+    /* Configuration -> LED Strip */
+    ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7,  7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
+    ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8,  7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
+    ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9,  7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
+    ledStripStatusModeConfigMutable()->ledConfigs[3] = DEFINE_LED( 10, 7, 12, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
 
     /* Modes */
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
@@ -170,11 +192,30 @@ void targetConfiguration(void) {
 #undef _USER_VTX_TABLE_MAX_CHANNELS
 #undef _USER_VTX_TABLE_MAX_POWER_LEVELS
 
+    /* Motors */
+    motorConfigMutable()->digitalIdleOffsetValue = 800;
+    motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
+    motorConfigMutable()->dev.useDshotBitbang  = DSHOT_BITBANG_OFF;
+    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
+    motorConfigMutable()->motorPoleCount = 12;
+
+    /* Power & Battery */
+    batteryConfigMutable()->vbatmincellvoltage = 320;
+    batteryConfigMutable()->vbatwarningcellvoltage = 340;
+
+    /* Configuration -> Arming */
+    imuConfigMutable()->small_angle = 180;
+
+    /* Configuration -> Dshot Beacon Configuration */
+    beeperConfigMutable()->dshotBeaconTone = DSHOT_CMD_BEACON2;
+
+    /* Motors -> Mixer */
+    mixerConfigMutable()->yaw_motors_reversed = true;
 
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);
     osdWarnSetState(OSD_WARNING_VISUAL_BEEPER, false);
-    
+
     osdElementConfigMutable()->item_pos[OSD_MAIN_BATT_VOLTAGE]  = OSD_PROFILE_1_FLAG | OSD_POS(24,10);
     osdElementConfigMutable()->item_pos[OSD_RSSI_VALUE]         = OSD_PROFILE_1_FLAG | OSD_POS(1, 11);
     osdElementConfigMutable()->item_pos[OSD_ITEM_TIMER_2]       = OSD_PROFILE_1_FLAG | OSD_POS(1, 10);
@@ -192,37 +233,13 @@ void targetConfiguration(void) {
     vtxSettingsConfigMutable()->channel = 4;
     vtxSettingsConfigMutable()->power = 1;
 
-    /* Power & Battery */
-    batteryConfigMutable()->vbatmincellvoltage = 320;
-    batteryConfigMutable()->vbatwarningcellvoltage = 340;
-
-    /* Motors */
-    motorConfigMutable()->digitalIdleOffsetValue = 800;
-    motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
-    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
-    motorConfigMutable()->dev.useDshotBitbang  = DSHOT_BITBANG_OFF;
-
-    /* Motors -> Mixer */
-    mixerConfigMutable()->yaw_motors_reversed = true;
-
-    /* Configuration -> Dshot Beacon Configuration */
-    beeperConfigMutable()->dshotBeaconTone = DSHOT_CMD_BEACON2;
-    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_SILENCE;
-
     /* OSD -> Video Format */
     vcdProfileMutable()->video_system = VIDEO_SYSTEM_NTSC;
 
     /* Configuration -> Personalization */
-    strcpy(pilotConfigMutable()->craftName, "HUMMINGBIRD_V4");
+    strcpy(pilotConfigMutable()->craftName, USBD_PRODUCT_STRING);
 
-    /* Configuration -> Ws2811strip */
-    ledStripStatusModeConfigMutable()->ledConfigs[0] = DEFINE_LED( 7, 7,  8, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-    ledStripStatusModeConfigMutable()->ledConfigs[1] = DEFINE_LED( 8, 7, 13, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-    ledStripStatusModeConfigMutable()->ledConfigs[2] = DEFINE_LED( 9, 7, 11, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-    ledStripStatusModeConfigMutable()->ledConfigs[3] = DEFINE_LED( 10, 7, 12, 0, LF(COLOR), LO(LARSON_SCANNER) | LO(THROTTLE));
-
-    /* PID Tuning -> PID Profile Settings */
-    pidProfilesMutable(0)->vbat_sag_compensation = 0;
+    /* PID Tuning -> PID Profile Setting */
     pidProfilesMutable(0)->pid[PID_PITCH].P = 86;
     pidProfilesMutable(0)->pid[PID_PITCH].I = 155;
     pidProfilesMutable(0)->pid[PID_PITCH].D = 44;
@@ -231,10 +248,6 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->pid[PID_ROLL].I = 105;
     pidProfilesMutable(0)->pid[PID_ROLL].D = 35;
     pidProfilesMutable(0)->pid[PID_ROLL].F = 43;
-    pidProfilesMutable(0)->pid[PID_YAW].P = 45;
-    pidProfilesMutable(0)->pid[PID_YAW].I = 80;
-    pidProfilesMutable(0)->pid[PID_YAW].F = 120;
-    pidProfilesMutable(0)->thrustLinearization =0;
     pidProfilesMutable(0)->d_min[FD_ROLL] = 35;
     pidProfilesMutable(0)->d_min[FD_PITCH] = 44;
     pidProfilesMutable(0)->thrustLinearization = 20;
@@ -243,8 +256,8 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->simplified_pi_gain = 110;
     pidProfilesMutable(0)->simplified_dmin_ratio = 0;
     pidProfilesMutable(0)->simplified_feedforward_gain = 30;
-    pidProfilesMutable(0)->simplified_roll_pitch_ratio =110;
-    pidProfilesMutable(0)->simplified_pitch_pi_gain =140; 
+    pidProfilesMutable(0)->simplified_roll_pitch_ratio = 110;
+    pidProfilesMutable(0)->simplified_pitch_pi_gain = 140;
 
     /* PID Tuning -> Rateprofile Settings */
     controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 8;
