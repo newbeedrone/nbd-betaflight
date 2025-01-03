@@ -21,7 +21,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird F4 Pro V4"
+#define TARGET_BOARD_IDENTIFIER         "HummingBird F4 V4"
 #define USBD_PRODUCT_STRING             "HummingBird V4"
 
 /* ======== LED ======== */
