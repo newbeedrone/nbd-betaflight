@@ -62,49 +62,34 @@
 #define USE_SPI_DMA_ENABLE_LATE
 
 #define USE_SPI_DEVICE_1
-#define SPI1_SCK_PIN                   PB3
-#define SPI1_SDI_PIN                   PB4
-#define SPI1_SDO_PIN                   PB5
+#define SPI1_SCK_PIN                    PB3
+#define SPI1_SDI_PIN                    PB4
+#define SPI1_SDO_PIN                    PB5
 
 #define USE_SPI_DEVICE_2
-#define SPI2_SCK_PIN                   PB13
-#define SPI2_SDI_PIN                   PB14
-#define SPI2_SDO_PIN                   PB15
+#define SPI2_SCK_PIN                    PB13
+#define SPI2_SDI_PIN                    PB14
+#define SPI2_SDO_PIN                    PB15
 
 /* ======== I2C ======== */
 #define USE_I2C
 #define USE_I2C_PULLUP
-#define USE_I2C_DEVICE_2
 #define I2C_FULL_RECONFIGURABILITY
-#define I2C2_CLOCKSPEED                400
-#define BARO_BUSTYPE                   BUS_TYPE_I2C
-#define MAG_BUSTYPE                    BUS_TYPE_I2C
 
-#define USE_MAG
-#define USE_BARO
-#undef USE_BARO_SPI_MS5611
-#undef USE_BARO_SPI_BMP280
-#undef USE_BARO_SPI_BMP388
-#undef USE_BARO_SPI_LPS
-#undef USE_BARO_SPI_QMP6988
-#undef USE_BARO_SPI_DPS310
-#undef USE_BARO_SPI_2SMBP_02B
-#undef USE_BARO_SPI_LPS22DF
+#define USE_I2C_DEVICE_2
+#define I2C2_SCL_PIN                    PC4
+#define I2C2_SDA_PIN                    PA8
 
-#define MAG_I2C_INSTANCE              (I2CDEV_2)
-#define BARO_I2C_INSTANCE             (I2CDEV_2)
+#define I2C2_CLOCKSPEED                 400
 
-#define I2C2_SCL_PIN                   PC4
-#define I2C2_SDA_PIN                   PA8
 /* ======== GYRO & ACC ======== */
 #define USE_ACC
 #define USE_GYRO
 
-#define USE_ACC_SPI_MPU6000 // For MPU6000 variation
-#define USE_GYRO_SPI_MPU6000 // For MPU6000 variation
-
-#define USE_ACC_SPI_ICM42688P // For ICM42688P variation
-#define USE_GYRO_SPI_ICM42688P // For ICM42688P variation
+#define USE_ACC_SPI_MPU6000
+#define USE_GYRO_SPI_MPU6000
+#define USE_ACC_SPI_ICM42688P
+#define USE_GYRO_SPI_ICM42688P
 
 #define GYRO_1_EXTI_PIN                 PC14
 #define GYRO_1_CS_PIN                   PB12
@@ -129,6 +114,27 @@
 #define DEFAULT_RX_FEATURE              FEATURE_RX_SERIAL
 #define SERIALRX_PROVIDER               SERIALRX_CRSF
 
+/* ======== BARO ======== */
+#define USE_BARO
+
+#undef USE_BARO_SPI_MS5611
+#undef USE_BARO_SPI_BMP280
+#undef USE_BARO_SPI_BMP388
+#undef USE_BARO_SPI_LPS
+#undef USE_BARO_SPI_QMP6988
+#undef USE_BARO_SPI_DPS310
+#undef USE_BARO_SPI_2SMBP_02B
+#undef USE_BARO_SPI_LPS22DF
+
+#define BARO_I2C_INSTANCE               (I2CDEV_2)
+#define BARO_BUSTYPE                    BUS_TYPE_I2C
+
+/* ======== MAG ======== */
+#define USE_MAG
+
+#define MAG_I2C_INSTANCE                (I2CDEV_2)
+#define MAG_BUSTYPE                     BUS_TYPE_I2C
+
 /* ======== GPS ======== */
 #define USE_GPS
 #define USE_GPS_NMEA
@@ -143,8 +149,8 @@
 #define ADC_VBAT_PIN                    PA0
 #define ADC_CURR_PIN                    PA1
 
-#define VBAT_SCALE_DEFAULT              110
-#define CURRENT_METER_SCALE_DEFAULT     410
+#define DEFAULT_VOLTAGE_METER_SCALE     110
+#define DEFAULT_CURRENT_METER_SCALE     410
 
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
@@ -158,17 +164,18 @@
 #define USE_ESCSERIAL
 
 /* ======== System ======== */
-#undef USE_SDCARD
 #define SYSTEM_HSE_MHZ                  8
+
+#undef USE_SDCARD
 #define USE_EXTI
 #define USE_PID_DENOM_CHECK
 #define USE_TIMER_UP_CONFIG
 
-#define SPI1_TX_DMA_OPT 14
-#define SPI2_TX_DMA_OPT 10
+#define SPI1_TX_DMA_OPT                 14
+#define SPI2_TX_DMA_OPT                 10
 
-#define SPI1_RX_DMA_OPT 13
-#define SPI2_RX_DMA_OPT 11
+#define SPI1_RX_DMA_OPT                 13
+#define SPI2_RX_DMA_OPT                 11
 
 #define TIMER_PIN_MAPPING \
     TIMER_PIN_MAP( 0, MOTOR1_PIN   ,    2, 6) \

@@ -96,11 +96,10 @@
 #include "sensors/compass.h"
 #include "sensors/gyro.h"
 
-#include "drivers/dshot.h"
 void targetConfiguration(void) {
 
     /* Configuration -> Other Features */
-    featureConfigMutable()->enabledFeatures |= (FEATURE_SERVO_TILT | FEATURE_GPS | FEATURE_TELEMETRY | FEATURE_LED_STRIP  | FEATURE_CHANNEL_FORWARDING);
+    featureConfigMutable()->enabledFeatures |= ( FEATURE_SERVO_TILT | FEATURE_GPS | FEATURE_TELEMETRY | FEATURE_LED_STRIP  | FEATURE_CHANNEL_FORWARDING );
 
     /* Configuration -> Dshot Beacon Configuration */
     beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_SET;
@@ -150,10 +149,6 @@ void targetConfiguration(void) {
     motorConfigMutable()->dev.motorOutputReordering[1] = 3;
     motorConfigMutable()->dev.motorOutputReordering[2] = 0;
     motorConfigMutable()->dev.motorOutputReordering[3] = 1;
-    motorConfigMutable()->dev.motorOutputReordering[4] = 4;
-    motorConfigMutable()->dev.motorOutputReordering[5] = 5;
-    motorConfigMutable()->dev.motorOutputReordering[6] = 6;
-    motorConfigMutable()->dev.motorOutputReordering[7] = 7;
     
     /* Power & Battery */
     batteryConfigMutable()->vbatmincellvoltage = 330;
