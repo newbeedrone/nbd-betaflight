@@ -116,6 +116,15 @@
 /* ======== BARO ======== */
 #define USE_BARO
 
+#undef USE_BARO_SPI_MS5611
+#undef USE_BARO_SPI_BMP280
+#undef USE_BARO_SPI_BMP388
+#undef USE_BARO_SPI_LPS
+#undef USE_BARO_SPI_QMP6988
+#undef USE_BARO_SPI_DPS310
+#undef USE_BARO_SPI_2SMBP_02B
+#undef USE_BARO_SPI_LPS22DF
+
 #define BARO_I2C_INSTANCE               (I2CDEV_2)
 #define BARO_BUSTYPE                    BUS_TYPE_I2C
 
@@ -134,8 +143,8 @@
 #define ADC_VBAT_PIN                    PA6
 #define ADC_CURR_PIN                    PA7
 
-#define VBAT_SCALE_DEFAULT              110
-// #define CURRENT_METER_SCALE_DEFAULT     410
+#define DEFAULT_VOLTAGE_METER_SCALE     107
+#define DEFAULT_CURRENT_METER_SCALE     300
 
 #define DEFAULT_CURRENT_METER_SOURCE    CURRENT_METER_ADC
 #define DEFAULT_VOLTAGE_METER_SOURCE    VOLTAGE_METER_ADC
@@ -159,6 +168,8 @@
     TIMER_PIN_MAP( 0, LED_STRIP_PIN , 1,  5)
 
 /* ======== System ======== */
+#define SYSTEM_HSE_MHZ                  8
+
 #define USE_EXTI
 #undef USE_TRANSPONDER
 #undef USE_RX_PPM
