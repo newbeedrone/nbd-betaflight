@@ -88,8 +88,10 @@
 
 #define USE_ACC_SPI_MPU6000
 #define USE_GYRO_SPI_MPU6000
+
 #define USE_ACC_SPI_ICM42688P
 #define USE_GYRO_SPI_ICM42688P
+#define ICM426XX_CLOCK                  6000000
 
 #define GYRO_1_EXTI_PIN                 PC14
 #define GYRO_1_CS_PIN                   PB12
