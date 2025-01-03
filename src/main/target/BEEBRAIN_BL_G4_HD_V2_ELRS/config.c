@@ -152,7 +152,7 @@ void targetConfiguration(void) {
     
     /* Power & Battery */
     batteryConfigMutable()->vbatmincellvoltage = 330;
-    batteryConfigMutable()->vbatwarningcellvoltage = 350;
+    batteryConfigMutable()->vbatwarningcellvoltage = 340;
     batteryConfigMutable()->vbatmaxcellvoltage  = 440;
 
     /* Motors -> Mixer */

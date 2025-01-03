@@ -203,8 +203,9 @@ void targetConfiguration(void) {
     motorConfigMutable()->motorPoleCount = 12;
 
     /* Power & Battery */
-    batteryConfigMutable()->vbatmincellvoltage = 320;
+    batteryConfigMutable()->vbatmincellvoltage = 330;
     batteryConfigMutable()->vbatwarningcellvoltage = 340;
+    batteryConfigMutable()->vbatmaxcellvoltage  = 440;
 
     /* Configuration -> Arming */
     imuConfigMutable()->small_angle = 180;
