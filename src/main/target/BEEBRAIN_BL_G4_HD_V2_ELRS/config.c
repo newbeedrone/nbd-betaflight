@@ -102,8 +102,9 @@ void targetConfiguration(void) {
     featureConfigMutable()->enabledFeatures |= ( FEATURE_SERVO_TILT | FEATURE_GPS | FEATURE_TELEMETRY | FEATURE_LED_STRIP  | FEATURE_CHANNEL_FORWARDING );
 
     /* Configuration -> Dshot Beacon Configuration */
-    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_RX_SET;
-
+    beeperConfigMutable()->dshotBeaconTone = DSHOT_CMD_BEACON2;
+    beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_SILENCE;
+    
     /* Modes */
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
     modeActivationConditionsMutable(0)->auxChannelIndex = AUX1 - NON_AUX_CHANNEL_COUNT;
@@ -145,10 +146,6 @@ void targetConfiguration(void) {
     motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
     motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT300;
     motorConfigMutable()->motorPoleCount = 12;
-    motorConfigMutable()->dev.motorOutputReordering[0] = 2;
-    motorConfigMutable()->dev.motorOutputReordering[1] = 3;
-    motorConfigMutable()->dev.motorOutputReordering[2] = 0;
-    motorConfigMutable()->dev.motorOutputReordering[3] = 1;
     
     /* Power & Battery */
     batteryConfigMutable()->vbatmincellvoltage = 330;
