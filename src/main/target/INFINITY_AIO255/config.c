@@ -146,13 +146,32 @@ void targetConfiguration(void) {
     /* Motors -> Mixer */
     mixerConfigMutable()->yaw_motors_reversed = true;
     
+    /* Compass */
+    compassConfigMutable()->mag_alignment = CW180_DEG;
+    compassConfigMutable()->mag_customAlignment.yaw = 1800;
+    compassConfigMutable()->mag_customAlignment.pitch = 0;
+
+    /* GPS */
+    gpsConfigMutable()->gps_ublox_use_galileo = true;
+
     /* Failsafe -> Stage 2 - Setting */
-    #define USE_GPS_RESCUE
     failsafeConfigMutable()->failsafe_procedure = FAILSAFE_PROCEDURE_GPS_RESCUE;
     gpsRescueConfigMutable()->initialClimbM = 30;
     gpsRescueConfigMutable()->maxRescueAngle = 60;
     gpsRescueConfigMutable()->minSats = 6;
     gpsRescueConfigMutable()->allowArmingWithoutFix = true;
+    gpsRescueConfigMutable()->minStartDistM = 10;
+    gpsRescueConfigMutable()->ascendRate = 500;
+    gpsRescueConfigMutable()->groundSpeedCmS = 500;
+    gpsRescueConfigMutable()->descentDistanceM = 30;
+    gpsRescueConfigMutable()->descendRate = 100;
+
+    /* RxFail */
+    rxFailsafeChannelConfigsMutable(3)->mode = RX_FAILSAFE_MODE_SET;
+    rxFailsafeChannelConfigsMutable(3)->step = CHANNEL_VALUE_TO_RXFAIL_STEP(1500);
+
+    rxFailsafeChannelConfigsMutable(5)->mode = RX_FAILSAFE_MODE_SET;
+    rxFailsafeChannelConfigsMutable(5)->step = CHANNEL_VALUE_TO_RXFAIL_STEP(1100);
 
     /* Power & Battery */
     batteryConfigMutable()->vbatmincellvoltage = 330;
@@ -174,7 +193,7 @@ void targetConfiguration(void) {
     osdElementConfigMutable()->item_pos[OSD_FLYMODE]                       = OSD_PROFILE_1_FLAG | OSD_POS(19,17);
     osdElementConfigMutable()->item_pos[OSD_CURRENT_DRAW]                  = OSD_PROFILE_1_FLAG | OSD_POS(26,17);
     osdElementConfigMutable()->item_pos[OSD_CRAFT_NAME]                    = OSD_PROFILE_1_FLAG | OSD_POS(19,16);
-    osdElementConfigMutable()->item_pos[OSD_GPS_SATS]                      = OSD_PROFILE_1_FLAG | OSD_POS(46,1);
+    osdElementConfigMutable()->item_pos[OSD_GPS_SATS]                      = OSD_PROFILE_1_FLAG | OSD_POS(2,2);
     osdElementConfigMutable()->item_pos[OSD_AVG_CELL_VOLTAGE]              = OSD_PROFILE_1_FLAG | OSD_POS(43,17);
 
     osdConfigMutable()->displayPortDevice = OSD_DISPLAYPORT_DEVICE_MSP;
