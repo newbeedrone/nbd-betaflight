@@ -101,6 +101,12 @@
 
 #define GYRO_1_ALIGN                    CW90_DEG
 
+/* ======== GPS ======== */
+#define USE_GPS
+#define USE_GPS_NMEA
+#define USE_GPS_UBLOX
+#define USE_GPS_RESCUE
+
 /* ======== OSD ======== */
 #define USE_MAX7456
 
@@ -144,7 +150,7 @@
 #define USE_ADC
 
 #define ADC_INSTANCE                    ADC1
-#define ADC1_DMA_OPT                    12
+#define ADC1_DMA_OPT                    1
 
 #define ADC_VBAT_PIN                    PC0
 #define ADC_CURR_PIN                    PC1
@@ -165,14 +171,11 @@
 #define MOTOR2_PIN                      PB5
 #define MOTOR3_PIN                      PB4
 #define MOTOR4_PIN                      PB1
-#define MOTOR5_PIN                      PC8
-#define MOTOR6_PIN                      PC9
-#define MOTOR7_PIN                      PB3
-#define MOTOR8_PIN                      PB6
 
 #define USE_ESCSERIAL
 
 /* ======== OTHER ======== */
+#undef  USE_SERVOS
 #define USE_EXTI
 
 #define TIMER_PIN_MAPPING \
@@ -180,11 +183,7 @@
     TIMER_PIN_MAP( 1, MOTOR2_PIN , 1,  0)\
     TIMER_PIN_MAP( 2, MOTOR3_PIN , 1,  0)\
     TIMER_PIN_MAP( 3, MOTOR4_PIN , 1,  0)\
-    TIMER_PIN_MAP( 4, MOTOR5_PIN , 1,  0)\
-    TIMER_PIN_MAP( 5, MOTOR6_PIN , 1,  0)\
-    TIMER_PIN_MAP( 6, MOTOR7_PIN , 1,  0)\
-    TIMER_PIN_MAP( 7, MOTOR8_PIN , 1,  0)\
-    TIMER_PIN_MAP( 8, LED_STRIP_PIN , 1,  0)
+    TIMER_PIN_MAP( 4, LED_STRIP_PIN , 1,  0)
 
 #define TARGET_IO_PORTA                 0xffff
 #define TARGET_IO_PORTB                 0xffff

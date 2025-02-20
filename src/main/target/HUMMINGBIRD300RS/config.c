@@ -105,6 +105,9 @@ void targetConfiguration(void) {
     beeperConfigMutable()->dshotBeaconTone = DSHOT_CMD_BEACON2;
     beeperConfigMutable()->dshotBeaconOffFlags = BEEPER_SILENCE;
 
+    /* Configuration -> Arming */
+    imuConfigMutable()->small_angle = 180;
+    
     /* Modes */
     modeActivationConditionsMutable(0)->modeId          = BOXARM;
     modeActivationConditionsMutable(0)->auxChannelIndex = AUX1 - NON_AUX_CHANNEL_COUNT;
