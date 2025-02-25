@@ -20,7 +20,7 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "AcroBee75 HD O4 Pusher Rev_B"
+#define TARGET_BOARD_IDENTIFIER         "Beebrain BL V5 HD ELRS Rev_B"
 #define USBD_PRODUCT_STRING             "AcroBee75 HD O4"
 
 /* ======== LED ======== */
