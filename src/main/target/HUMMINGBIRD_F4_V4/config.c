@@ -133,7 +133,7 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(3)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
     /* Video Transmitter -> VTX Table */
-#define _USER_VTX_TABLE_MAX_BANDS           6
+#define _USER_VTX_TABLE_MAX_BANDS           5
 #define _USER_VTX_TABLE_MAX_CHANNELS        8
 #define _USER_VTX_TABLE_MAX_POWER_LEVELS    3
 
@@ -143,7 +143,6 @@ void targetConfiguration(void) {
         { 5705, 5685, 5665,    0, 5885, 5905,    0,    0 }, // Boscam E
         { 5740, 5760, 5780, 5800, 5820, 5840, 5860, 5880 }, // FatShark
         { 5658, 5695, 5732, 5769, 5806, 5843, 5880, 5917 }, // RaceBand
-        { 5732, 5765, 5828, 5840, 5866, 5740,    0,    0 }, // IMD6
     };
 
     const char *vtxTableBandNames[_USER_VTX_TABLE_MAX_BANDS + 1] = {
@@ -152,11 +151,10 @@ void targetConfiguration(void) {
         "BOSCAM E",
         "FATSHARK",
         "RACEBAND",
-        "IMD6    ",
     };
 
     char vtxTableBandLetters[_USER_VTX_TABLE_MAX_BANDS + 1] = {
-        "ABEFRI",
+        "ABEFR",
     };
 
     const char *vtxTableChannelNames[_USER_VTX_TABLE_MAX_CHANNELS + 1] = {
