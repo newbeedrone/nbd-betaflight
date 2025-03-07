@@ -180,7 +180,7 @@ void expressLrsTimerStop(void)
     LL_TIM_DisableCounter(timer);
     LL_TIM_SetCounter(timer, 0);
 #else
-#ifdef AT32F4
+#ifdef USE_ATBSP_DRIVER
     tmr_interrupt_enable(timer, TMR_OVF_FLAG, FALSE);
     TIM_Cmd(timer, FALSE);
 #else
@@ -206,7 +206,7 @@ void expressLrsTimerResume(void)
     TIM_SetAutoreload(timer, (timerState.intervalUs / TICK_TOCK_COUNT));
     TIM_SetCounter(timer, 0);
 
-#ifdef AT32F4
+#ifdef USE_ATBSP_DRIVER
     tmr_flag_clear(timer, TMR_OVF_FLAG);
     tmr_interrupt_enable(timer, TMR_OVF_FLAG, TRUE);
 #else
@@ -221,7 +221,7 @@ void expressLrsTimerResume(void)
     LL_TIM_EnableCounter(timer);
     LL_TIM_GenerateEvent_UPDATE(timer);
 #else
-#ifdef AT32F4
+#ifdef USE_ATBSP_DRIVER
     TIM_Cmd(timer, TRUE);
     tmr_event_sw_trigger(timer, TMR_OVERFLOW_SWTRIG);
 #else
