@@ -130,7 +130,10 @@ void targetConfiguration(void) {
     modeActivationConditionsMutable(3)->range.endStep   = CHANNEL_VALUE_TO_STEP(2100);
 
     /* Motors */
-    motorConfigMutable()->minthrottle = 1030;
+    motorConfigMutable()->digitalIdleOffsetValue = 1000;
+    motorConfigMutable()->dev.useBurstDshot = DSHOT_DMAR_ON;
+    motorConfigMutable()->dev.useDshotTelemetry = DSHOT_TELEMETRY_ON;
+    motorConfigMutable()->dev.motorPwmProtocol = PWM_TYPE_DSHOT600;
 
     /* OSD */
     osdWarnSetState(OSD_WARNING_BATTERY_NOT_FULL, false);

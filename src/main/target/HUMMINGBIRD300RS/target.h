@@ -99,8 +99,6 @@
 #define GYRO_1_CS_PIN                   PB12
 #define GYRO_1_SPI_INSTANCE             SPI2
 
-#define GYRO_1_ALIGN                    CW90_DEG
-
 /* ======== GPS ======== */
 #define USE_GPS
 #define USE_GPS_NMEA
@@ -174,6 +172,7 @@
 
 #define USE_ESCSERIAL
 
+#define USE_DSHOT_TELEMETRY
 /* ======== OTHER ======== */
 #undef  USE_SERVOS
 #define USE_EXTI
