@@ -406,6 +406,7 @@ const spiHardware_t spiHardware[] = {
             { DEFIO_TAG_E(PB5),  GPIO_MUX_6},
             { DEFIO_TAG_E(PC12),  GPIO_MUX_6},
             { DEFIO_TAG_E(PD0),  GPIO_MUX_6},
+            { DEFIO_TAG_E(PB0),  GPIO_MUX_7},
         },
         .af= 0x00,
         .rcc = RCC_APB1(SPI3),
