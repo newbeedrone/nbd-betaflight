@@ -138,6 +138,7 @@
 #define USE_FLASH_TOOLS
 #define USE_FLASH_M25P16
 #define USE_FLASH_W25N01G    // 1Gb NAND flash support
+#define USE_FLASH_W25N02K    // 2Gb NAND flash support
 #define USE_FLASH_W25M       // Stacked die support
 #define USE_FLASH_W25M512    // 512Kb (256Kb x 2 stacked) NOR flash support
 #define USE_FLASH_W25M02G    // 2Gb (1Gb x 2 stacked) NAND flash support
@@ -337,6 +338,15 @@
 #define USE_SPEKTRUM_VTX_TELEMETRY
 #define USE_SPEKTRUM_CMS_TELEMETRY
 #endif // USE_SERIALRX_SPEKTRUM
+
+#ifdef USE_TELEMETRY_SRXL
+#ifndef USE_SERIALRX_SPEKTRUM
+#define USE_SERIALRX_SPEKTRUM
+#define USE_SPEKTRUM_VTX_CONTROL
+#define USE_SPEKTRUM_VTX_TELEMETRY
+#define USE_SPEKTRUM_CMS_TELEMETRY
+#endif // USE_SERIALRX_SPEKTRUM
+#endif // USE_TELEMETRY_SRXL
 
 #define USE_BOARD_INFO
 #define USE_RTC_TIME

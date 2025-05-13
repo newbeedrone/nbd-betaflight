@@ -497,7 +497,7 @@ static void saReceiveFrame(uint8_t c)
 static void saSendFrame(uint8_t *buf, int len)
 {
     if (!IS_RC_MODE_ACTIVE(BOXVTXCONTROLDISABLE)) {
-#ifndef AT32F4
+#ifdef USE_NONCOMPLIANT_SMARTAUDIO
         switch (smartAudioSerialPort->identifier) {
         case SERIAL_PORT_SOFTSERIAL1:
         case SERIAL_PORT_SOFTSERIAL2:
@@ -509,14 +509,14 @@ static void saSendFrame(uint8_t *buf, int len)
             serialWrite(smartAudioSerialPort, 0x00); // Generate 1st start byte
             break;
         }
-#endif //AT32F4
+#endif // USE_NONCOMPLIANT_SMARTAUDIO
 
         for (int i = 0 ; i < len ; i++) {
             serialWrite(smartAudioSerialPort, buf[i]);
         }
-        #ifdef USE_AKK_SMARTAUDIO
+#ifdef USE_AKK_SMARTAUDIO
         serialWrite(smartAudioSerialPort, 0x00); // AKK/RDQ SmartAudio devices can expect an extra byte due to manufacturing errors.
-        #endif // USE_AKK_SMARTAUDIO
+#endif // USE_AKK_SMARTAUDIO
 
         saStat.pktsent++;
     } else {
@@ -710,7 +710,13 @@ bool vtxSmartAudioInit(void)
     const serialPortConfig_t *portConfig = findSerialPortConfig(FUNCTION_VTX_SMARTAUDIO);
     if (portConfig) {
         portOptions_e portOptions = SERIAL_STOPBITS_2 | SERIAL_BIDIR | SERIAL_BIDIR_PP_PD | SERIAL_BIDIR_NOPULL;
-
+#ifdef USE_SMARTAUDIO_NOPULLDOWN
+        // softserial hack (#13797)
+        if (smartAudioSerialPort->identifier == SERIAL_PORT_SOFTSERIAL1 || smartAudioSerialPort->identifier == SERIAL_PORT_SOFTSERIAL2) {
+            portOptions &= ~SERIAL_BIDIR_PP_PD;
+            portOptions |= SERIAL_BIDIR_PP;
+        }
+#endif
         smartAudioSerialPort = openSerialPort(portConfig->identifier, FUNCTION_VTX_SMARTAUDIO, NULL, NULL, 4800, MODE_RXTX, portOptions);
     }
 
