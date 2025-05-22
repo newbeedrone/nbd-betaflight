@@ -255,9 +255,9 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->pid[PID_ROLL].I = 119;
     pidProfilesMutable(0)->pid[PID_ROLL].D = 42;
     pidProfilesMutable(0)->pid[PID_ROLL].F = 46;
-    pidProfilesMutable(0)->pid[PID_YAW].P = 130;
-    pidProfilesMutable(0)->pid[PID_YAW].I = 60;
-    pidProfilesMutable(0)->pid[PID_YAW].F = 0;
+    pidProfilesMutable(0)->pid[PID_YAW].P = 60;
+    pidProfilesMutable(0)->pid[PID_YAW].I = 130;
+    pidProfilesMutable(0)->pid[PID_YAW].F = 50;
     pidProfilesMutable(0)->d_min[FD_ROLL] = 42;
     pidProfilesMutable(0)->d_min[FD_PITCH] = 53;
     pidProfilesMutable(0)->thrustLinearization = 20;
