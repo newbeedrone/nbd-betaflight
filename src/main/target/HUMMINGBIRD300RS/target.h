@@ -20,8 +20,8 @@
 
 #pragma once
 
-#define TARGET_BOARD_IDENTIFIER         "HummingBird 300 RS"
-#define USBD_PRODUCT_STRING             "HummingBird 300 RS"
+#define TARGET_BOARD_IDENTIFIER         "HummingBird 300RS_REV_D"
+#define USBD_PRODUCT_STRING             "HummingBird 300RS"
 
 /* ======== LED ======== */
 #define USE_LED_STRIP
@@ -54,6 +54,7 @@
 #define UART4_TX_PIN                    PA0
 
 #define USE_UART5
+#define UART5_TX_PIN                    PC12
 #define UART5_RX_PIN                    PD2
 
 #define USE_UART6
@@ -95,7 +96,7 @@
 #define USE_GYRO_EXTI
 #define USE_ACC_SPI_ICM42688P
 #define USE_GYRO_SPI_ICM42688P
-#define GYRO_1_EXTI_PIN                 PC4
+#define GYRO_1_EXTI_PIN                 PB6
 #define GYRO_1_CS_PIN                   PB12
 #define GYRO_1_SPI_INSTANCE             SPI2
 
