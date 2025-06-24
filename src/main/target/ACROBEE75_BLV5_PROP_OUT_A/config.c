@@ -257,7 +257,7 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->pid[PID_ROLL].F = 46;
     pidProfilesMutable(0)->pid[PID_YAW].P = 60;
     pidProfilesMutable(0)->pid[PID_YAW].I = 115;
-    pidProfilesMutable(0)->pid[PID_YAW].F = 50;
+    pidProfilesMutable(0)->pid[PID_YAW].F = 55;
     pidProfilesMutable(0)->d_min[FD_ROLL] = 42;
     pidProfilesMutable(0)->d_min[FD_PITCH] = 53;
     pidProfilesMutable(0)->thrustLinearization = 20;
@@ -270,7 +270,7 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->simplified_pi_gain = 115;
     pidProfilesMutable(0)->simplified_roll_pitch_ratio = 110;
     pidProfilesMutable(0)->simplified_pitch_pi_gain = 140;
-    pidProfilesMutable(0)->dyn_idle_min_rpm = 40; 
+    pidProfilesMutable(0)->dyn_idle_min_rpm = 55; 
     /* PID Tuning -> Rateprofile Settings */
     controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 8;
     controlRateProfilesMutable(0)->rcRates[FD_PITCH] = 8;
