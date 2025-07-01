@@ -270,7 +270,7 @@ void targetConfiguration(void) {
     pidProfilesMutable(0)->simplified_pi_gain = 115;
     pidProfilesMutable(0)->simplified_roll_pitch_ratio = 110;
     pidProfilesMutable(0)->simplified_pitch_pi_gain = 140;
-    pidProfilesMutable(0)->dyn_idle_min_rpm = 55; 
+    pidProfilesMutable(0)->dyn_idle_min_rpm = 0; // override the platform_mcu.h for the blv5
     /* PID Tuning -> Rateprofile Settings */
     controlRateProfilesMutable(0)->rcRates[FD_ROLL] = 8;
     controlRateProfilesMutable(0)->rcRates[FD_PITCH] = 8;
