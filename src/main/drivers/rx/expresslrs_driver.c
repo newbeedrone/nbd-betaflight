@@ -180,8 +180,13 @@ void expressLrsTimerStop(void)
     LL_TIM_DisableCounter(timer);
     LL_TIM_SetCounter(timer, 0);
 #else
+#ifdef USE_ATBSP_DRIVER
+    tmr_interrupt_enable(timer, TMR_OVF_FLAG, FALSE);
+    TIM_Cmd(timer, FALSE);
+#else
     TIM_ITConfig(timer, TIM_IT_Update, DISABLE);
     TIM_Cmd(timer, DISABLE);
+#endif
     TIM_SetCounter(timer, 0);
 #endif
     timerState.running = false;
@@ -201,8 +206,13 @@ void expressLrsTimerResume(void)
     TIM_SetAutoreload(timer, (timerState.intervalUs / TICK_TOCK_COUNT));
     TIM_SetCounter(timer, 0);
 
+#ifdef USE_ATBSP_DRIVER
+    tmr_flag_clear(timer, TMR_OVF_FLAG);
+    tmr_interrupt_enable(timer, TMR_OVF_FLAG, TRUE);
+#else
     TIM_ClearFlag(timer, TIM_FLAG_Update);
     TIM_ITConfig(timer, TIM_IT_Update, ENABLE);
+#endif
 #endif
 
     timerState.running = true;
@@ -211,8 +221,13 @@ void expressLrsTimerResume(void)
     LL_TIM_EnableCounter(timer);
     LL_TIM_GenerateEvent_UPDATE(timer);
 #else
+#ifdef USE_ATBSP_DRIVER
+    TIM_Cmd(timer, TRUE);
+    tmr_event_sw_trigger(timer, TMR_OVERFLOW_SWTRIG);
+#else
     TIM_Cmd(timer, ENABLE);
     TIM_GenerateEvent(timer, TIM_EventSource_Update);
+#endif
 #endif
 }
 
