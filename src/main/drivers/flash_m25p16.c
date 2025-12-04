@@ -106,6 +106,9 @@ struct {
     // Datasheet: https://www.winbond.com/resource-files/w25q64jv%20spi%20%20%20revc%2006032016%20kms.pdf
     { 0xEF4017, 133, 50, 128, 256 }, // W25Q64JV-IQ/JQ
     { 0xEF7017, 133, 50, 128, 256 }, // W25Q64JV-IM/JM*
+    // Datasheet: https://www.winbond.com/resource-files/W25Q64JW%20RevE%2003102021%20Plus.pdf
+    { 0xEF6017, 104, 50, 128, 256 }, // W25Q64JW-IQ/JQ
+    { 0xEF8017, 104, 50, 128, 256 }, // W25Q64JW-IM/JM*
     // Winbond W25Q128
     // Datasheet: https://www.winbond.com/resource-files/w25q128fv%20rev.l%2008242015.pdf
     { 0xEF4018, 104, 50, 256, 256 },
@@ -130,6 +133,9 @@ struct {
     // BergMicro W25Q32
     // Datasheet: https://www.winbond.com/resource-files/w25q32jv%20dtr%20revf%2002242017.pdf?__locale=zh_TW
     { 0xE04016, 133, 50, 1024, 16 },
+    // BYTe BY25Q64
+    // https://www.byte-semi.com/download/SPI_NOR_Flash/BY25Q64ES.pdf
+    { 0x684017, 120, 100, 128, 256 },
     // End of list
     { 0x000000, 0, 0, 0, 0 }
 };
@@ -409,7 +415,7 @@ static void m25p16_pageProgramBegin(flashDevice_t *fdevice, uint32_t address, vo
 }
 
 
-static uint32_t m25p16_pageProgramContinue(flashDevice_t *fdevice, uint8_t const **buffers, uint32_t *bufferSizes, uint32_t bufferCount)
+static uint32_t m25p16_pageProgramContinue(flashDevice_t *fdevice, uint8_t const **buffers, const uint32_t *bufferSizes, uint32_t bufferCount)
 {
     // The segment list cannot be in automatic storage as this routine is non-blocking
     STATIC_DMA_DATA_AUTO uint8_t readStatus[2] = { M25P16_INSTRUCTION_READ_STATUS_REG, 0 };
@@ -505,7 +511,7 @@ static void m25p16_pageProgram(flashDevice_t *fdevice, uint32_t address, const u
 #ifdef USE_QUADSPI
 // Page programming QSPI mode
 
-static uint32_t m25p16_pageProgramContinueQspi(flashDevice_t *fdevice, uint8_t const **buffers, uint32_t *bufferSizes, uint32_t bufferCount)
+static uint32_t m25p16_pageProgramContinueQspi(flashDevice_t *fdevice, uint8_t const **buffers, const uint32_t *bufferSizes, uint32_t bufferCount)
 {
     if (bufferCount == 0) {
         return 0;

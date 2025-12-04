@@ -71,9 +71,9 @@ jobs:
         run: make EXTRA_FLAGS=-Werror ${{ matrix.target }}_rev
 
       - name: Publish build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Assets
+          name: Assets-${{ strategy.job-index }}
           path: obj/*.hex
           retention-days: 60
 
@@ -82,6 +82,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Update package list
+        run: sudo apt-get update
 
       - name: Install dependencies
         run: sudo apt-get install -y libblocksruntime-dev clang-15

@@ -80,13 +80,18 @@ static void cmsx_Vtx_ConfigRead(void)
 
 static void cmsx_Vtx_ConfigWriteback(void)
 {
-    // update vtx_ settings
-    vtxSettingsConfigMutable()->band = cmsx_vtxBand;
-    vtxSettingsConfigMutable()->channel = cmsx_vtxChannel;
-    vtxSettingsConfigMutable()->power = cmsx_vtxPower;
-    vtxSettingsConfigMutable()->freq = vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel);
+    // update vtx_ settings if parameter doesn't match
+    if ((vtxSettingsConfigMutable()->band != cmsx_vtxBand) ||
+        (vtxSettingsConfigMutable()->channel != cmsx_vtxChannel) ||
+        (vtxSettingsConfigMutable()->power != cmsx_vtxPower) ||
+        (vtxSettingsConfigMutable()->freq != vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel))) {
+        vtxSettingsConfigMutable()->band = cmsx_vtxBand;
+        vtxSettingsConfigMutable()->channel = cmsx_vtxChannel;
+        vtxSettingsConfigMutable()->power = cmsx_vtxPower;
+        vtxSettingsConfigMutable()->freq = vtxCommonLookupFrequency(vtxCommonDevice(), cmsx_vtxBand, cmsx_vtxChannel);
 
-    saveConfigAndNotify();
+        saveConfigAndNotify();
+    }
 }
 
 static const void *cmsx_Vtx_onEnter(displayPort_t *pDisp)
