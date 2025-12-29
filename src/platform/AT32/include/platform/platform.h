@@ -46,7 +46,9 @@ typedef enum {DISABLE = 0, ENABLE = !DISABLE} FunctionalState;
 #define TIM_Cmd             tmr_counter_enable
 #define TIM_CtrlPWMOutputs  tmr_output_enable
 #define TIM_TimeBaseInit    tmr_base_init
+#define TIM_SetCounter      tmr_counter_value_set
 #define TIM_ARRPreloadConfig tmr_period_buffer_enable
+#define TIM_SetAutoreload   tmr_period_value_set
 #define SystemCoreClock     system_core_clock
 #define EXTI_TypeDef        exint_type
 #define EXTI_InitTypeDef    exint_init_type
