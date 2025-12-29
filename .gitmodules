@@ -1,6 +1,6 @@
 [submodule "config"]
 	path = src/config
-	url = https://github.com/betaflight/config.git
+	url = https://github.com/newbeedrone/2025.12.x-config.git
 	branch = master
 	ignore = dirty
 [submodule "lib/main/pico-sdk"]
