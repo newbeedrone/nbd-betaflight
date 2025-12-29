@@ -1,5 +1,4 @@
-
-CONFIGS_REPO_URL ?= https://github.com/betaflight/config
+CONFIGS_REPO_URL ?= https://github.com/newbeedrone/2025.12.x-config.git
 # handle only this directory as config submodule
 CONFIGS_SUBMODULE_DIR := src/config
 BASE_CONFIGS           = $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(CONFIG_DIR)/configs/*/config.h)))))
