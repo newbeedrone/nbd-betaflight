@@ -33,7 +33,11 @@
 
 #include "rx/expresslrs_telemetry.h"
 
+#ifdef ELRS_V4
+#define ELRS_OTA_VERSION_ID 4
+#else
 #define ELRS_OTA_VERSION_ID 3
+#endif
 
 #define ELRS_CRC_LEN 256
 #define ELRS_CRC14_POLY 0x2E57
@@ -123,6 +127,41 @@ typedef enum {
     RATE_FLRC_1000HZ,
 } elrsRfRate_e; // Max value of 16 since only 4 bits have been assigned in the sync package.
 
+#ifdef ELRS_V4
+typedef enum {
+    ELRS_V4_RATE_LORA_900_25HZ = 0,
+    ELRS_V4_RATE_LORA_900_50HZ = 1,
+    ELRS_V4_RATE_LORA_900_100HZ = 2,
+    ELRS_V4_RATE_LORA_900_100HZ_8CH = 3,
+    ELRS_V4_RATE_LORA_900_150HZ = 4,
+    ELRS_V4_RATE_LORA_900_200HZ = 5,
+    ELRS_V4_RATE_LORA_900_200HZ_8CH = 6,
+    ELRS_V4_RATE_LORA_900_250HZ = 7,
+    ELRS_V4_RATE_LORA_900_333HZ_8CH = 8,
+    ELRS_V4_RATE_LORA_900_500HZ = 9,
+    ELRS_V4_RATE_LORA_900_50HZ_DVDA = 10,
+    ELRS_V4_RATE_FSK_900_1000HZ_8CH = 11,
+
+    ELRS_V4_RATE_LORA_2G4_25HZ = 20,
+    ELRS_V4_RATE_LORA_2G4_50HZ = 21,
+    ELRS_V4_RATE_LORA_2G4_100HZ = 22,
+    ELRS_V4_RATE_LORA_2G4_100HZ_8CH = 23,
+    ELRS_V4_RATE_LORA_2G4_150HZ = 24,
+    ELRS_V4_RATE_LORA_2G4_200HZ = 25,
+    ELRS_V4_RATE_LORA_2G4_200HZ_8CH = 26,
+    ELRS_V4_RATE_LORA_2G4_250HZ = 27,
+    ELRS_V4_RATE_LORA_2G4_333HZ_8CH = 28,
+    ELRS_V4_RATE_LORA_2G4_500HZ = 29,
+    ELRS_V4_RATE_FLRC_2G4_250HZ_DVDA = 30,
+    ELRS_V4_RATE_FLRC_2G4_500HZ_DVDA = 31,
+    ELRS_V4_RATE_FLRC_2G4_500HZ = 32,
+    ELRS_V4_RATE_FLRC_2G4_1000HZ = 33,
+    ELRS_V4_RATE_FSK_2G4_250HZ_DVDA = 34,
+    ELRS_V4_RATE_FSK_2G4_500HZ_DVDA = 35,
+    ELRS_V4_RATE_FSK_2G4_1000HZ = 36,
+} elrsV4RfRate_e;
+#endif
+
 typedef enum {
     RADIO_TYPE_SX127x_LORA,
     RADIO_TYPE_SX128x_LORA,
@@ -174,22 +213,43 @@ typedef struct elrsOtaPacket_s {
         } rc;
         /** PACKET_TYPE_MSP **/
         struct {
+#ifdef ELRS_V4
+            uint8_t packageIndex : 7,
+                    stubbornAck : 1;
+#else
             uint8_t packageIndex;
+#endif
             uint8_t payload[ELRS_MSP_BYTES_PER_CALL];
         } msp_ul;
         /** PACKET_TYPE_SYNC **/
         struct {
             uint8_t fhssIndex;
             uint8_t nonce;
+#ifdef ELRS_V4
+            uint8_t rfRateEnum;
+            uint8_t switchEncMode : 1,
+                    newTlmRatio : 3,
+                    geminiMode : 1,
+                    otaProtocol : 2,
+                    free : 1;
+            uint8_t UID4;
+            uint8_t UID5;
+#else
             uint8_t switchEncMode : 1,
                     newTlmRatio : 3,
                     rateIndex : 4;
             uint8_t UID3;
             uint8_t UID4;
             uint8_t UID5;
+#endif
         } sync;
         /** PACKET_TYPE_TLM **/
         struct {
+#ifdef ELRS_V4
+            uint8_t packageIndex : 7,
+                    stubbornAck : 1;
+            uint8_t payload[ELRS_TELEMETRY_BYTES_PER_CALL];
+#else
             uint8_t type : ELRS_TELEMETRY_SHIFT,
                     packageIndex : (8 - ELRS_TELEMETRY_SHIFT);
             union {
@@ -205,6 +265,7 @@ typedef struct elrsOtaPacket_s {
                 } ul_link_stats;
                 uint8_t payload[ELRS_TELEMETRY_BYTES_PER_CALL];
             };
+#endif
         } tlm_dl;
     };
     uint8_t crcLow;

@@ -23,7 +23,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define ELRS_TELEMETRY_SHIFT 2
+#ifdef ELRS_V4
+#define ELRS_TELEMETRY_SHIFT 1          // V4: 7-bit packageIndex (1 bit for stubbornAck)
+#else
+#define ELRS_TELEMETRY_SHIFT 2          // V3: 6-bit packageIndex (2 bits for type)
+#endif
 #define ELRS_TELEMETRY_BYTES_PER_CALL 5
 #define ELRS_TELEMETRY_MAX_PACKAGES (255 >> ELRS_TELEMETRY_SHIFT)
 #define ELRS_TELEMETRY_MAX_MISSED_PACKETS 20
