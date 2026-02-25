@@ -23,10 +23,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#ifdef ELRS_V4
-#define ELRS_TELEMETRY_SHIFT 1          // V4: 7-bit packageIndex (1 bit for stubbornAck)
+#ifdef USE_ELRSV3
+    #define ELRS_TELEMETRY_SHIFT 2
 #else
-#define ELRS_TELEMETRY_SHIFT 2          // V3: 6-bit packageIndex (2 bits for type)
+    #define ELRS_TELEMETRY_SHIFT 1
 #endif
 #define ELRS_TELEMETRY_BYTES_PER_CALL 5
 #define ELRS_TELEMETRY_MAX_PACKAGES (255 >> ELRS_TELEMETRY_SHIFT)
@@ -40,6 +40,7 @@
 
 typedef enum {
     ELRS_SENDER_IDLE = 0,
+    ELRS_SEND_PENDING,
     ELRS_SENDING,
     ELRS_WAIT_UNTIL_NEXT_CONFIRM,
     ELRS_RESYNC,
@@ -51,7 +52,7 @@ bool getNextTelemetryPayload(uint8_t *nextPayloadSize, uint8_t **payloadData);
 
 void setTelemetryDataToTransmit(const uint8_t lengthToTransmit, uint8_t* dataToTransmit);
 bool isTelemetrySenderActive(void);
-uint8_t getCurrentTelemetryPayload(uint8_t *outData);
+uint8_t getCurrentTelemetryPayload(uint8_t *outData, uint8_t maxLen);
 void confirmCurrentTelemetryPayload(const bool telemetryConfirmValue);
 void updateTelemetryRate(const uint16_t airRate, const uint8_t tlmRatio, const uint8_t tlmBurst);
 
