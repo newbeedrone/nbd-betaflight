@@ -56,7 +56,7 @@
 #include "drivers/dma.h"
 #include "drivers/dshot.h"
 #include "drivers/exti.h"
-#include "drivers/flash.h"
+#include "drivers/flash/flash.h"
 #include "drivers/inverter.h"
 #include "drivers/io.h"
 #include "drivers/light_led.h"
@@ -64,7 +64,6 @@
 #include "drivers/nvic.h"
 #include "drivers/persistent.h"
 #include "drivers/pin_pull_up_down.h"
-#include "drivers/pwm_output.h"
 #include "drivers/rx/rx_pwm.h"
 #include "drivers/sensor.h"
 #include "drivers/serial.h"
@@ -78,6 +77,7 @@
 #include "drivers/timer.h"
 #include "drivers/transponder_ir.h"
 #include "drivers/usb_io.h"
+#include "drivers/brushed_reverse.h"
 #ifdef USE_USB_MSC
 #include "drivers/usb_msc.h"
 #endif
@@ -94,6 +94,8 @@
 #include "fc/stats.h"
 #include "fc/tasks.h"
 
+#include "flight/alt_hold.h"
+#include "flight/autopilot.h"
 #include "flight/failsafe.h"
 #include "flight/imu.h"
 #include "flight/mixer.h"
@@ -101,6 +103,7 @@
 #include "flight/pid.h"
 #include "flight/pid_init.h"
 #include "flight/position.h"
+#include "flight/pos_hold.h"
 #include "flight/servos.h"
 
 #include "io/asyncfatfs/asyncfatfs.h"
@@ -111,6 +114,7 @@
 #include "io/displayport_msp.h"
 #include "io/flashfs.h"
 #include "io/gimbal.h"
+#include "io/gimbal_control.h"
 #include "io/gps.h"
 #include "io/ledstrip.h"
 #include "io/pidaudio.h"
@@ -182,6 +186,13 @@ void targetPreInit(void);
 
 uint8_t systemState = SYSTEM_STATE_INITIALISING;
 
+static enum {
+    FLASH_INIT_ATTEMPTED                = (1 << 0),
+    SD_INIT_ATTEMPTED                   = (1 << 1),
+    SPI_BUSSES_INIT_ATTEMPTED           = (1 << 2),
+    QUAD_OCTO_SPI_BUSSES_INIT_ATTEMPTED = (1 << 3),
+} initFlags = 0;
+
 #ifdef BUS_SWITCH_PIN
 void busSwitchInit(void)
 {
@@ -207,6 +218,9 @@ static void configureSPIBusses(void)
 #ifdef USE_SPI
     spiPreinit();
 
+#ifdef USE_SPI_DEVICE_0
+    spiInit(SPIDEV_0);
+#endif
 #ifdef USE_SPI_DEVICE_1
     spiInit(SPIDEV_1);
 #endif
@@ -236,7 +250,7 @@ static void configureQuadSPIBusses(void)
 #ifdef USE_QUADSPI_DEVICE_1
     quadSpiInit(QUADSPIDEV_1);
 #endif
-#endif // USE_QUAD_SPI
+#endif // USE_QUADSPI
 }
 
 static void configureOctoSPIBusses(void)
@@ -256,14 +270,8 @@ static void sdCardAndFSInit(void)
 }
 #endif
 
-void init(void)
+void initPhase1(void)
 {
-#ifdef SERIAL_PORT_COUNT
-    printfSerialInit();
-#endif
-
-    systemInit();
-
     // Initialize task data as soon as possible. Has to be done before tasksInit(),
     // and any init code that may try to modify task behaviour before tasksInit().
     tasksInitData();
@@ -271,22 +279,18 @@ void init(void)
     // initialize IO (needed for all IO operations)
     IOInitGlobal();
 
-#ifdef USE_HARDWARE_REVISION_DETECTION
-    detectHardwareRevision();
-#endif
+    // If the target provides a brushed direction pin, configure it immediately
+    // and drive it to the safe "normal direction" state to avoid shoot-through.
+    brushedReverseInit();
 
 #if defined(USE_TARGET_CONFIG)
     // Call once before the config is loaded for any target specific configuration required to support loading the config
     targetConfiguration();
 #endif
 
-    enum {
-        FLASH_INIT_ATTEMPTED                = (1 << 0),
-        SD_INIT_ATTEMPTED                   = (1 << 1),
-        SPI_BUSSES_INIT_ATTEMPTED           = (1 << 2),
-        QUAD_OCTO_SPI_BUSSES_INIT_ATTEMPTED = (1 << 3),
-    };
-    uint8_t initFlags = 0;
+#if defined(USE_CONFIG_TARGET_PREINIT)
+    configTargetPreInit();
+#endif
 
 #ifdef CONFIG_IN_SDCARD
 
@@ -382,7 +386,6 @@ void init(void)
 
 #endif // CONFIG_IN_EXTERNAL_FLASH || CONFIG_IN_MEMORY_MAPPED_FLASH
 
-
     initEEPROM();
 
     ensureEEPROMStructureIsValid();
@@ -402,6 +405,9 @@ void init(void)
 #ifdef USE_DEBUG_PIN
     dbgPinInit();
 #endif
+#ifdef USE_PINIO
+    pinioInit(pinioConfig());
+#endif
 
     debugMode = systemConfig()->debug_mode;
 
@@ -417,7 +423,10 @@ void init(void)
 #if !defined(SIMULATOR_BUILD)
     EXTIInit();
 #endif
+}
 
+void initPhase2(void)
+{
 #if defined(USE_BUTTONS)
 
     buttonsInit();
@@ -478,9 +487,7 @@ void init(void)
     }
 #endif
 
-#if defined(STM32F4) || defined(STM32G4)
-    // F4 has non-8MHz boards
-    // G4 for Betaflight allow 24 or 27MHz oscillator
+#if PLATFORM_TRAIT_CONFIG_HSE
     systemClockSetHSEValue(systemConfig()->hseMhz * 1000000U);
 #endif
 
@@ -490,18 +497,7 @@ void init(void)
 
     // Configure MCO output after config is stable
 #ifdef USE_MCO
-    // Note that mcoConfigure must be augmented with an additional argument to
-    // indicate which device instance to configure when MCO and MCO2 are both supported
-
-#if defined(STM32F4) || defined(STM32F7)
-    // F4 and F7 support MCO on PA8 and MCO2 on PC9, but only MCO2 is supported for now
-    mcoConfigure(MCODEV_2, mcoConfig(MCODEV_2));
-#elif defined(STM32G4)
-    // G4 only supports one MCO on PA8
-    mcoConfigure(MCODEV_1, mcoConfig(MCODEV_1));
-#else
-#error Unsupported MCU
-#endif
+    mcoInit();
 #endif // USE_MCO
 
 #ifdef USE_TIMER
@@ -516,49 +512,33 @@ void init(void)
     uartPinConfigure(serialPinConfig());
 #endif
 
-#if defined(AVOID_UART1_FOR_PWM_PPM)
-    serialInit(featureIsEnabled(FEATURE_SOFTSERIAL),
-            featureIsEnabled(FEATURE_RX_PPM) || featureIsEnabled(FEATURE_RX_PARALLEL_PWM) ? SERIAL_PORT_USART1 : SERIAL_PORT_NONE);
-#elif defined(AVOID_UART2_FOR_PWM_PPM)
-    serialInit(featureIsEnabled(FEATURE_SOFTSERIAL),
-            featureIsEnabled(FEATURE_RX_PPM) || featureIsEnabled(FEATURE_RX_PARALLEL_PWM) ? SERIAL_PORT_USART2 : SERIAL_PORT_NONE);
-#elif defined(AVOID_UART3_FOR_PWM_PPM)
-    serialInit(featureIsEnabled(FEATURE_SOFTSERIAL),
-            featureIsEnabled(FEATURE_RX_PPM) || featureIsEnabled(FEATURE_RX_PARALLEL_PWM) ? SERIAL_PORT_USART3 : SERIAL_PORT_NONE);
-#else
-    serialInit(featureIsEnabled(FEATURE_SOFTSERIAL), SERIAL_PORT_NONE);
-#endif
+    serialInit(featureIsEnabled(FEATURE_SOFTSERIAL));
 
     mixerInit(mixerConfig()->mixerMode);
 
-    uint16_t idlePulse = motorConfig()->mincommand;
-    if (featureIsEnabled(FEATURE_3D)) {
-        idlePulse = flight3DConfig()->neutral3d;
-    }
-    if (motorConfig()->dev.motorPwmProtocol == PWM_TYPE_BRUSHED) {
-        idlePulse = 0; // brushed motors
-    }
 #ifdef USE_MOTOR
     /* Motors needs to be initialized soon as posible because hardware initialization
      * may send spurious pulses to esc's causing their early initialization. Also ppm
      * receiver may share timer with motors so motors MUST be initialized here. */
-    motorDevInit(&motorConfig()->dev, idlePulse, getMotorCount());
+    motorDevInit(getMotorCount());
+    // TODO: add check here that motors actually initialised correctly
     systemState |= SYSTEM_STATE_MOTORS_READY;
-#else
-    UNUSED(idlePulse);
 #endif
 
-    if (0) {}
+    do {
 #if defined(USE_RX_PPM)
-    else if (featureIsEnabled(FEATURE_RX_PPM)) {
-        ppmRxInit(ppmConfig());
-    }
+        if (featureIsEnabled(FEATURE_RX_PPM)) {
+            ppmRxInit(ppmConfig());
+            break;
+        }
 #endif
 #if defined(USE_RX_PWM)
-    else if (featureIsEnabled(FEATURE_RX_PARALLEL_PWM)) {
-        pwmRxInit(pwmConfig());
-    }
+        if (featureIsEnabled(FEATURE_RX_PARALLEL_PWM)) {
+            pwmRxInit(pwmConfig());
+            break;
+        }
 #endif
+    } while (false);
 
 #ifdef USE_BEEPER
     beeperInit(beeperDevConfig());
@@ -567,7 +547,6 @@ void init(void)
 #if defined(USE_INVERTER) && !defined(SIMULATOR_BUILD)
     initInverters(serialPinConfig());
 #endif
-
 
 #ifdef TARGET_BUS_INIT
     targetBusInit();
@@ -586,49 +565,57 @@ void init(void)
         initFlags |= QUAD_OCTO_SPI_BUSSES_INIT_ATTEMPTED;
     }
 
-#if defined(USE_SDCARD_SDIO) && !defined(CONFIG_IN_SDCARD) && defined(STM32H7)
+#if defined(USE_SDCARD_SDIO) && !defined(CONFIG_IN_SDCARD) && PLATFORM_TRAIT_SDIO_INIT
     sdioPinConfigure();
     SDIO_GPIO_Init();
 #endif
+}
 
 #ifdef USE_USB_MSC
+bool checkMsc(void)
+{
+    return (mscCheckBootAndReset() || mscCheckButton());
+}
+
+void initMsc(void)
+{
 /* MSC mode will start after init, but will not allow scheduler to run,
  *  so there is no bottleneck in reading and writing data */
-    mscInit();
-    if (mscCheckBootAndReset() || mscCheckButton()) {
-        ledInit(statusLedConfig());
+    ledInit(statusLedConfig());
 
 #ifdef USE_SDCARD
-        if (blackboxConfig()->device == BLACKBOX_DEVICE_SDCARD) {
-            if (sdcardConfig()->mode) {
-                if (!(initFlags & SD_INIT_ATTEMPTED)) {
-                    sdCardAndFSInit();
-                    initFlags |= SD_INIT_ATTEMPTED;
-                }
+    if (blackboxConfig()->device == BLACKBOX_DEVICE_SDCARD) {
+        if (sdcardConfig()->mode) {
+            if (!(initFlags & SD_INIT_ATTEMPTED)) {
+                sdCardAndFSInit();
+                initFlags |= SD_INIT_ATTEMPTED;
             }
-        }
-#endif
-
-#if defined(USE_FLASHFS)
-        // If the blackbox device is onboard flash, then initialize and scan
-        // it to identify the log files *before* starting the USB device to
-        // prevent timeouts of the mass storage device.
-        if (blackboxConfig()->device == BLACKBOX_DEVICE_FLASH) {
-            emfat_init_files();
-        }
-#endif
-        // There's no more initialisation to be done, so enable DMA where possible for SPI
-#ifdef USE_SPI
-        spiInitBusDMA();
-#endif
-        if (mscStart() == 0) {
-             mscWaitForButton();
-        } else {
-            systemResetFromMsc();
         }
     }
 #endif
 
+#if defined(USE_FLASHFS)
+    // If the blackbox device is onboard flash, then initialize and scan
+    // it to identify the log files *before* starting the USB device to
+    // prevent timeouts of the mass storage device.
+    if (blackboxConfig()->device == BLACKBOX_DEVICE_FLASH) {
+        emfat_init_files();
+    }
+#endif
+    // There's no more initialisation to be done, so enable DMA where possible for SPI
+#ifdef USE_SPI
+    spiInitBusDMA();
+#endif
+    if (mscStart() == 0) {
+        mscWaitForButton();
+    } else {
+        systemResetFromMsc();
+    }
+}
+#endif
+
+void initPhase3(void)
+{
 #ifdef USE_PERSISTENT_MSC_RTC
     // if we didn't enter MSC mode then clear the persistent RTC value
     persistentObjectWrite(PERSISTENT_OBJECT_RTC_HIGH, 0);
@@ -636,11 +623,14 @@ void init(void)
 #endif
 
 #ifdef USE_I2C
-    i2cHardwareConfigure(i2cConfig(0));
+    i2cPinConfigure(i2cConfig(0));
 
     // Note: Unlike UARTs which are configured when client is present,
     // I2C buses are initialized unconditionally if they are configured.
 
+#ifdef USE_I2C_DEVICE_0
+    i2cInit(I2CDEV_0);
+#endif
 #ifdef USE_I2C_DEVICE_1
     i2cInit(I2CDEV_1);
 #endif
@@ -719,9 +709,6 @@ void init(void)
     servosFilterInit();
 #endif
 
-#ifdef USE_PINIO
-    pinioInit(pinioConfig());
-#endif
 
 #ifdef USE_PIN_PULL_UP_DOWN
     pinPullupPulldownInit();
@@ -749,6 +736,7 @@ void init(void)
         delay(50);
 #endif
     }
+
     LED0_OFF;
     LED1_OFF;
 
@@ -761,9 +749,6 @@ void init(void)
 #ifdef USE_GPS
     if (featureIsEnabled(FEATURE_GPS)) {
         gpsInit();
-#ifdef USE_GPS_RESCUE
-        gpsRescueInit();
-#endif
 #ifdef USE_GPS_LAP_TIMER
         gpsLapTimerInit();
 #endif // USE_GPS_LAP_TIMER
@@ -827,7 +812,9 @@ void init(void)
 #ifdef USE_BARO
     baroStartCalibration();
 #endif
+
     positionInit();
+    autopilotInit();
 
 #if defined(USE_VTX_COMMON) || defined(USE_VTX_CONTROL)
     vtxTableInit();
@@ -859,6 +846,10 @@ void init(void)
 #endif
 
 #endif // VTX_CONTROL
+
+#ifdef USE_GIMBAL
+    gimbalInit();
+#endif
 
     batteryInit(); // always needs doing, regardless of features.
 
@@ -997,6 +988,21 @@ void init(void)
 #if defined(USE_SPI) && defined(USE_SPI_DMA_ENABLE_LATE) && !defined(USE_SPI_DMA_ENABLE_EARLY)
     // Attempt to enable DMA on all SPI busses
     spiInitBusDMA();
+#endif
+
+// autopilot must be initialised before modes that require the autopilot pids
+#ifdef USE_ALTITUDE_HOLD
+    altHoldInit();
+#endif
+
+#ifdef USE_POSITION_HOLD
+    posHoldInit();
+#endif
+
+#ifdef USE_GPS_RESCUE
+    if (featureIsEnabled(FEATURE_GPS)) {
+        gpsRescueInit();
+    }
 #endif
 
     debugInit();

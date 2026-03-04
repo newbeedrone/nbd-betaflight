@@ -26,19 +26,14 @@
 
 #include "drivers/dma.h"
 #include "drivers/io_types.h"
-#include "drivers/motor.h"
+#include "drivers/motor_types.h"
 #include "drivers/timer.h"
 
-#define BRUSHED_MOTORS_PWM_RATE 16000
-#define BRUSHLESS_MOTORS_PWM_RATE 480
-
-#define ALL_MOTORS 255
-
-#define MOTOR_OUTPUT_LIMIT_PERCENT_MIN 1
-#define MOTOR_OUTPUT_LIMIT_PERCENT_MAX 100
+#include "pg/motor.h"
 
 #define PWM_TIMER_1MHZ        MHZ_TO_HZ(1)
 
+// TODO: move the implementation defintions to impl header (platform)
 struct timerHardware_s;
 
 typedef struct {
@@ -55,25 +50,13 @@ typedef struct {
     IO_t io;
 } pwmOutputPort_t;
 
-extern FAST_DATA_ZERO_INIT pwmOutputPort_t motors[MAX_SUPPORTED_MOTORS];
+extern FAST_DATA_ZERO_INIT pwmOutputPort_t pwmMotors[MAX_SUPPORTED_MOTORS];
+extern FAST_DATA_ZERO_INIT uint8_t pwmMotorCount;
 
-struct motorDevConfig_s;
-motorDevice_t *motorPwmDevInit(const struct motorDevConfig_s *motorDevConfig, uint16_t idlePulse, uint8_t motorCount, bool useUnsyncedPwm);
-
-typedef struct servoDevConfig_s {
-    // PWM values, in milliseconds, common range is 1000-2000 (1ms to 2ms)
-    uint16_t servoCenterPulse;              // This is the value for servos when they should be in the middle. e.g. 1500.
-    uint16_t servoPwmRate;                  // The update rate of servo outputs (50-498Hz)
-    ioTag_t  ioTags[MAX_SUPPORTED_SERVOS];
-} servoDevConfig_t;
-
-void servoDevInit(const servoDevConfig_t *servoDevConfig);
-
-void pwmServoConfig(const struct timerHardware_s *timerHardware, uint8_t servoIndex, uint16_t servoPwmRate, uint16_t servoCenterPulse);
+bool motorPwmDevInit(motorDevice_t *device, const motorDevConfig_t *motorDevConfig, uint16_t idlePulse);
 
 void pwmOutConfig(timerChannel_t *channel, const timerHardware_t *timerHardware, uint32_t hz, uint16_t period, uint16_t value, uint8_t inversion);
 
-void pwmWriteServo(uint8_t index, float value);
-
 pwmOutputPort_t *pwmGetMotors(void);
 bool pwmIsSynced(void);
+void analogInitEndpoints(const motorConfig_t *motorConfig, float outputLimit, float *outputLow, float *outputHigh, float *disarm, float *deadbandMotor3dHigh, float *deadbandMotor3dLow);

@@ -40,7 +40,7 @@ STATIC_UNIT_TESTED uint16_t crc14tab[ELRS_CRC_LEN] = {0};
 
 static uint8_t volatile fhssIndex = 0;
 STATIC_UNIT_TESTED uint8_t fhssSequence[ELRS_NR_SEQUENCE_ENTRIES] = {0};
-static uint16_t seqCount = 0;
+STATIC_UNIT_TESTED uint16_t seqCount = 0;
 static uint8_t syncChannel = 0;
 static uint32_t freqSpread = 0;
 
@@ -53,18 +53,20 @@ static uint32_t freqSpread = 0;
 elrsModSettings_t airRateConfig[][ELRS_RATE_MAX] = {
 #ifdef USE_RX_SX127X
     {
-        {0, RATE_LORA_200HZ, SX127x_BW_500_00_KHZ, SX127x_SF_6, SX127x_CR_4_7, 5000, TLM_RATIO_1_64, 4, 8},
-        {1, RATE_LORA_100HZ, SX127x_BW_500_00_KHZ, SX127x_SF_7, SX127x_CR_4_7, 10000, TLM_RATIO_1_64, 4, 8},
-        {2, RATE_LORA_50HZ, SX127x_BW_500_00_KHZ, SX127x_SF_8, SX127x_CR_4_7, 20000, TLM_RATIO_1_16, 4, 10},
-        {3, RATE_LORA_25HZ, SX127x_BW_500_00_KHZ, SX127x_SF_9, SX127x_CR_4_7, 40000, TLM_RATIO_1_8, 2, 10}
+        {0, RADIO_TYPE_SX127x_LORA, RATE_LORA_200HZ, RATE_LORA_900_200HZ, SX127x_BW_500_00_KHZ, SX127x_SF_6, SX127x_CR_4_7, 5000, TLM_RATIO_1_64, 4, 8},
+        {1, RADIO_TYPE_SX127x_LORA, RATE_LORA_100HZ, RATE_LORA_900_100HZ, SX127x_BW_500_00_KHZ, SX127x_SF_7, SX127x_CR_4_7, 10000, TLM_RATIO_1_64, 4, 8},
+        {2, RADIO_TYPE_SX127x_LORA, RATE_LORA_50HZ, RATE_LORA_900_50HZ, SX127x_BW_500_00_KHZ, SX127x_SF_8, SX127x_CR_4_7, 20000, TLM_RATIO_1_16, 4, 10},
+        {3, RADIO_TYPE_SX127x_LORA, RATE_LORA_25HZ, RATE_LORA_900_25HZ, SX127x_BW_500_00_KHZ, SX127x_SF_9, SX127x_CR_4_7, 40000, TLM_RATIO_1_8, 2, 10},
     },
 #endif
 #ifdef USE_RX_SX1280
     {
-        {0, RATE_LORA_500HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF5, SX1280_LORA_CR_LI_4_6, 2000, TLM_RATIO_1_128, 4, 12},
-        {1, RATE_LORA_250HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF6, SX1280_LORA_CR_LI_4_7, 4000, TLM_RATIO_1_64, 4, 14},
-        {2, RATE_LORA_150HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF7, SX1280_LORA_CR_LI_4_7, 6666, TLM_RATIO_1_32, 4, 12},
-        {3, RATE_LORA_50HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF8, SX1280_LORA_CR_LI_4_7, 20000, TLM_RATIO_1_16, 2, 12}
+        {0, RADIO_TYPE_SX128x_FLRC, RATE_FLRC_1000HZ, RATE_FLRC_2G4_1000HZ, SX1280_FLRC_BR_0_650_BW_0_6, SX1280_FLRC_BT_1, SX1280_FLRC_CR_1_2, 1000, TLM_RATIO_1_128, 2, 32},
+        {1, RADIO_TYPE_SX128x_FLRC, RATE_FLRC_500HZ, RATE_FLRC_2G4_500HZ, SX1280_FLRC_BR_0_650_BW_0_6, SX1280_FLRC_BT_1, SX1280_FLRC_CR_1_2, 2000, TLM_RATIO_1_128, 2, 32},
+        {2, RADIO_TYPE_SX128x_LORA, RATE_LORA_500HZ, RATE_LORA_2G4_500HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF5, SX1280_LORA_CR_LI_4_6, 2000, TLM_RATIO_1_128, 4, 12},
+        {3, RADIO_TYPE_SX128x_LORA, RATE_LORA_250HZ, RATE_LORA_2G4_250HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF6, SX1280_LORA_CR_LI_4_7, 4000, TLM_RATIO_1_64, 4, 14},
+        {4, RADIO_TYPE_SX128x_LORA, RATE_LORA_150HZ, RATE_LORA_2G4_150HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF7, SX1280_LORA_CR_LI_4_7, 6666, TLM_RATIO_1_32, 4, 12},
+        {5, RADIO_TYPE_SX128x_LORA, RATE_LORA_50HZ, RATE_LORA_2G4_50HZ, SX1280_LORA_BW_0800, SX1280_LORA_SF8, SX1280_LORA_CR_LI_4_7, 20000, TLM_RATIO_1_16, 2, 12},
     },
 #endif
 #if !defined(USE_RX_SX127X) && !defined(USE_RX_SX1280)
@@ -78,15 +80,17 @@ elrsRfPerfParams_t rfPerfConfig[][ELRS_RATE_MAX] = {
         {0, RATE_LORA_200HZ, -112, 4380, 3000, 2500, 600, 5000},
         {1, RATE_LORA_100HZ, -117, 8770, 3500, 2500, 600, 5000},
         {2, RATE_LORA_50HZ, -120, 17540, 4000, 2500, 600, 5000},
-        {3, RATE_LORA_25HZ, -123, 17540, 6000, 4000, 0, 5000}
+        {3, RATE_LORA_25HZ, -123, 17540, 6000, 4000, 0, 5000},
     },
 #endif
 #ifdef USE_RX_SX1280
     {
-        {0, RATE_LORA_500HZ, -105, 1665, 2500, 2500, 3, 5000},
-        {1, RATE_LORA_250HZ, -108, 3300, 3000, 2500, 6, 5000},
-        {2, RATE_LORA_150HZ, -112, 5871, 3500, 2500, 10, 5000},
-        {3, RATE_LORA_50HZ, -115, 10798, 4000, 2500, 0, 5000}
+        {0, RATE_FLRC_1000HZ, -104, 389, 2500, 2500, 0, 5000},
+        {1, RATE_FLRC_500HZ, -104, 389, 2500, 2500, 0, 5000},
+        {2, RATE_LORA_500HZ, -105, 1665, 2500, 2500, 3, 5000},
+        {3, RATE_LORA_250HZ, -108, 3300, 3000, 2500, 6, 5000},
+        {4, RATE_LORA_150HZ, -112, 5871, 3500, 2500, 10, 5000},
+        {5, RATE_LORA_50HZ, -115, 10798, 4000, 2500, 0, 5000},
     },
 #endif
 #if !defined(USE_RX_SX127X) && !defined(USE_RX_SX1280)
@@ -186,12 +190,16 @@ Approach:
   another random entry, excluding the sync channel.
 
 */
-void fhssGenSequence(const uint8_t UID[], const elrsFreqDomain_e dom)
+void fhssGenSequence(const uint32_t uidSeed, const elrsFreqDomain_e dom)
 {
-    seed = (((long)UID[2] << 24) + ((long)UID[3] << 16) + ((long)UID[4] << 8) + UID[5]) ^ ELRS_OTA_VERSION_ID;
+    seed = uidSeed;
     fhssConfig = &fhssConfigs[dom];
     seqCount = (256 / MAX(fhssConfig->freqCount, 1)) * fhssConfig->freqCount;
-    syncChannel = (fhssConfig->freqCount / 2) + 1;
+    syncChannel = (fhssConfig->freqCount / 2)
+#ifdef USE_ELRSV3
+    + 1
+#endif
+    ;
     freqSpread = (fhssConfig->freqStop - fhssConfig->freqStart) * ELRS_FREQ_SPREAD_SCALE / MAX((fhssConfig->freqCount - 1), 1);
 
     // initialize the sequence array
@@ -234,6 +242,8 @@ uint8_t tlmRatioEnumToValue(const elrsTlmRatio_e enumval)
 uint16_t rateEnumToHz(const elrsRfRate_e eRate)
 {
     switch (eRate) {
+    case RATE_FLRC_1000HZ: return 1000;
+    case RATE_FLRC_500HZ: return 500;
     case RATE_LORA_500HZ: return 500;
     case RATE_LORA_250HZ: return 250;
     case RATE_LORA_200HZ: return 200;
@@ -260,6 +270,12 @@ uint16_t txPowerIndexToValue(const uint8_t index)
     case 8: return 50;
     default: return 0;
     }
+}
+
+uint32_t elrsUidToSeed(const uint8_t UID[])
+{
+    return ((uint32_t)UID[2] << 24) + ((uint32_t)UID[3] << 16) +
+        ((uint32_t)UID[4] << 8) + (UID[5] ^ ELRS_OTA_VERSION_ID);
 }
 
 #define ELRS_LQ_DEPTH 4 //100 % 32
@@ -323,7 +339,7 @@ uint16_t convertSwitch1b(const uint16_t val)
 }
 
 // 3b to decode 7 pos switches
-uint16_t convertSwitch3b(const uint16_t val) 
+uint16_t convertSwitch3b(const uint16_t val)
 {
     switch (val) {
     case 0: return 1000;
@@ -356,6 +372,7 @@ uint8_t hybridWideNonceToSwitchIndex(const uint8_t nonce)
 uint8_t airRateIndexToIndex900(uint8_t airRate, uint8_t currentIndex)
 {
     switch (airRate) {
+#ifdef USE_ELRSV3
     case 0:
         return 0;
     case 1:
@@ -366,6 +383,12 @@ uint8_t airRateIndexToIndex900(uint8_t airRate, uint8_t currentIndex)
         return 2;
     case 4:
         return 3;
+#else
+    case RATE_LORA_900_200HZ: return 0;
+    case RATE_LORA_900_100HZ: return 1;
+    case RATE_LORA_900_50HZ: return 2;
+    case RATE_LORA_900_25HZ: return 3;
+#endif
     default:
         return currentIndex;
     }
@@ -374,26 +397,35 @@ uint8_t airRateIndexToIndex900(uint8_t airRate, uint8_t currentIndex)
 uint8_t airRateIndexToIndex24(uint8_t airRate, uint8_t currentIndex)
 {
     switch (airRate) {
-    case 0:
-        return currentIndex;
-    case 1:
-        return currentIndex;
-    case 2:
-        return currentIndex;
-    case 3:
-        return currentIndex;
-    case 4:
+#ifdef USE_ELRSV3
+   case 0:  // F1000
         return 0;
-    case 5:
-        return currentIndex;
-    case 6:
+    case 1:  // F500
         return 1;
-    case 7:
-        return 2;
-    case 8:
+    case 2:  // D500
         return currentIndex;
-    case 9:
+    case 3:  // D250
+        return currentIndex;
+    case 4:  // 500Hz
+        return 2;
+    case 5:  // 333Hz Full
+        return currentIndex;
+    case 6:  // 250Hz
         return 3;
+    case 7:  // 150Hz
+        return 4;
+    case 8:  // 100Hz Full
+        return currentIndex;
+    case 9:  // 50Hz
+        return 5;
+#else
+    case RATE_FLRC_2G4_1000HZ: return 0;
+    case RATE_FLRC_2G4_500HZ: return 1;
+    case RATE_LORA_2G4_500HZ: return 2;
+    case RATE_LORA_2G4_250HZ: return 3;
+    case RATE_LORA_2G4_150HZ: return 4;
+    case RATE_LORA_2G4_50HZ: return 5;
+#endif
     default:
         return currentIndex;
     }

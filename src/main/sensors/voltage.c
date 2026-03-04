@@ -82,7 +82,6 @@ const uint8_t voltageMeterIds[] = {
 
 const uint8_t supportedVoltageMeterCount = ARRAYLEN(voltageMeterIds);
 
-
 //
 // ADC/ESC shared
 //
@@ -128,7 +127,7 @@ voltageMeterADCState_t voltageMeterADCStates[MAX_VOLTAGE_SENSOR_ADC];
 
 static bool sagCompensationConfigured;
 
-voltageMeterADCState_t *getVoltageMeterADC(uint8_t index)
+LOCAL_UNUSED_FUNCTION static voltageMeterADCState_t *getVoltageMeterADC(uint8_t index)
 {
     return &voltageMeterADCStates[index];
 }
@@ -145,7 +144,6 @@ void pgResetFn_voltageSensorADCConfig(voltageSensorADCConfig_t *instance)
         );
     }
 }
-
 
 static const uint8_t voltageMeterAdcChannelMap[] = {
     ADC_BATTERY,
@@ -177,7 +175,7 @@ void voltageMeterADCRefresh(void)
         const voltageSensorADCConfig_t *config = voltageSensorADCConfig(i);
 
         uint8_t channel = voltageMeterAdcChannelMap[i];
-        uint16_t rawSample = adcGetChannel(channel);
+        uint16_t rawSample = adcGetValue(channel);
         uint16_t filteredDisplaySample = pt1FilterApply(&state->displayFilter, rawSample);
 
         // always calculate the latest voltage, see getLatestVoltage() which does the calculation on demand.
@@ -192,6 +190,7 @@ void voltageMeterADCRefresh(void)
 #endif
 #else
         UNUSED(voltageAdcToVoltage);
+        UNUSED(voltageMeterAdcChannelMap);
 
         state->voltageDisplayFiltered = 0;
         state->voltageUnfiltered = 0;
@@ -261,8 +260,6 @@ typedef struct voltageMeterESCState_s {
 static voltageMeterESCState_t voltageMeterESCState;
 #endif
 
-
-
 void voltageMeterESCInit(void)
 {
 #ifdef USE_ESC_SENSOR
@@ -314,7 +311,6 @@ void voltageMeterESCReadCombined(voltageMeter_t *voltageMeter)
 //
 // This API is used by MSP, for configuration/status.
 //
-
 
 // the order of these much match the indexes in voltageSensorADC_e
 const uint8_t voltageMeterADCtoIDMap[MAX_VOLTAGE_SENSOR_ADC] = {
@@ -386,5 +382,5 @@ void voltageStableUpdate(voltageMeter_t* vm)
 // voltage is stable when it was within VOLTAGE_STABLE_MAX_DELTA for 10 update periods
 bool voltageIsStable(voltageMeter_t* vm)
 {
-    return __builtin_popcount(vm->voltageStableBits & (BIT(VOLTAGE_STABLE_BITS_TOTAL + 1) - 1)) >= VOLTAGE_STABLE_BITS_THRESHOLD;
+    return popcount(vm->voltageStableBits & (BIT(VOLTAGE_STABLE_BITS_TOTAL + 1) - 1)) >= VOLTAGE_STABLE_BITS_THRESHOLD;
 }

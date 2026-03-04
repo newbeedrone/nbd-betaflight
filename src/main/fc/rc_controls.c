@@ -48,6 +48,7 @@
 #include "io/beeper.h"
 #include "io/usb_cdc_hid.h"
 #include "io/dashboard.h"
+#include "io/gimbal_control.h"
 #include "io/gps.h"
 #include "io/vtx_control.h"
 
@@ -69,24 +70,24 @@
 
 // true if arming is done via the sticks (as opposed to a switch)
 static bool isUsingSticksToArm = true;
+static bool disarmUserRequested = false; // has the user requested a disarm, using either sticks or switches, whether armed or disarmed
 
 float rcCommand[4];           // interval [1000;2000] for THROTTLE and [-500;+500] for ROLL/PITCH/YAW
 
-PG_REGISTER_WITH_RESET_TEMPLATE(rcControlsConfig_t, rcControlsConfig, PG_RC_CONTROLS_CONFIG, 0);
+PG_REGISTER_WITH_RESET_TEMPLATE(rcControlsConfig_t, rcControlsConfig, PG_RC_CONTROLS_CONFIG, 1);
 
 PG_RESET_TEMPLATE(rcControlsConfig_t, rcControlsConfig,
     .deadband = 0,
     .yaw_deadband = 0,
-    .alt_hold_deadband = 40,
-    .alt_hold_fast_change = 1,
     .yaw_control_reversed = false,
 );
 
-PG_REGISTER_WITH_RESET_TEMPLATE(armingConfig_t, armingConfig, PG_ARMING_CONFIG, 1);
+PG_REGISTER_WITH_RESET_TEMPLATE(armingConfig_t, armingConfig, PG_ARMING_CONFIG, 2);
 
 PG_RESET_TEMPLATE(armingConfig_t, armingConfig,
     .gyro_cal_on_first_arm = 0,
-    .auto_disarm_delay = 5
+    .auto_disarm_delay = 5,
+    .prearm_allow_rearm = 0,
 );
 
 PG_REGISTER_WITH_RESET_TEMPLATE(flight3DConfig_t, flight3DConfig, PG_MOTOR_3D_CONFIG, 0);
@@ -104,6 +105,17 @@ bool isUsingSticksForArming(void)
 {
     return isUsingSticksToArm;
 }
+
+bool wasLastDisarmUserRequested(void)
+{
+    return disarmUserRequested;
+}
+
+void clearWasLastDisarmUserRequested(void)
+{
+    disarmUserRequested = false;
+}
+
 
 throttleStatus_e calculateThrottleStatus(void)
 {
@@ -171,6 +183,7 @@ void processRcStickPositions(void)
         } else {
             resetTryingToArm();
             // Disarming via ARM BOX
+              disarmUserRequested = true;
             resetArmingDisabled();
             const bool boxFailsafeSwitchIsOn = IS_RC_MODE_ACTIVE(BOXFAILSAFE);
             if (ARMING_FLAG(ARMED) && (failsafeIsReceivingRxData() || boxFailsafeSwitchIsOn)) {
@@ -190,10 +203,11 @@ void processRcStickPositions(void)
         if (rcDelayMs >= ARM_DELAY_MS && !doNotRepeat) {
             doNotRepeat = true;
             // Disarm on throttle down + yaw
+             disarmUserRequested = true;
             resetTryingToArm();
-            if (ARMING_FLAG(ARMED))
+            if (ARMING_FLAG(ARMED)){
                 disarm(DISARM_REASON_STICKS);
-            else {
+           } else {
                 beeper(BEEPER_DISARM_REPEAT);     // sound tone while stick held
                 repeatAfter(STICK_AUTOREPEAT_MS); // disarm tone will repeat
 
@@ -303,8 +317,7 @@ void processRcStickPositions(void)
     }
 #endif
 
-
-    if (FLIGHT_MODE(ANGLE_MODE|HORIZON_MODE)) {
+    if (FLIGHT_MODE(ANGLE_MODE | HORIZON_MODE)) {
         // in ANGLE or HORIZON mode, so use sticks to apply accelerometer trims
         rollAndPitchTrims_t accelerometerTrimsDelta;
         memset(&accelerometerTrimsDelta, 0, sizeof(accelerometerTrimsDelta));

@@ -60,8 +60,7 @@ static IO_t vtxPowerPin     = IO_NONE;
 static IO_t exPowerPin[VTX_DYNAMIC_CTRL_PIN_COUNT]   = {IO_NONE, IO_NONE};
 #endif
 
-static extDevice_t rtc6705Device;
-static extDevice_t *dev = &rtc6705Device;
+static extDevice_t *dev = NULL;
 
 #define DISABLE_RTC6705()   IOHi(dev->busType_u.spi.csnPin)
 #define ENABLE_RTC6705()    IOLo(dev->busType_u.spi.csnPin)
@@ -99,6 +98,7 @@ static uint32_t reverse32(uint32_t in)
  */
 bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
 {
+    static extDevice_t devInstance;
     IO_t csnPin = IOGetByTag(vtxIOConfig->csTag);
     if (!csnPin) {
         return false;
@@ -108,11 +108,7 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
     if (vtxPowerPin) {
         IOInit(vtxPowerPin, OWNER_VTX_POWER, 0);
 
-#ifdef VTX_POWER_PIN_INVERTED
-        IOLo(vtxPowerPin);
-#else
         IOHi(vtxPowerPin);
-#endif
 
         IOConfigGPIO(vtxPowerPin, IOCFG_OUT_PP);
     }
@@ -130,15 +126,16 @@ bool rtc6705IOInit(const vtxIOConfig_t *vtxIOConfig)
 
     // RTC6705 when using SOFT SPI driver doesn't use an SPI device, so don't attempt to initialise an spiInstance.
     SPI_TypeDef *spiInstance = spiInstanceByDevice(SPI_CFG_TO_DEV(vtxIOConfig->spiDevice));
-    if (spiInstance && spiSetBusInstance(dev, vtxIOConfig->spiDevice)) {
-        rtc6705Device.busType_u.spi.csnPin = csnPin;
-        IOInit(rtc6705Device.busType_u.spi.csnPin, OWNER_VTX_CS, 0);
-
+    if (spiInstance && spiSetBusInstance(&devInstance, vtxIOConfig->spiDevice)) {
+        dev = &devInstance;
+        dev->busType_u.spi.csnPin = csnPin;
+        IOInit(dev->busType_u.spi.csnPin, OWNER_VTX_CS, 0);
         DISABLE_RTC6705();
         // GPIO bit is enabled so here so the output is not pulled low when the GPIO is set in output mode.
         // Note: It's critical to ensure that incorrect signals are not sent to the VTX.
-        IOConfigGPIO(rtc6705Device.busType_u.spi.csnPin, IOCFG_OUT_PP);
+        IOConfigGPIO(dev->busType_u.spi.csnPin, IOCFG_OUT_PP);
 
+        spiSetBusInstance(dev, vtxIOConfig->spiDevice);
         return true;
 #if defined(USE_VTX_RTC6705_SOFTSPI)
     } else {
@@ -251,22 +248,14 @@ void rtc6705SetRFPower(uint8_t rf_power)
 void rtc6705Disable(void)
 {
     if (vtxPowerPin) {
-#ifdef VTX_POWER_PIN_INVERTED
-        IOLo(vtxPowerPin);
-#else
         IOHi(vtxPowerPin);
-#endif
     }
 }
 
 void rtc6705Enable(void)
 {
     if (vtxPowerPin) {
-#ifdef VTX_POWER_PIN_INVERTED
-        IOHi(vtxPowerPin);
-#else
         IOLo(vtxPowerPin);
-#endif
     }
 }
 #endif

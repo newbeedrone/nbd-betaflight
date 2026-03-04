@@ -29,7 +29,6 @@
 #define DEFIO_TAG_E(pinid) CONCAT(DEFIO_TAG_E__, pinid)
 #define DEFIO_TAG_E__NONE 0
 
-
 // return ioRec_t or NULL for given pinid
 // tags should be preferred, possibly removing it in future
 // io_impl.h must be included when this macro is used
@@ -42,11 +41,24 @@
 // get ioRec by index
 #define DEFIO_REC_INDEXED(idx) (ioRecs + (idx))
 
+// split ioTag bits between pin and port
+// port is encoded as +1 to avoid collision with 0x0 (false as bool)
+#ifndef DEFIO_PORT_PINS
+// pins per port
+#define DEFIO_PORT_PINS 16
+#endif
+
+STATIC_ASSERT((DEFIO_PORT_PINS & (DEFIO_PORT_PINS - 1)) == 0, "DEFIO_PORT_PINS must be power of 2");
+
+#define DEFIO_PORT_BITSHIFT LOG2(DEFIO_PORT_PINS)
+#define DEFIO_PIN_BITMASK   ((1 << DEFIO_PORT_BITSHIFT ) - 1)
+
 // ioTag_t accessor macros
-#define DEFIO_TAG_MAKE(gpioid, pin) ((ioTag_t)((((gpioid) + 1) << 4) | (pin)))
+#define DEFIO_TAG_MAKE(gpioid, pin) ((ioTag_t)((((gpioid) + 1) << DEFIO_PORT_BITSHIFT) | (pin)))
 #define DEFIO_TAG_ISEMPTY(tag) (!(tag))
-#define DEFIO_TAG_GPIOID(tag) (((tag) >> 4) - 1)
-#define DEFIO_TAG_PIN(tag) ((tag) & 0x0f)
+#define DEFIO_TAG_GPIOID(tag) (((tag) >> DEFIO_PORT_BITSHIFT) - 1)
+#define DEFIO_TAG_PIN(tag) ((tag) & DEFIO_PIN_BITMASK)
+
 
 // TARGET must define used pins
 #include "target.h"

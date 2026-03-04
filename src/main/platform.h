@@ -32,8 +32,8 @@
 
 #include "target/common_pre.h"
 
-// MCU specific platform from drivers/XX
-#include "platform_mcu.h"
+// MCU specific platform from platform/X
+#include "platform/platform.h"
 
 #include "target.h"
 #include "target/common_post.h"

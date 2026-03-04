@@ -30,12 +30,12 @@
 #include "pg/pg.h"
 
 #include "drivers/io_types.h"
-#include "drivers/pwm_output.h"
+#include "drivers/motor.h"
 
 #define QUAD_MOTOR_COUNT 4
 
 // Note: this is called MultiType/MULTITYPE_* in baseflight.
-typedef enum mixerMode
+typedef enum
 {
     MIXER_TRI = 1,
     MIXER_QUADP = 2,
@@ -66,7 +66,7 @@ typedef enum mixerMode
     MIXER_OCTOX8P = 27
 } mixerMode_e;
 
-typedef enum mixerType
+typedef enum
 {
     MIXER_LEGACY = 0,
     MIXER_LINEAR = 1,
@@ -95,7 +95,8 @@ typedef struct mixerConfig_s {
     uint8_t mixerMode;
     bool yaw_motors_reversed;
     uint8_t crashflip_motor_percent;
-    uint8_t crashflip_expo;
+    uint8_t crashflip_rate;
+    bool crashflip_auto_rearm;
     uint8_t mixer_type;
 #ifdef USE_RPM_LIMIT
     bool rpm_limit;
@@ -121,6 +122,7 @@ extern float motor[MAX_SUPPORTED_MOTORS];
 extern float motor_disarmed[MAX_SUPPORTED_MOTORS];
 struct rxConfig_s;
 
+bool hasServos(void);
 uint8_t getMotorCount(void);
 float getMotorMixRange(void);
 bool areMotorsRunning(void);
@@ -140,9 +142,14 @@ bool mixerIsTricopter(void);
 
 void mixerSetThrottleAngleCorrection(int correctionValue);
 float mixerGetThrottle(void);
+float mixerGetRcThrottle(void);
 mixerMode_e getMixerMode(void);
 bool mixerModeIsFixedWing(mixerMode_e mixerMode);
 bool isFixedWing(void);
 
 float getMotorOutputLow(void);
 float getMotorOutputHigh(void);
+
+#ifdef USE_WING
+float getMotorOutputRms(void);
+#endif

@@ -25,10 +25,16 @@
 
 #include "drivers/dma.h"
 #include "drivers/io_types.h"
-#include "drivers/rcc_types.h"
+
+#if PLATFORM_TRAIT_RCC
+#include "platform/rcc_types.h"
+#endif
+
 #include "drivers/resource.h"
 
+#ifdef USE_TIMER
 #include "timer_def.h"
+#endif
 
 #include "pg/timerio.h"
 
@@ -42,6 +48,8 @@
 #endif
 
 #define TIM_CH_TO_SELCHANNEL(ch)  ((ch - 1) * 2)
+#define TIM_N(n) (1 << (n))
+#define TIMER_INDEX(i) BITCOUNT((TIM_N(i) - 1) & USED_TIMERS)
 
 typedef uint16_t captureCompare_t;        // 16 bit on both 103 and 303, just register access must be 32bit sometimes (use timCCR_t)
 
@@ -67,7 +75,9 @@ typedef struct timerOvrHandlerRec_s {
 
 typedef struct timerDef_s {
     TIM_TypeDef *TIMx;
+#if PLATFORM_TRAIT_RCC
     rccPeriphTag_t rcc;
+#endif
     uint8_t inputIrq;
 } timerDef_t;
 
@@ -173,17 +183,17 @@ void timerForceOverflow(TIM_TypeDef *tim);
 
 void timerConfigUpdateCallback(const TIM_TypeDef *tim, timerOvrHandlerRec_t *updateCallback);
 
-uint32_t timerClock(TIM_TypeDef *tim);
+uint32_t timerClock(const TIM_TypeDef *tim);
 
 void configTimeBase(TIM_TypeDef *tim, uint16_t period, uint32_t hz);  // TODO - just for migration
 void timerReconfigureTimeBase(TIM_TypeDef *tim, uint16_t period, uint32_t hz);
 
-rccPeriphTag_t timerRCC(TIM_TypeDef *tim);
-uint8_t timerInputIrq(TIM_TypeDef *tim);
+#if PLATFORM_TRAIT_RCC
+rccPeriphTag_t timerRCC(const TIM_TypeDef *tim);
+#endif
+uint8_t timerInputIrq(const TIM_TypeDef *tim);
 
 #if defined(USE_TIMER_MGMT)
-extern const resourceOwner_t freeOwner;
-
 struct timerIOConfig_s;
 
 struct timerIOConfig_s *timerIoConfigByTag(ioTag_t ioTag);
@@ -212,5 +222,15 @@ uint16_t timerGetPrescalerByDesiredMhz(TIM_TypeDef *tim, uint16_t mhz);
 uint16_t timerGetPeriodByPrescaler(TIM_TypeDef *tim, uint16_t prescaler, uint32_t hz);
 
 int8_t timerGetNumberByIndex(uint8_t index);
+int8_t timerGetIndexByNumber(uint8_t number);
 int8_t timerGetTIMNumber(const TIM_TypeDef *tim);
 uint8_t timerLookupChannelIndex(const uint16_t channel);
+
+// TODO: replace TIM_TypeDef with alternate
+void timerReset(TIM_TypeDef *timer);
+void timerSetPeriod(TIM_TypeDef *timer, uint32_t period);
+uint32_t timerGetPeriod(TIM_TypeDef *timer);
+void timerSetCounter(TIM_TypeDef *timer, uint32_t counter);
+void timerDisable(TIM_TypeDef *timer);
+void timerEnable(TIM_TypeDef *timer);
+void timerEnableInterrupt(TIM_TypeDef *timer);

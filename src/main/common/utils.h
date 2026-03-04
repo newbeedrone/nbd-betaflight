@@ -58,6 +58,23 @@
 #define UNUSED(x) (void)(x) // Variables and parameters that are not used
 #endif
 
+#define MAYBE_UNUSED __attribute__ ((unused))
+#define LOCAL_UNUSED_FUNCTION __attribute__ ((unused, deprecated ("function is marked as LOCAL_UNUSED_FUNCTION")))
+
+/* Mark a char buffer/pointer as not necessarily NUL-terminated. */
+#ifndef NONSTRING
+        /* Fallback for compilers without __has_attribute. */
+#  ifndef __has_attribute
+#    define __has_attribute(x) 0
+#  endif
+
+#  if __has_attribute(nonstring) || (defined(__GNUC__) && __GNUC__ >= 8)
+#    define NONSTRING __attribute__((__nonstring__))
+#  else
+#    define NONSTRING
+#  endif
+#endif
+
 #define DISCARD(x) (void)(x) // To explicitly ignore result of x (usually an I/O register access).
 
 #ifndef __cplusplus
@@ -75,6 +92,9 @@ http://resnet.uoregon.edu/~gurney_j/jmpc/bitwise.html
 #define BITCOUNT(x) (((BX_(x)+(BX_(x)>>4)) & 0x0F0F0F0F) % 255)
 #define BX_(x) ((x) - (((x)>>1)&0x77777777) - (((x)>>2)&0x33333333) - (((x)>>3)&0x11111111))
 
+static inline int popcount(unsigned x) { return __builtin_popcount(x); }
+static inline int popcount32(uint32_t x) { return __builtin_popcount(x); }
+static inline int popcount64(uint64_t x) { return __builtin_popcountll(x); }
 
 /*
  * https://groups.google.com/forum/?hl=en#!msg/comp.lang.c/attFnqwhvGk/sGBKXvIkY3AJ
@@ -115,7 +135,6 @@ static inline void  memcpy_fn ( void * destination, const void * source, size_t 
 #else
 void * memcpy_fn ( void * destination, const void * source, size_t num ) asm("memcpy");
 #endif
-
 
 #endif
 

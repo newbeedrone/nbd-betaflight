@@ -39,44 +39,55 @@
 
 */
 
+#ifndef PLATFORM_NO_LIBC
+#define PLATFORM_NO_LIBC 1
+#endif
+
 #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
 #define DEFAULT_AUX_CHANNEL_COUNT       MAX_AUX_CHANNEL_COUNT
 #else
 #define DEFAULT_AUX_CHANNEL_COUNT       6
 #endif
 
-#ifdef USE_ITCM_RAM
-#if defined(ITCM_RAM_OPTIMISATION) && !defined(DEBUG)
-#define FAST_CODE                   __attribute__((section(".tcm_code"))) __attribute__((optimize(ITCM_RAM_OPTIMISATION)))
-#else
-#define FAST_CODE                   __attribute__((section(".tcm_code")))
-#endif
-// Handle case where we'd prefer code to be in ITCM, but it won't fit on the device
-#ifndef FAST_CODE_PREF
-#define FAST_CODE_PREF              FAST_CODE
-#endif
-
-#define FAST_CODE_NOINLINE          NOINLINE
-
-#else
+#ifndef FAST_CODE
 #define FAST_CODE
-#define FAST_CODE_PREF
-#define FAST_CODE_NOINLINE
-#endif // USE_ITCM_RAM
+#endif
 
-#ifdef USE_CCM_CODE
-#define CCM_CODE                    __attribute__((section(".ccm_code")))
-#else
+#ifndef FAST_CODE_PREF
+#define FAST_CODE_PREF  FAST_CODE
+#endif
+
+#ifndef FAST_CODE_NOINLINE
+#define FAST_CODE_NOINLINE
+#endif
+
+#ifndef CCM_CODE
 #define CCM_CODE
 #endif
 
-#ifdef USE_FAST_DATA
-#define FAST_DATA_ZERO_INIT         __attribute__ ((section(".fastram_bss"), aligned(4)))
-#define FAST_DATA                   __attribute__ ((section(".fastram_data"), aligned(4)))
-#else
-#define FAST_DATA_ZERO_INIT
+#ifndef FAST_DATA
 #define FAST_DATA
-#endif // USE_FAST_DATA
+#endif
+
+#ifndef FAST_DATA_ZERO_INIT
+#define FAST_DATA_ZERO_INIT
+#endif
+
+#ifndef MMFLASH_CODE
+#define MMFLASH_CODE
+#endif
+
+#ifndef MMFLASH_CODE_NOINLINE
+#define MMFLASH_CODE_NOINLINE
+#endif
+
+#ifndef MMFLASH_DATA
+#define MMFLASH_DATA
+#endif
+
+#ifndef MMFLASH_DATA_ZERO_INIT
+#define MMFLASH_DATA_ZERO_INIT
+#endif
 
 /*
     BEGIN HARDWARE INCLUSIONS
@@ -84,6 +95,58 @@
     Simplified options for the moment, i.e. adding USE_MAG or USE_BARO and the entire driver suite is added.
     In the future we can move to specific drivers being added only - to save flash space.
 */
+
+// normalize serial ports definitions
+#include "serial_post.h"
+
+#if defined(USE_ACC) \
+    && !defined(USE_ACC_MPU6000) \
+    && !defined(USE_ACC_MPU6050) \
+    && !defined(USE_ACC_MPU6500) \
+    && !defined(USE_ACCGYRO_BMI160) \
+    && !defined(USE_ACCGYRO_BMI270) \
+    && !defined(USE_ACC_SPI_ICM20602) \
+    && !defined(USE_ACC_SPI_ICM20649) \
+    && !defined(USE_ACC_SPI_ICM20689) \
+    && !defined(USE_ACC_SPI_ICM42605) \
+    && !defined(USE_ACCGYRO_ICM40609D) \
+    && !defined(USE_ACC_SPI_ICM42688P) \
+    && !defined(USE_ACCGYRO_ICM45686) \
+    && !defined(USE_ACCGYRO_ICM45605) \
+    && !defined(USE_ACCGYRO_LSM6DSO) \
+    && !defined(USE_ACCGYRO_LSM6DSV16X) \
+    && !defined(USE_ACC_SPI_MPU6000) \
+    && !defined(USE_ACC_SPI_MPU6500) \
+    && !defined(USE_ACC_SPI_MPU9250) \
+    && !defined(USE_ACCGYRO_IIM42652) \
+    && !defined(USE_ACCGYRO_IIM42653) \
+    && !defined(USE_VIRTUAL_ACC)
+#error At least one USE_ACC device definition required
+#endif
+
+#if defined(USE_GYRO) \
+    && !defined(USE_GYRO_MPU6050) \
+    && !defined(USE_GYRO_MPU6500) \
+    && !defined(USE_ACCGYRO_BMI160) \
+    && !defined(USE_ACCGYRO_BMI270) \
+    && !defined(USE_GYRO_SPI_ICM20602) \
+    && !defined(USE_GYRO_SPI_ICM20649) \
+    && !defined(USE_GYRO_SPI_ICM20689) \
+    && !defined(USE_GYRO_SPI_ICM42605) \
+    && !defined(USE_GYRO_SPI_ICM42688P) \
+    && !defined(USE_ACCGYRO_ICM45686) \
+    && !defined(USE_ACCGYRO_ICM45605) \
+    && !defined(USE_ACCGYRO_ICM40609D) \
+    && !defined(USE_ACCGYRO_LSM6DSO) \
+    && !defined(USE_ACCGYRO_LSM6DSV16X) \
+    && !defined(USE_GYRO_SPI_MPU6000) \
+    && !defined(USE_GYRO_SPI_MPU6500) \
+    && !defined(USE_GYRO_SPI_MPU9250) \
+    && !defined(USE_ACCGYRO_IIM42652) \
+    && !defined(USE_ACCGYRO_IIM42653) \
+    && !defined(USE_VIRTUAL_GYRO)
+#error At least one USE_GYRO device definition required
+#endif
 
 #if defined(USE_MAG) && !defined(USE_VIRTUAL_MAG)
 
@@ -206,6 +269,7 @@
 #undef USE_SERIALRX_SUMH
 #undef USE_SERIALRX_XBUS
 #undef USE_SERIALRX_FPORT
+#undef USE_SERIALRX_MAVLINK
 #endif
 
 #if !defined(USE_TELEMETRY)
@@ -253,7 +317,7 @@
 #undef USE_CRSF_V3
 #endif
 
-#if !defined(USE_RX_EXPRESSLRS) && !defined(USE_SERIALRX_CRSF)
+#if !defined(USE_RX_EXPRESSLRS) && !defined(USE_SERIALRX_CRSF) && !defined(USE_SERIALRX_MAVLINK)
 #undef USE_RX_RSSI_DBM
 #endif
 
@@ -419,16 +483,11 @@
 #define USE_GYRO_SPI_MPU6500
 #endif
 
-// Generate USE_SPI_GYRO or USE_I2C_GYRO
-#if defined(USE_GYRO_L3G4200D) || defined(USE_GYRO_MPU3050) || defined(USE_GYRO_MPU6000) || defined(USE_GYRO_MPU6050) || defined(USE_GYRO_MPU6500)
-#ifndef USE_I2C_GYRO
-#define USE_I2C_GYRO
-#endif
-#endif
-
+// Generate USE_SPI_GYRO
 #if defined(USE_GYRO_SPI_ICM20689) || defined(USE_GYRO_SPI_MPU6000) || defined(USE_GYRO_SPI_MPU6500) || defined(USE_GYRO_SPI_MPU9250) \
-    || defined(USE_GYRO_L3GD20) || defined(USE_GYRO_SPI_ICM42605) || defined(USE_GYRO_SPI_ICM42688P) || defined(USE_ACCGYRO_BMI160) \
-    || defined(USE_ACCGYRO_BMI270) || defined(USE_ACCGYRO_LSM6DSV16X) || defined(USE_ACCGYRO_LSM6DSO)
+    || defined(USE_GYRO_L3GD20) || defined(USE_GYRO_SPI_ICM42605) || defined(USE_GYRO_SPI_ICM42688P) || defined(USE_ACCGYRO_ICM45686) \
+    || defined(USE_ACCGYRO_ICM45605) || defined(USE_ACCGYRO_IIM42653) || defined(USE_ACCGYRO_BMI160) || defined(USE_ACCGYRO_BMI270) \
+    || defined(USE_ACCGYRO_LSM6DSV16X) || defined(USE_ACCGYRO_LSM6DSO) || defined(USE_ACCGYRO_ICM40609D) || defined(USE_ACCGYRO_IIM42652)
 #ifndef USE_SPI_GYRO
 #define USE_SPI_GYRO
 #endif
@@ -455,14 +514,6 @@
 // Can be set at runtime with with CLI parameter 'system_hse_mhz'.
 #ifndef SYSTEM_HSE_MHZ
 #define SYSTEM_HSE_MHZ 0
-#endif
-
-// Number of pins that needs pre-init
-#ifdef USE_SPI
-#ifndef SPI_PREINIT_COUNT
-// 2 x 8 (GYROx2, BARO, MAG, MAX, FLASHx2, RX)
-#define SPI_PREINIT_COUNT 16
-#endif
 #endif
 
 #ifndef USE_BLACKBOX
@@ -549,19 +600,24 @@
 #undef USED_TIMERS
 #endif
 
-#if !defined(USE_RANGEFINDER)
-#undef USE_RANGEFINDER_HCSR04
-#undef USE_RANGEFINDER_SRF10
-#undef USE_RANGEFINDER_HCSR04_I2C
-#undef USE_RANGEFINDER_VL53L0X
-#undef USE_RANGEFINDER_UIB
-#undef USE_RANGEFINDER_TF
+#if defined(USE_OPTICALFLOW_MT)
+#ifndef USE_RANGEFINDER_MT
+#define USE_RANGEFINDER_MT
 #endif
+#ifndef USE_OPTICALFLOW
+#define USE_OPTICALFLOW
+#endif
+#endif // USE_OPTICALFLOW_MT
+
+#if defined(USE_RANGEFINDER_HCSR04) || defined(USE_RANGEFINDER_TF) || defined(USE_RANGEFINDER_MT)
+#ifndef USE_RANGEFINDER
+#define USE_RANGEFINDER
+#endif
+#endif // USE_RANGEFINDER_XXX
 
 #ifndef USE_GPS_RESCUE
 #undef USE_CMS_GPS_RESCUE_MENU
 #endif
-
 
 #if defined(CONFIG_IN_RAM) || defined(CONFIG_IN_FILE) || defined(CONFIG_IN_EXTERNAL_FLASH) || defined(CONFIG_IN_SDCARD) || defined(CONFIG_IN_MEMORY_MAPPED_FLASH)
 #ifndef EEPROM_SIZE
@@ -574,35 +630,9 @@ extern uint8_t eepromData[EEPROM_SIZE];
 #ifndef CONFIG_IN_FLASH
 #define CONFIG_IN_FLASH
 #endif
-extern uint8_t __config_start;   // configured via linker script when building binaries.
-extern uint8_t __config_end;
-#endif
-
-#if defined(USE_EXST) && !defined(RAMBASED)
-#define USE_FLASH_BOOT_LOADER
-#endif
-
-#if defined(USE_FLASH_MEMORY_MAPPED)
-#if !defined(USE_RAM_CODE)
-#define USE_RAM_CODE
-#endif
-
-#define MMFLASH_CODE RAM_CODE
-#define MMFLASH_CODE_NOINLINE RAM_CODE NOINLINE
-
-#define MMFLASH_DATA FAST_DATA
-#define MMFLASH_DATA_ZERO_INIT FAST_DATA_ZERO_INIT
-#else
-#define MMFLASH_CODE
-#define MMFLASH_CODE_NOINLINE
-#define MMFLASH_DATA
-#define MMFLASH_DATA_ZERO_INIT
-#endif
-
-#ifdef USE_RAM_CODE
-// RAM_CODE for methods that need to be in RAM, but don't need to be in the fastest type of memory.
-// Note: if code is marked as RAM_CODE it *MUST* be in RAM, there is no alternative unlike functions marked with FAST_CODE/CCM_CODE
-#define RAM_CODE                   __attribute__((section(".ram_code")))
+struct linker_symbol;
+extern struct linker_symbol __config_start;   // configured via linker script when building binaries.
+extern struct linker_symbol __config_end;
 #endif
 
 #ifndef USE_ITERM_RELAX
@@ -651,3 +681,4 @@ extern uint8_t __config_end;
 #define USE_PIN_PULL_UP_DOWN
 #endif
 #endif // USE_PINIO
+

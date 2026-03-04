@@ -23,6 +23,8 @@
 
 #include "platform.h"
 
+#include "adcinternal.h"
+
 #if defined(USE_ADC_INTERNAL)
 
 #include "build/debug.h"
@@ -38,7 +40,7 @@ typedef struct movingAverageStateUint16_s {
     uint8_t pos;
 } movingAverageStateUint16_t;
 
-uint16_t updateMovingAverageUint16(movingAverageStateUint16_t *state, uint16_t newValue)
+static uint16_t updateMovingAverageUint16(movingAverageStateUint16_t *state, uint16_t newValue)
 {
     state->sum -= state->values[state->pos];
     state->values[state->pos] = newValue;
@@ -81,8 +83,8 @@ void adcInternalProcess(timeUs_t currentTimeUs)
         return;
     }
 
-    uint16_t vrefintSample = adcInternalReadVrefint();
-    uint16_t tempsensorSample = adcInternalReadTempsensor();
+    uint16_t vrefintSample = adcGetValue(ADC_VREFINT);
+    uint16_t tempsensorSample = adcGetValue(ADC_TEMPSENSOR);
 
     adcVrefintValue = updateMovingAverageUint16(&adcVrefintAverageState, vrefintSample);
     adcTempsensorValue = updateMovingAverageUint16(&adcTempsensorAverageState, tempsensorSample);

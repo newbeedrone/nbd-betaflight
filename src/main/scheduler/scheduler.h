@@ -52,8 +52,8 @@
 
 #define TASK_AGE_EXPEDITE_RX            schedulerConfig()->rxRelaxDeterminism  // Make RX tasks more schedulable if it's failed to be scheduled this many times
 #define TASK_AGE_EXPEDITE_OSD           schedulerConfig()->osdRelaxDeterminism  // Make OSD tasks more schedulable if it's failed to be scheduled this many times
-#define TASK_AGE_EXPEDITE_COUNT         1   // Make aged tasks more schedulable
-#define TASK_AGE_EXPEDITE_SCALE         0.9 // By scaling their expected execution time
+#define TASK_AGE_EXPEDITE_COUNT         1    // Make aged tasks more schedulable
+#define TASK_AGE_EXPEDITE_SCALE         0.9f // By scaling their expected execution time
 
 // Gyro interrupt counts over which to measure loop time and skew
 #define GYRO_RATE_COUNT 25000
@@ -119,6 +119,12 @@ typedef enum {
 #ifdef USE_GPS_RESCUE
     TASK_GPS_RESCUE,
 #endif
+#ifdef USE_ALTITUDE_HOLD
+    TASK_ALTHOLD,
+#endif
+#ifdef USE_POSITION_HOLD
+    TASK_POSHOLD,
+#endif
 #ifdef USE_MAG
     TASK_COMPASS,
 #endif
@@ -127,6 +133,9 @@ typedef enum {
 #endif
 #ifdef USE_RANGEFINDER
     TASK_RANGEFINDER,
+#endif
+#ifdef USE_OPTICALFLOW
+    TASK_OPTICALFLOW,
 #endif
 #if defined(USE_BARO) || defined(USE_GPS)
     TASK_ALTITUDE,
@@ -179,6 +188,9 @@ typedef enum {
 #ifdef USE_RC_STATS
     TASK_RC_STATS,
 #endif
+#ifdef USE_GIMBAL
+    TASK_GIMBAL,
+#endif
 
     /* Count of real tasks */
     TASK_COUNT,
@@ -230,10 +242,10 @@ void getTaskInfo(taskId_e taskId, taskInfo_t *taskInfo);
 void rescheduleTask(taskId_e taskId, timeDelta_t newPeriodUs);
 void setTaskEnabled(taskId_e taskId, bool newEnabledState);
 timeDelta_t getTaskDeltaTimeUs(taskId_e taskId);
-void schedulerIgnoreTaskStateTime();
-void schedulerIgnoreTaskExecRate();
-void schedulerIgnoreTaskExecTime();
-bool schedulerGetIgnoreTaskExecTime();
+void schedulerIgnoreTaskStateTime(void);
+void schedulerIgnoreTaskExecRate(void);
+void schedulerIgnoreTaskExecTime(void);
+bool schedulerGetIgnoreTaskExecTime(void);
 void schedulerResetTaskStatistics(taskId_e taskId);
 void schedulerResetTaskMaxExecutionTime(taskId_e taskId);
 void schedulerResetCheckFunctionMaxExecutionTime(void);

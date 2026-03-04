@@ -1,9 +1,13 @@
+CONFIGS_REPO_URL ?= https://github.com/newbeedrone/2025.12.x-config.git
+# handle only this directory as config submodule
+CONFIGS_SUBMODULE_DIR := src/config
+BASE_CONFIGS           = $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(CONFIG_DIR)/configs/*/config.h)))))
 
-CONFIGS_REPO_URL ?= https://github.com/newbeedrone/config
+ifneq ($(words $(CONFIG_DIR)),1)
+$(error CONFIG_DIR/BETAFLIGHT_CONFIG path contains whitespace; unsupported by GNU make wildcard.)
+endif
 
-BASE_CONFIGS      = $(sort $(notdir $(patsubst %/,%,$(dir $(wildcard $(CONFIG_DIR)/configs/*/config.h)))))
-
-ifneq ($(filter-out %_install test% %_clean clean% %-print %.hex %.h hex checks help configs $(BASE_TARGETS) $(BASE_CONFIGS),$(MAKECMDGOALS)),)
+ifneq ($(filter-out %_sdk %_install test% %_clean clean% %-print %.hex %.h hex checks help configs $(BASE_TARGETS) $(BASE_CONFIGS),$(MAKECMDGOALS)),)
 ifeq ($(wildcard $(CONFIG_DIR)/configs/),)
 $(error `$(CONFIG_DIR)` not found. Have you hydrated configuration using: 'make configs'?)
 endif
@@ -15,53 +19,70 @@ ifneq ($(TARGET),)
 $(error TARGET or CONFIG should be specified. Not both.)
 endif
 
-CONFIG_FILE      = $(CONFIG_DIR)/configs/$(CONFIG)/config.h
-INCLUDE_DIRS    += $(CONFIG_DIR)/configs/$(CONFIG)
+CONFIG_HEADER_FILE  = $(CONFIG_DIR)/configs/$(CONFIG)/config.h
+CONFIG_SOURCE_FILE  = $(CONFIG_DIR)/configs/$(CONFIG)/config.c
+INCLUDE_DIRS       += $(CONFIG_DIR)/configs/$(CONFIG)
 
-ifneq ($(wildcard $(CONFIG_FILE)),)
+ifneq ($(wildcard $(CONFIG_HEADER_FILE)),)
 
-CONFIG_REVISION := norevision
-ifeq ($(shell git -C $(CONFIG_DIR) diff --shortstat),)
-CONFIG_REVISION := $(shell git -C $(CONFIG_DIR) log -1 --format="%h")
-CONFIG_REVISION_DEFINE := -D'__CONFIG_REVISION__="$(CONFIG_REVISION)"'
+CONFIG_SRC :=
+ifneq ($(wildcard $(CONFIG_SOURCE_FILE)),)
+CONFIG_SRC += $(CONFIG_SOURCE_FILE)
+TARGET_FLAGS += -DUSE_CONFIG_SOURCE -DUSE_TARGET_CONFIG
 endif
 
-TARGET        := $(shell grep " FC_TARGET_MCU" $(CONFIG_FILE) | awk '{print $$3}' )
-HSE_VALUE_MHZ := $(shell grep " SYSTEM_HSE_MHZ" $(CONFIG_FILE) | awk '{print $$3}' )
-ifneq ($(HSE_VALUE_MHZ),)
+CONFIG_REVISION := norevision
+ifeq ($(shell git -C "$(CONFIG_DIR)" rev-parse --is-inside-work-tree 2>/dev/null),true)
+ifeq ($(strip $(shell git -C "$(CONFIG_DIR)" status --porcelain -uno 2>/dev/null)),)
+CONFIG_REVISION := $(shell git -C "$(CONFIG_DIR)" rev-parse --short=7 HEAD 2>/dev/null)
+CONFIG_REVISION_DEFINE := -D'__CONFIG_REVISION__="$(CONFIG_REVISION)"'
+endif
+endif
+
+# Extract constants from $(CONFIG_HEADER_FILE) via preprocessor expansion
+# Oscillator frequency (MHz) -> Hz
+HSE_VALUE_MHZ := $(call pp_def_value,$(CONFIG_HEADER_FILE),SYSTEM_HSE_MHZ)
+ifneq ($(strip $(HSE_VALUE_MHZ)),)
 HSE_VALUE     := $(shell echo $$(( $(HSE_VALUE_MHZ) * 1000000 )) )
 endif
 
-GYRO_DEFINE   := $(shell grep " USE_GYRO_" $(CONFIG_FILE) | awk '{print $$2}' )
-
-ifeq ($(TARGET),)
-$(error No TARGET identified. Is the $(CONFIG_FILE) valid for $(CONFIG)?)
+# MCU target from config header
+TARGET        := $(call pp_def_value,$(CONFIG_HEADER_FILE),FC_TARGET_MCU)
+ifeq ($(strip $(TARGET)),)
+$(error No TARGET identified. Is the $(CONFIG_HEADER_FILE) valid for $(CONFIG)?)
 endif
 
-EXST_ADJUST_VMA := $(shell grep " FC_VMA_ADDRESS" $(CONFIG_FILE) | awk '{print $$3}' )
-ifneq ($(EXST_ADJUST_VMA),)
+# Optional EXST address adjustment
+EXST_ADJUST_VMA := $(call pp_def_value,$(CONFIG_HEADER_FILE),FC_VMA_ADDRESS)
+ifneq ($(strip $(EXST_ADJUST_VMA)),)
 EXST = yes
 endif
 
 else #exists
-$(error `$(CONFIG_FILE)` not found. Have you hydrated configuration using: 'make configs'?)
-endif #config_file exists
+$(error `$(CONFIG_HEADER_FILE)` not found. Have you hydrated configuration using: 'make configs'?)
+endif #CONFIG_HEADER_FILE exists
 endif #config
 
 .PHONY: configs
 configs:
+ifeq ($(shell realpath "$(CONFIG_DIR)"),$(shell realpath "$(CONFIGS_SUBMODULE_DIR)"))
+	@echo "Updating config submodule: $(CONFIGS_SUBMODULE_DIR)"
+	$(V1) git submodule update --init -- "$(CONFIGS_SUBMODULE_DIR)" || { echo "Config submodule update failed. Please check your git configuration."; exit 1; }
+	@echo "Submodule update succeeded."
+else
 ifeq ($(wildcard $(CONFIG_DIR)),)
 	@echo "Hydrating clone for configs: $(CONFIG_DIR)"
-	$(V0) git clone $(CONFIGS_REPO_URL) $(CONFIG_DIR)
+	$(V1) git clone --depth=1 $(CONFIGS_REPO_URL) "$(CONFIG_DIR)"
 else
-	$(V0) git -C $(CONFIG_DIR) pull origin
+	$(V1) git -C "$(CONFIG_DIR)" pull --ff-only origin
+endif
 endif
 
 $(BASE_CONFIGS):
 	@echo "Building target config $@"
-	$(V0) $(MAKE) -j hex CONFIG=$@
+	$(V0) $(MAKE) fwo CONFIG=$@
 	@echo "Building target config $@ succeeded."
 
 ## <CONFIG>_rev    : build configured target and add revision to filename
 $(addsuffix _rev,$(BASE_CONFIGS)):
-	$(V0) $(MAKE) -j hex CONFIG=$(subst _rev,,$@) REV=yes
+	$(V0) $(MAKE) fwo CONFIG=$(subst _rev,,$@) REV=yes

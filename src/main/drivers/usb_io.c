@@ -26,6 +26,7 @@
 #ifdef USE_VCP
 
 #include "drivers/io.h"
+#include "drivers/serial_usb_vcp.h"
 #include "drivers/time.h"
 #include "usb_io.h"
 
@@ -62,19 +63,26 @@ bool usbCableIsInserted(void)
     }
 #endif
 
+#if defined(USE_VCP)
+    result = result || usbVcpIsConnected() != 0;
+#endif
+
     return result;
 }
 
 void usbGenerateDisconnectPulse(void)
 {
-    /* Pull down PA12 to create USB disconnect pulse */
-    IO_t usbPin = IOGetByTag(IO_TAG(PA12));
+#ifdef USB_DP_PIN
+    /* Pull down USB_DP_PIN to create USB disconnect pulse */
+    IO_t usbPin = IOGetByTag(IO_TAG(USB_DP_PIN));
+    if (!usbPin) {
+        return;
+    }
+
     IOConfigGPIO(usbPin, IOCFG_OUT_OD);
-
     IOLo(usbPin);
-
     delay(200);
-
     IOHi(usbPin);
+#endif
 }
 #endif

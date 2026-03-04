@@ -20,7 +20,6 @@
 
 #pragma once
 
-
 // can't use 0
 #define NVIC_PRIO_MAX                      NVIC_BUILD_PRIORITY(0, 1)
 #define NVIC_PRIO_TIMER                    NVIC_BUILD_PRIORITY(1, 1)
@@ -33,7 +32,7 @@
 #define NVIC_PRIO_RX_INT_EXTI              NVIC_BUILD_PRIORITY(3, 0x0f)
 #define NVIC_PRIO_RX_BUSY_EXTI             NVIC_BUILD_PRIORITY(3, 0x0f)
 
-#define NVIC_PRIO_MPU_INT_EXTI             NVIC_BUILD_PRIORITY(0x0f, 0x0f)
+#define NVIC_PRIO_MPU_INT_EXTI             NVIC_BUILD_PRIORITY(0, 0)  // This must be high priority as it drives the scheduler timing
 #define NVIC_PRIO_MAG_INT_EXTI             NVIC_BUILD_PRIORITY(0x0f, 0x0f)
 #define NVIC_PRIO_WS2811_DMA               NVIC_BUILD_PRIORITY(1, 2)  // TODO - is there some reason to use high priority?
 #define NVIC_PRIO_SERIALUART_TXDMA         NVIC_BUILD_PRIORITY(1, 1)  // Highest of all SERIALUARTx_TXDMA
@@ -77,19 +76,23 @@
 #define NVIC_PRIO_SPI_DMA                  NVIC_BUILD_PRIORITY(0, 0)
 #define NVIC_PRIO_SDIO_DMA                 NVIC_BUILD_PRIORITY(0, 0)
 
-#ifdef USE_HAL_DRIVER
 // utility macros to join/split priority
+#ifdef USE_HAL_DRIVER
+
 #define NVIC_PRIORITY_GROUPING NVIC_PRIORITYGROUP_2
 #define NVIC_BUILD_PRIORITY(base,sub) (((((base)<<(4-(7-(NVIC_PRIORITY_GROUPING))))|((sub)&(0x0f>>(7-(NVIC_PRIORITY_GROUPING)))))<<4)&0xf0)
 #define NVIC_PRIORITY_BASE(prio) (((prio)>>(4-(7-(NVIC_PRIORITY_GROUPING))))>>4)
 #define NVIC_PRIORITY_SUB(prio) (((prio)&(0x0f>>(7-(NVIC_PRIORITY_GROUPING))))>>4)
+
 #elif defined(USE_ATBSP_DRIVER)
+
 #define NVIC_PRIORITY_GROUPING NVIC_PRIORITY_GROUP_2
 #define NVIC_BUILD_PRIORITY(base,sub) (((((base)<<(4-(7-(NVIC_PRIORITY_GROUPING))))|((sub)&(0x0f>>(7-(NVIC_PRIORITY_GROUPING)))))<<4)&0xf0)
 #define NVIC_PRIORITY_BASE(prio) (((prio)>>(4-(7-(NVIC_PRIORITY_GROUPING))))>>4)
 #define NVIC_PRIORITY_SUB(prio) (((prio)&((0x0f>>(7-(NVIC_PRIORITY_GROUPING)))<<4))>>4)
+
 #else
-// utility macros to join/split priority
+
 #define NVIC_PRIORITY_GROUPING NVIC_PriorityGroup_2
 #define NVIC_BUILD_PRIORITY(base,sub) (((((base)<<(4-(7-(NVIC_PRIORITY_GROUPING>>8))))|((sub)&(0x0f>>(7-(NVIC_PRIORITY_GROUPING>>8)))))<<4)&0xf0)
 #define NVIC_PRIORITY_BASE(prio) (((prio)>>(4-(7-(NVIC_PRIORITY_GROUPING>>8))))>>4)

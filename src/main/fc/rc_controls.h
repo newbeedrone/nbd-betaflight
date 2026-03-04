@@ -22,10 +22,11 @@
 
 #include <stdbool.h>
 
+#include "common/axis.h"
 #include "common/filter.h"
 #include "pg/pg.h"
 
-typedef enum rc_alias {
+typedef enum {
     ROLL = 0,
     PITCH,
     YAW,
@@ -85,34 +86,26 @@ typedef enum {
 extern float rcCommand[4];
 
 typedef struct rcSmoothingFilter_s {
-    bool filterInitialized;
-    pt3Filter_t filterSetpoint[4];
-    pt3Filter_t filterRcDeflection[2];
-    pt3Filter_t filterFeedforward[3];
+    pt3Filter_t filterSetpoint[PRIMARY_CHANNEL_COUNT];
+    pt3Filter_t filterRcDeflection[RP_AXIS_COUNT];
+    pt3Filter_t filterFeedforward[XYZ_AXIS_COUNT];
 
     uint8_t setpointCutoffSetting;
     uint8_t throttleCutoffSetting;
-    uint8_t feedforwardCutoffSetting;
 
     uint16_t setpointCutoffFrequency;
     uint16_t throttleCutoffFrequency;
-    uint16_t feedforwardCutoffFrequency;
 
-    float smoothedRxRateHz;
-    uint8_t sampleCount;
     uint8_t debugAxis;
 
     float autoSmoothnessFactorSetpoint;
-    float autoSmoothnessFactorFeedforward;
     float autoSmoothnessFactorThrottle;
 } rcSmoothingFilter_t;
 
 typedef struct rcControlsConfig_s {
     uint8_t deadband;                       // introduce a deadband around the stick center for pitch and roll axis. Must be greater than zero.
     uint8_t yaw_deadband;                   // introduce a deadband around the stick center for yaw axis. Must be greater than zero.
-    uint8_t alt_hold_deadband;              // defines the neutral zone of throttle stick during altitude hold, default setting is +/-40
-    uint8_t alt_hold_fast_change;           // when disabled, turn off the althold when throttle stick is out of deadband defined with alt_hold_deadband; when enabled, altitude changes slowly proportional to stick movement
-    bool yaw_control_reversed;            // invert control direction of yaw
+    bool yaw_control_reversed;              // invert control direction of yaw
 } rcControlsConfig_t;
 
 PG_DECLARE(rcControlsConfig_t, rcControlsConfig);
@@ -132,6 +125,7 @@ PG_DECLARE(flight3DConfig_t, flight3DConfig);
 typedef struct armingConfig_s {
     uint8_t gyro_cal_on_first_arm;          // calibrate the gyro right before the first arm
     uint8_t auto_disarm_delay;              // allow automatically disarming multicopters after auto_disarm_delay seconds of zero throttle. Disabled when 0
+    uint8_t prearm_allow_rearm;
 } armingConfig_t;
 
 PG_DECLARE(armingConfig_t, armingConfig);
@@ -139,8 +133,12 @@ PG_DECLARE(armingConfig_t, armingConfig);
 bool areUsingSticksToArm(void);
 
 throttleStatus_e calculateThrottleStatus(void);
-void processRcStickPositions();
+void processRcStickPositions(void);
 
 bool isUsingSticksForArming(void);
 
 void rcControlsInit(void);
+
+bool wasLastDisarmUserRequested(void); // Check if the user has requested a disarm since the last cleared
+
+void clearWasLastDisarmUserRequested(void); // Clear the user disarm request flag

@@ -2,10 +2,13 @@
 #
 # Installers for tools
 #
-# NOTE: These are not tied to the default goals
-#       and must be invoked manually
+# NOTE: These are not tied to the default goals and must be invoked manually
 #
-# ARM SDK Version: 10.3-2021.10
+# ARM SDK Version: 13.3.Rel1
+#
+# Release date: July 04, 2024
+#
+# PICO SDK Version: 2.X - July 03, 2025
 #
 ###############################################################
 
@@ -16,53 +19,67 @@
 ##############################
 
 # Set up ARM (STM32) SDK
-ARM_SDK_DIR ?= $(TOOLS_DIR)/gcc-arm-none-eabi-10.3-2021.10
 # Checked below, Should match the output of $(shell arm-none-eabi-gcc -dumpversion)
-GCC_REQUIRED_VERSION ?= 10.3.1
-
-.PHONY: arm_sdk_version
-
-arm_sdk_version:
-	$(V1) $(ARM_SDK_PREFIX)gcc --version
+# must match arm-none-eabi-gcc-<version> file in arm sdk distribution
+GCC_REQUIRED_VERSION ?= 13.3.1
 
 ## arm_sdk_install   : Install Arm SDK
 .PHONY: arm_sdk_install
 
-ARM_SDK_URL_BASE  := https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10
-# source: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
-ifeq ($(OSFAMILY), linux)
-  ARM_SDK_URL  := $(ARM_SDK_URL_BASE)-$(shell uname -m)-linux.tar.bz2
-endif
-
-ifeq ($(OSFAMILY), macosx)
-  ARM_SDK_URL  := $(ARM_SDK_URL_BASE)-mac.tar.bz2
-endif
-
-ifeq ($(OSFAMILY), windows)
-  ARM_SDK_URL  := $(ARM_SDK_URL_BASE)-win32.zip
+# source: https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+ifeq ($(OSFAMILY)-$(ARCHFAMILY), linux-x86_64)
+  ARM_SDK_URL := https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-arm-none-eabi.tar.xz
+  DL_CHECKSUM = 0601a9588bc5b9c99ad2b56133b7f118
+else ifeq ($(OSFAMILY)-$(ARCHFAMILY), macosx-x86_64)
+  ARM_SDK_URL := https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-darwin-x86_64-arm-none-eabi.tar.xz
+  DL_CHECKSUM = 4bb141e44b831635fde4e8139d470f1f
+else ifeq ($(OSFAMILY)-$(ARCHFAMILY), macosx-arm64)
+  ARM_SDK_URL := https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-darwin-arm64-arm-none-eabi.tar.xz
+  DL_CHECKSUM = f1c18320bb3121fa89dca11399273f4e
+else ifeq ($(OSFAMILY), windows)
+  ARM_SDK_URL := https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi.zip
+  DL_CHECKSUM = 39d9882ca0eb475e81170ae826c1435d
+else
+  $(error No toolchain URL defined for $(OSFAMILY)-$(ARCHFAMILY))
 endif
 
 ARM_SDK_FILE := $(notdir $(ARM_SDK_URL))
+# remove compression suffixes
+ARM_SDK_DIR := $(TOOLS_DIR)/$(patsubst %.zip,%, 	\
+			    $(patsubst %.tar.xz,%, 	\
+			    $(notdir $(ARM_SDK_URL))))
 
-SDK_INSTALL_MARKER := $(ARM_SDK_DIR)/bin/arm-none-eabi-gcc-$(GCC_REQUIRED_VERSION)
+SDK_INSTALL_MARKER := $(ARM_SDK_DIR)/.installed
+
+.PHONY: arm_sdk_version
+
+arm_sdk_version: | $(ARM_SDK_DIR)
+	$(V1) $(ARM_SDK_DIR)/bin/arm-none-eabi-gcc --version
 
 # order-only prereq on directory existance:
 arm_sdk_install: | $(TOOLS_DIR)
 arm_sdk_install: arm_sdk_download $(SDK_INSTALL_MARKER)
 
-$(SDK_INSTALL_MARKER):
-ifneq ($(OSFAMILY), windows)
-        # binary only release so just extract it
-	$(V1) tar -C $(TOOLS_DIR) -xjf "$(DL_DIR)/$(ARM_SDK_FILE)"
+$(SDK_INSTALL_MARKER): $(DL_DIR)/$(ARM_SDK_FILE)
+        # verify ckecksum first
+	@checksum=$$(md5sum "$<" | awk '{print $$1}'); \
+	if [ "$$checksum" != "$(DL_CHECKSUM)" ]; then \
+		echo "$@ Checksum mismatch! Expected $(DL_CHECKSUM), got $$checksum."; \
+		exit 1; \
+	fi
+ifeq ($(OSFAMILY), windows)
+	$(V1) unzip -q -d $(TOOLS_DIR) "$<"
 else
-	$(V1) unzip -q -d $(ARM_SDK_DIR) "$(DL_DIR)/$(ARM_SDK_FILE)"
+        # binary only release so just extract it
+	$(V1) tar -C $(TOOLS_DIR) -xf "$<"
 endif
+	$(V1) touch $(SDK_INSTALL_MARKER)
 
 .PHONY: arm_sdk_download
 arm_sdk_download: | $(DL_DIR)
 arm_sdk_download: $(DL_DIR)/$(ARM_SDK_FILE)
 $(DL_DIR)/$(ARM_SDK_FILE):
-    # download the source only if it's newer than what we already have
+        # download the source only if it's newer than what we already have
 	$(V1) curl -L -k -o "$@" $(if $(wildcard $@), -z "$@",) "$(ARM_SDK_URL)"
 
 ## arm_sdk_clean     : Uninstall Arm SDK
@@ -260,7 +277,7 @@ zip_clean:
 
 ifeq ($(shell [ -d "$(ARM_SDK_DIR)" ] && echo "exists"), exists)
   ARM_SDK_PREFIX := $(ARM_SDK_DIR)/bin/arm-none-eabi-
-else ifeq (,$(filter %_install test% clean% %-print checks help configs, $(MAKECMDGOALS)))
+else ifeq (,$(filter %_sdk %_install test% clean% %-print checks help configs, $(MAKECMDGOALS)))
   GCC_VERSION = $(shell arm-none-eabi-gcc -dumpversion)
   ifeq ($(GCC_VERSION),)
     $(error **ERROR** arm-none-eabi-gcc not in the PATH. Run 'make arm_sdk_install' to install automatically in the tools folder of this repo)
@@ -316,3 +333,54 @@ breakpad_clean:
 	$(V1) [ ! -d "$(BREAKPAD_DIR)" ] || $(RM) -rf $(BREAKPAD_DIR)
 	@echo " CLEAN        $(BREAKPAD_DL_FILE)"
 	$(V1) $(RM) -f $(BREAKPAD_DL_FILE)
+
+# Raspberry Pi Pico tools
+PICOTOOL_REPO   := https://github.com/raspberrypi/picotool.git
+PICOTOOL_DL_DIR := $(DL_DIR)/picotool
+PICOTOOL_BUILD_DIR := $(PICOTOOL_DL_DIR)/build
+PICOTOOL_DIR    := $(TOOLS_DIR)/picotool
+PICO_SDK_PATH   ?= $(ROOT_DIR)/lib/main/pico-sdk
+PICOTOOL        ?= $(PICOTOOL_DIR)/picotool
+
+ifneq ($(filter picotool_install uf2,$(MAKECMDGOALS)),)
+    ifeq ($(wildcard $(PICO_SDK_PATH)/CMakeLists.txt),)
+        $(error "PICO_SDK_PATH ($(PICO_SDK_PATH)) does not point to a valid Pico SDK. Please 'make pico_sdk' to hydrate the Pico SDK.")
+    endif
+endif
+
+ifneq ($(filter uf2,$(MAKECMDGOALS)),)
+    ifeq (,$(wildcard $(PICOTOOL)))
+        ifeq (,$(shell which picotool 2>/dev/null))
+            $(error "picotool not in the PATH or configured. Run 'make picotool_install' to install in the tools folder.")
+        else
+            PICOTOOL := picotool
+        endif
+    endif
+endif
+
+.PHONY: pico_sdk
+pico_sdk:
+	@echo "Updating pico-sdk"
+	$(V1) git submodule update --init --recursive -- lib/main/pico-sdk || { echo "Failed to update pico-sdk"; exit 1; }
+	@echo "pico-sdk updated"
+
+.PHONY: picotool_install
+picotool_install: | $(DL_DIR) $(TOOLS_DIR)
+picotool_install: picotool_clean
+	@echo "\n CLONE     $(PICOTOOL_REPO)"
+	$(V1) git clone --depth 1 $(PICOTOOL_REPO) "$(PICOTOOL_DL_DIR)" || { echo "Failed to clone picotool repository"; exit 1; }
+	@echo "\n BUILD      $(PICOTOOL_BUILD_DIR)"
+	$(V1) [ -d "$(PICOTOOL_DIR)" ] || mkdir -p $(PICOTOOL_DIR)
+	$(V1) [ -d "$(PICOTOOL_BUILD_DIR)" ] || mkdir -p $(PICOTOOL_BUILD_DIR)
+	$(V1) cmake -S $(PICOTOOL_DL_DIR) -B $(PICOTOOL_BUILD_DIR) -D PICO_SDK_PATH=$(PICO_SDK_PATH) || { echo "CMake configuration failed"; exit 1; }
+	$(V1) $(MAKE) -C $(PICOTOOL_BUILD_DIR) || { echo "picotool build failed"; exit 1; }
+	$(V1) cp $(PICOTOOL_BUILD_DIR)/picotool $(PICOTOOL_DIR)/picotool || { echo "Failed to install picotool binary"; exit 1; }
+	@echo "\n VERSION:"
+	$(V1) $(PICOTOOL_DIR)/picotool version
+
+.PHONY: picotool_clean
+picotool_clean:
+	@echo " CLEAN        $(PICOTOOL_DIR)"
+	$(V1) [ ! -d "$(PICOTOOL_DIR)" ] || $(RM) -rf $(PICOTOOL_DIR)
+	@echo " CLEAN        $(PICOTOOL_DL_DIR)"
+	$(V1) [ ! -d "$(PICOTOOL_DL_DIR)" ] || $(RM) -rf $(PICOTOOL_DL_DIR)

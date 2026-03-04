@@ -47,16 +47,18 @@
 static displayPort_t mspDisplayPort;
 static serialPortIdentifier_e displayPortSerial;
 
+typedef struct displayPortMspCommand_s {
+    uint8_t command;
+    uint8_t row;
+    uint8_t col;
+    uint8_t attribute;
+    uint8_t data[OSD_CHAR_BYTES];
+} __attribute__((packed)) displayPortMspCommand_t;
+
 static int output(displayPort_t *displayPort, uint8_t cmd, uint8_t *buf, int len)
 {
     UNUSED(displayPort);
 
-#ifdef USE_CLI
-    // FIXME There should be no dependency on the CLI but mspSerialPush doesn't check for cli mode, and can't because it also shouldn't have a dependency on the CLI.
-    if (cliMode) {
-        return 0;
-    }
-#endif
     return mspSerialPush(displayPortSerial, cmd, buf, len, MSP_DIRECTION_REPLY, MSP_V1);
 }
 
@@ -174,6 +176,44 @@ static uint32_t txBytesFree(const displayPort_t *displayPort)
     return mspSerialTxBytesFree();
 }
 
+#ifdef USE_MSP_DISPLAYPORT_FONT
+static bool writeFontCharacter(displayPort_t *displayPort, uint16_t addr, const osdCharacter_t *chr)
+{
+    displayPortMspCommand_t displayPortCommand;
+
+    if (!chr) {
+        return false;
+    }
+
+    displayPortCommand.command = MSP_DP_FONTCHAR_WRITE;
+    displayPortCommand.row = addr & 0xff;
+    displayPortCommand.col = (addr >> 8) & 0xff;
+    displayPortCommand.attribute = 0;
+
+    memcpy(displayPortCommand.data, chr->data, OSD_CHAR_BYTES);
+
+    int res = output(displayPort, MSP_DISPLAYPORT, (uint8_t*)&displayPortCommand, OSD_CHAR_BYTES + 4);
+
+    // 80ms delay needed to ensure the MSP display has enough time to process the font data
+    delay(80);
+
+    return res > 0;
+}
+
+static bool checkReady(displayPort_t *displayPort, bool rescan)
+{
+    UNUSED(rescan);
+    if (
+        !displayPort ||
+        displayPort->deviceType != DISPLAYPORT_DEVICE_TYPE_MSP
+    ) {
+        return false;
+    }
+
+    return true;
+}
+#endif
+
 static const displayPortVTable_t mspDisplayPortVTable = {
     .grab = grab,
     .release = release,
@@ -188,6 +228,10 @@ static const displayPortVTable_t mspDisplayPortVTable = {
     .redraw = redraw,
     .isSynced = isSynced,
     .txBytesFree = txBytesFree,
+#ifdef USE_MSP_DISPLAYPORT_FONT
+    .writeFontCharacter = writeFontCharacter,
+    .checkReady = checkReady,
+#endif
     .layerSupported = NULL,
     .layerSelect = NULL,
     .layerCopy = NULL,
@@ -226,7 +270,12 @@ displayPort_t *displayPortMspInit(void)
     return &mspDisplayPort;
 }
 
-void displayPortMspSetSerial(serialPortIdentifier_e serialPort) {
+void displayPortMspSetSerial(serialPortIdentifier_e serialPort)
+{
     displayPortSerial = serialPort;
+}
+
+serialPortIdentifier_e displayPortMspGetSerial(void) {
+    return displayPortSerial;
 }
 #endif // USE_MSP_DISPLAYPORT

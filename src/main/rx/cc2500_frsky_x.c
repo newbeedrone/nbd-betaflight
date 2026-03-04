@@ -34,7 +34,6 @@
 
 #include "drivers/adc.h"
 #include "drivers/io.h"
-#include "drivers/io_def.h"
 #include "drivers/io_types.h"
 #include "drivers/resource.h"
 #include "drivers/rx/rx_cc2500.h"
@@ -192,7 +191,7 @@ static void buildTelemetryFrame(uint8_t *packet)
         uint8_t a1Value;
         switch (rxCc2500SpiConfig()->a1Source) {
         case FRSKY_SPI_A1_SOURCE_EXTADC:
-            a1Value = (uint8_t)((adcGetChannel(ADC_EXTERNAL1) & 0xfe0) >> 5);
+            a1Value = (uint8_t)((adcGetValue(ADC_EXTERNAL1) & 0xfe0) >> 5);
             break;
         case FRSKY_SPI_A1_SOURCE_CONST:
             a1Value = A1_CONST_X & 0x7f;
@@ -276,7 +275,6 @@ static void frSkyXTelemetryWriteFrame(const smartPortPayload_t *payload)
 #endif
 #endif // USE_RX_FRSKY_SPI_TELEMETRY
 
-
 void frSkyXSetRcData(uint16_t *rcData, const uint8_t *packet)
 {
     uint16_t c[8];
@@ -300,7 +298,7 @@ void frSkyXSetRcData(uint16_t *rcData, const uint8_t *packet)
     }
 }
 
-bool isValidPacket(const uint8_t *packet)
+static bool isValidPacket(const uint8_t *packet)
 {
     bool useBindTxId2 = false;
 
@@ -311,7 +309,7 @@ bool isValidPacket(const uint8_t *packet)
         }
     }
 
-    uint16_t lcrc = calculateCrc(&packet[3], (packetLength - 7)); 
+    uint16_t lcrc = calculateCrc(&packet[3], (packetLength - 7));
 
     if ((lcrc >> 8) == packet[packetLength - 4] && (lcrc & 0x00FF) == packet[packetLength - 3] &&
         (packet[0] == packetLength - 3) &&

@@ -24,10 +24,10 @@
 
 #ifdef USE_OCTOSPI
 
-typedef enum OCTOSPIDevice {
+typedef enum octoSpiDevice_e {
     OCTOSPIINVALID = -1,
     OCTOSPIDEV_1   = 0,
-} OCTOSPIDevice;
+} octoSpiDevice_e;
 
 #define OCTOSPIDEV_COUNT 1
 
@@ -39,11 +39,10 @@ typedef enum OCTOSPIDevice {
 #error OctoSPI unsupported on this MCU
 #endif
 
-OCTOSPIDevice octoSpiDeviceByInstance(OCTOSPI_TypeDef *instance);
-OCTOSPI_TypeDef *octoSpiInstanceByDevice(OCTOSPIDevice device);
+octoSpiDevice_e octoSpiDeviceByInstance(OCTOSPI_TypeDef *instance);
+OCTOSPI_TypeDef *octoSpiInstanceByDevice(octoSpiDevice_e device);
 
-
-bool octoSpiInit(OCTOSPIDevice device);
+bool octoSpiInit(octoSpiDevice_e device);
 bool octoSpiReceive1LINE(OCTOSPI_TypeDef *instance, uint8_t instruction, uint8_t dummyCycles, uint8_t *in, int length);
 bool octoSpiReceive4LINES(OCTOSPI_TypeDef *instance, uint8_t instruction, uint8_t dummyCycles, uint8_t *in, int length);
 bool octoSpiTransmit1LINE(OCTOSPI_TypeDef *instance, uint8_t instruction, uint8_t dummyCycles, const uint8_t *out, int length);
@@ -54,7 +53,6 @@ bool octoSpiTransmitWithAddress1LINE(OCTOSPI_TypeDef *instance, uint8_t instruct
 bool octoSpiTransmitWithAddress4LINES(OCTOSPI_TypeDef *instance, uint8_t instruction, uint8_t dummyCycles, uint32_t address, uint8_t addressSize, const uint8_t *out, int length);
 
 bool octoSpiInstructionWithAddress1LINE(OCTOSPI_TypeDef *instance, uint8_t instruction, uint8_t dummyCycles, uint32_t address, uint8_t addressSize);
-
 
 void octoSpiDisableMemoryMappedMode(OCTOSPI_TypeDef *instance);
 void octoSpiEnableMemoryMappedMode(OCTOSPI_TypeDef *instance);

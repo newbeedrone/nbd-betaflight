@@ -37,27 +37,26 @@
 #include "drivers/accgyro/accgyro.h"
 #include "drivers/accgyro/accgyro_virtual.h"
 #include "drivers/accgyro/accgyro_mpu.h"
-#include "drivers/accgyro/accgyro_mpu3050.h"
+
 #include "drivers/accgyro/accgyro_mpu6050.h"
 #include "drivers/accgyro/accgyro_mpu6500.h"
+
 #include "drivers/accgyro/accgyro_spi_bmi160.h"
 #include "drivers/accgyro/accgyro_spi_bmi270.h"
+
 #include "drivers/accgyro/accgyro_spi_icm20649.h"
 #include "drivers/accgyro/accgyro_spi_icm20689.h"
 #include "drivers/accgyro/accgyro_spi_icm426xx.h"
+#include "drivers/accgyro/accgyro_spi_icm456xx.h"
+#include "drivers/accgyro/accgyro_spi_icm40609.h"
+
+#include "drivers/accgyro/accgyro_spi_l3gd20.h"
 #include "drivers/accgyro/accgyro_spi_lsm6dso.h"
+#include "drivers/accgyro/accgyro_spi_lsm6dsv16x.h"
+
 #include "drivers/accgyro/accgyro_spi_mpu6000.h"
 #include "drivers/accgyro/accgyro_spi_mpu6500.h"
 #include "drivers/accgyro/accgyro_spi_mpu9250.h"
-#include "drivers/accgyro/accgyro_spi_lsm6dsv16x.h"
-
-#ifdef USE_GYRO_L3GD20
-#include "drivers/accgyro/accgyro_spi_l3gd20.h"
-#endif
-
-#ifdef USE_GYRO_L3G4200D
-#include "drivers/accgyro_legacy/accgyro_l3g4200d.h"
-#endif
 
 #include "drivers/accgyro/gyro_sync.h"
 
@@ -72,27 +71,14 @@
 #include "sensors/gyro.h"
 #include "sensors/sensors.h"
 
-#if !defined(USE_GYRO_L3G4200D) && !defined(USE_GYRO_MPU3050) && !defined(USE_GYRO_MPU6050) && \
-    !defined(USE_GYRO_MPU6500) && !defined(USE_GYRO_SPI_ICM20689) && !defined(USE_GYRO_SPI_MPU6000) && \
-    !defined(USE_GYRO_SPI_MPU6500) && !defined(USE_GYRO_SPI_MPU9250) && !defined(USE_GYRO_L3GD20) && \
-    !defined(USE_GYRO_SPI_ICM42605) && !defined(USE_GYRO_SPI_ICM42688P) && \
-    !defined(USE_ACCGYRO_BMI160) && !defined(USE_ACCGYRO_BMI270) && \
-    !defined(USE_ACCGYRO_LSM6DSV16X) && !defined(USE_ACCGYRO_LSM6DSO) && !defined(USE_VIRTUAL_GYRO)
-#error At least one USE_GYRO device definition required
-#endif
-
-#ifdef USE_MULTI_GYRO
-#define ACTIVE_GYRO ((gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_2) ? &gyro.gyroSensor2 : &gyro.gyroSensor1)
-#else
-#define ACTIVE_GYRO (&gyro.gyroSensor1)
-#endif
+#include "gyro_init.h"
 
 // The gyro buffer is split 50/50, the first half for the transmit buffer, the second half for the receive buffer
 // This buffer is large enough for the gyros currently supported in accgyro_mpu.c but should be reviewed id other
 // gyro types are supported with SPI DMA.
 #define GYRO_BUF_SIZE 32
 
-static gyroDetectionFlags_t gyroDetectionFlags = GYRO_NONE_MASK;
+static uint8_t gyroDetectedFlags = 0;
 
 static uint16_t calculateNyquistAdjustedNotchHz(uint16_t notchHz, uint16_t notchCutoffHz)
 {
@@ -164,9 +150,6 @@ static bool gyroInitLowpassFilterLpf(int slot, int type, uint16_t lpfHz, uint32_
     const uint32_t gyroFrequencyNyquist = 1000000 / 2 / looptime;
     const float gyroDt = looptime * 1e-6f;
 
-    // Gain could be calculated a little later as it is specific to the pt1/bqrcf2/fkf branches
-    const float gain = pt1FilterGain(lpfHz, gyroDt);
-
     // Dereference the pointer to null before checking valid cutoff and filter
     // type. It will be overridden for positive cases.
     *lowpassFilterApplyFn = nullFilterApply;
@@ -177,7 +160,7 @@ static bool gyroInitLowpassFilterLpf(int slot, int type, uint16_t lpfHz, uint32_
         case FILTER_PT1:
             *lowpassFilterApplyFn = (filterApplyFnPtr) pt1FilterApply;
             for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
-                pt1FilterInit(&lowpassFilter[axis].pt1FilterState, gain);
+                pt1FilterInit(&lowpassFilter[axis].pt1FilterState, pt1FilterGain(lpfHz, gyroDt));
             }
             ret = true;
             break;
@@ -197,14 +180,14 @@ static bool gyroInitLowpassFilterLpf(int slot, int type, uint16_t lpfHz, uint32_
         case FILTER_PT2:
             *lowpassFilterApplyFn = (filterApplyFnPtr) pt2FilterApply;
             for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
-                pt2FilterInit(&lowpassFilter[axis].pt2FilterState, gain);
+                pt2FilterInit(&lowpassFilter[axis].pt2FilterState, pt2FilterGain(lpfHz, gyroDt));
             }
             ret = true;
             break;
         case FILTER_PT3:
             *lowpassFilterApplyFn = (filterApplyFnPtr) pt3FilterApply;
             for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
-                pt3FilterInit(&lowpassFilter[axis].pt3FilterState, gain);
+                pt3FilterInit(&lowpassFilter[axis].pt3FilterState, pt3FilterGain(lpfHz, gyroDt));
             }
             ret = true;
             break;
@@ -276,7 +259,7 @@ void gyroInitFilters(void)
     dynNotchInit(dynNotchConfig(), gyro.targetLooptime);
 #endif
 
-    const float k = pt1FilterGain(GYRO_IMU_DOWNSAMPLE_CUTOFF_HZ, gyro.targetLooptime);
+    const float k = pt1FilterGain(GYRO_IMU_DOWNSAMPLE_CUTOFF_HZ, gyro.targetLooptime * 1e-6f);
     for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
         pt1FilterInit(&gyro.imuGyroFilter[axis], k);
     }
@@ -305,7 +288,7 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
 {
     gyroSensor->gyroDev.gyro_high_fsr = gyroConfig()->gyro_high_fsr;
     gyroSensor->gyroDev.gyroAlign = config->alignment;
-    buildRotationMatrixFromAlignment(&config->customAlignment, &gyroSensor->gyroDev.rotationMatrix);
+    buildRotationMatrixFromAngles(&gyroSensor->gyroDev.rotationMatrix, &config->customAlignment);
     gyroSensor->gyroDev.mpuIntExtiTag = config->extiTag;
     gyroSensor->gyroDev.hardware_lpf = gyroConfig()->gyro_hardware_lpf;
 
@@ -320,8 +303,6 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
     case GYRO_DEFAULT:
     case GYRO_VIRTUAL:
     case GYRO_MPU6050:
-    case GYRO_L3G4200D:
-    case GYRO_MPU3050:
     case GYRO_L3GD20:
     case GYRO_BMI160:
     case GYRO_BMI270:
@@ -331,7 +312,11 @@ void gyroInitSensor(gyroSensor_t *gyroSensor, const gyroDeviceConfig_t *config)
     case GYRO_LSM6DSO:
     case GYRO_LSM6DSV16X:
     case GYRO_ICM42688P:
+    case GYRO_IIM42652:
+    case GYRO_IIM42653:
     case GYRO_ICM42605:
+    case GYRO_ICM45686:
+    case GYRO_ICM45605:
         gyroSensor->gyroDev.gyroHasOverflowProtection = true;
         break;
 
@@ -363,24 +348,6 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
     case GYRO_MPU6050:
         if (mpu6050GyroDetect(dev)) {
             gyroHardware = GYRO_MPU6050;
-            break;
-        }
-        FALLTHROUGH;
-#endif
-
-#ifdef USE_GYRO_L3G4200D
-    case GYRO_L3G4200D:
-        if (l3g4200dDetect(dev)) {
-            gyroHardware = GYRO_L3G4200D;
-            break;
-        }
-        FALLTHROUGH;
-#endif
-
-#ifdef USE_GYRO_MPU3050
-    case GYRO_MPU3050:
-        if (mpu3050Detect(dev)) {
-            gyroHardware = GYRO_MPU3050;
             break;
         }
         FALLTHROUGH;
@@ -462,9 +429,11 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
         FALLTHROUGH;
 #endif
 
-#if defined(USE_GYRO_SPI_ICM42605) || defined(USE_GYRO_SPI_ICM42688P)
+#if defined(USE_GYRO_SPI_ICM42605) || defined(USE_GYRO_SPI_ICM42688P) || defined(USE_ACCGYRO_IIM42652) || defined(USE_ACCGYRO_IIM42653)
     case GYRO_ICM42605:
     case GYRO_ICM42688P:
+    case GYRO_IIM42652:
+    case GYRO_IIM42653:
         if (icm426xxSpiGyroDetect(dev)) {
             switch (dev->mpuDetectionResult.sensor) {
             case ICM_42605_SPI:
@@ -472,6 +441,32 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
                 break;
             case ICM_42688P_SPI:
                 gyroHardware = GYRO_ICM42688P;
+                break;
+            case IIM_42652_SPI:
+                gyroHardware = GYRO_IIM42652;
+                break;
+            case IIM_42653_SPI:
+                gyroHardware = GYRO_IIM42653;
+                break;
+            default:
+                gyroHardware = GYRO_NONE;
+                break;
+            }
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
+#if defined(USE_ACCGYRO_ICM45686) || defined(USE_ACCGYRO_ICM45605)
+    case GYRO_ICM45686:
+    case GYRO_ICM45605:
+        if (icm456xxSpiGyroDetect(dev)) {
+            switch (dev->mpuDetectionResult.sensor) {
+            case ICM_45686_SPI:
+                gyroHardware = GYRO_ICM45686;
+                break;
+            case ICM_45605_SPI:
+                gyroHardware = GYRO_ICM45605;
                 break;
             default:
                 gyroHardware = GYRO_NONE;
@@ -518,6 +513,16 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
         FALLTHROUGH;
 #endif
 
+
+#ifdef USE_ACCGYRO_ICM40609D
+    case GYRO_ICM40609D:
+        if (icm40609SpiGyroDetect(dev)) {
+            gyroHardware = GYRO_ICM40609D;
+            break;
+        }
+        FALLTHROUGH;
+#endif
+
 #ifdef USE_VIRTUAL_GYRO
     case GYRO_VIRTUAL:
         if (virtualGyroDetect(dev)) {
@@ -528,13 +533,13 @@ STATIC_UNIT_TESTED gyroHardware_e gyroDetect(gyroDev_t *dev)
 #endif
 
     default:
+        UNUSED(dev);
         gyroHardware = GYRO_NONE;
     }
 
     if (gyroHardware != GYRO_NONE) {
         sensorsSet(SENSOR_GYRO);
     }
-
 
     return gyroHardware;
 }
@@ -567,10 +572,9 @@ static void gyroPreInitSensor(const gyroDeviceConfig_t *config)
 
 void gyroPreInit(void)
 {
-    gyroPreInitSensor(gyroDeviceConfig(0));
-#ifdef USE_MULTI_GYRO
-    gyroPreInitSensor(gyroDeviceConfig(1));
-#endif
+    for (int i = 0; i < GYRO_COUNT; i++) {
+        gyroPreInitSensor(gyroDeviceConfig(i));
+    }
 }
 
 bool gyroInit(void)
@@ -586,114 +590,146 @@ bool gyroInit(void)
 #endif
 
     gyro.gyroDebugMode = DEBUG_NONE;
-    gyro.useDualGyroDebugging = false;
+    gyro.useMultiGyroDebugging = false;
     gyro.gyroHasOverflowProtection = true;
 
     switch (debugMode) {
     case DEBUG_FFT:
     case DEBUG_FFT_FREQ:
     case DEBUG_GYRO_RAW:
-    case DEBUG_GYRO_SCALED:
     case DEBUG_GYRO_FILTERED:
     case DEBUG_DYN_LPF:
     case DEBUG_GYRO_SAMPLE:
         gyro.gyroDebugMode = debugMode;
         break;
-    case DEBUG_DUAL_GYRO_DIFF:
-    case DEBUG_DUAL_GYRO_RAW:
-    case DEBUG_DUAL_GYRO_SCALED:
-        gyro.useDualGyroDebugging = true;
+    case DEBUG_MULTI_GYRO_DIFF:
+    case DEBUG_MULTI_GYRO_RAW:
+    case DEBUG_MULTI_GYRO_SCALED:
+        gyro.useMultiGyroDebugging = true;
         break;
     }
 
-    gyroDetectionFlags = GYRO_NONE_MASK;
+    gyroDetectedFlags = 0;
     uint8_t gyrosToScan = gyroConfig()->gyrosDetected;
+    // scan all gyros if gyrosDetected is zero
+    if (gyrosToScan == 0) {
+        gyrosToScan = 0xff;
+    }
+    // always scan gyro_enabled_bitmask
+    gyrosToScan |= gyroConfig()->gyro_enabled_bitmask;
 
-    gyro.gyroToUse = gyroConfig()->gyro_to_use;
+    // Ensure we scan all configured gyros on boards with multiple gyros
+    // This fixes the issue where if the first gyro was previously detected but is now missing,
+    // we still attempt to detect other gyros that may be present
+    for (int i = 0; i < GYRO_COUNT; i++) {
+        if (gyroDeviceConfig(i)->busType != BUS_TYPE_NONE) {
+            gyrosToScan |= GYRO_MASK(i);
+        }
+    }
+
     gyro.gyroDebugAxis = gyroConfig()->gyro_filter_debug_axis;
 
-    if ((!gyrosToScan || (gyrosToScan & GYRO_1_MASK)) && gyroDetectSensor(&gyro.gyroSensor1, gyroDeviceConfig(0))) {
-        gyroDetectionFlags |= GYRO_1_MASK;
+    for (int i = 0; i < GYRO_COUNT; i++) {
+        detectedGyros[i] = GYRO_NONE;
+        // Only attempt to detect a gyro if it's enabled or we're doing an auto-scan
+        if (gyrosToScan & GYRO_MASK(i)) {
+            if (gyroDetectSensor(&gyro.gyroSensor[i], gyroDeviceConfig(i))) {
+                // If we detected a gyro, make sure it's in the enabled bitmask
+                // This ensures that during first boot, all detected gyros are enabled
+                gyroDetectedFlags |= GYRO_MASK(i);
+                detectedGyros[i] = gyro.gyroSensor[i].gyroDev.gyroHardware;
+            }
+        }
     }
 
-#if defined(USE_MULTI_GYRO)
-    if ((!gyrosToScan || (gyrosToScan & GYRO_2_MASK)) && gyroDetectSensor(&gyro.gyroSensor2, gyroDeviceConfig(1))) {
-        gyroDetectionFlags |= GYRO_2_MASK;
-    }
-#endif
-
-    if (gyroDetectionFlags == GYRO_NONE_MASK) {
+    if (gyroDetectedFlags == 0) {
+        // No gyros detected at all - this is a critical failure
+        // Set minimal safe defaults to prevent lockups
+        gyro.sampleRateHz = 1000;  // Safe default to prevent division by zero
+        gyro.accSampleRateHz = 1000;
+        gyro.scale = 1.0f;
+        gyro.rawSensorDev = NULL;
+        detectedSensors[SENSOR_INDEX_GYRO] = GYRO_NONE;
         return false;
     }
 
     bool eepromWriteRequired = false;
-    if (!gyrosToScan) {
-        gyroConfigMutable()->gyrosDetected = gyroDetectionFlags;
+    if (gyrosToScan != gyroConfigMutable()->gyrosDetected) {
+        gyroConfigMutable()->gyrosDetected = gyroDetectedFlags;
         eepromWriteRequired = true;
     }
 
-#if defined(USE_MULTI_GYRO)
-    if ((gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_BOTH && !((gyroDetectionFlags & GYRO_ALL_MASK) == GYRO_ALL_MASK))
-        || (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_1 && !(gyroDetectionFlags & GYRO_1_MASK))
-        || (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_2 && !(gyroDetectionFlags & GYRO_2_MASK))) {
-        if (gyroDetectionFlags & GYRO_1_MASK) {
-            gyro.gyroToUse = GYRO_CONFIG_USE_GYRO_1;
-        } else {
-            gyro.gyroToUse = GYRO_CONFIG_USE_GYRO_2;
+    // check if all enabled sensors are detected
+    gyro.gyroEnabledBitmask = gyroDetectedFlags & gyroConfig()->gyro_enabled_bitmask;
+
+    // If no gyros are enabled but some are detected, enable at least the first detected gyro
+    // This prevents lockups when configuration is inconsistent
+    if (gyro.gyroEnabledBitmask == 0 && gyroDetectedFlags != 0) {
+        gyro.gyroEnabledBitmask = gyroDetectedFlags & -gyroDetectedFlags;
+    }
+
+    if (gyroConfigMutable()->gyro_enabled_bitmask != gyro.gyroEnabledBitmask) {
+        gyroConfigMutable()->gyro_enabled_bitmask = gyro.gyroEnabledBitmask;
+        eepromWriteRequired = true;
+    }
+
+    // Only allow using multiple gyros simultaneously if they are the same hardware type.
+    // Or allow using if they have the same sample rate and scale.
+    bool gyro_hardware_compatible = true;
+    uint16_t gyro_sample_rate = 0;
+    float gyro_scale = 0.0f;
+    bool firstFound = false;
+    for (int i = 0; i < GYRO_COUNT; i++) {
+        if (gyro.gyroEnabledBitmask & GYRO_MASK(i)) {
+            if (!firstFound) {
+                firstFound = true;
+                gyro_sample_rate = gyro.gyroSensor[i].gyroDev.gyroSampleRateHz;
+                gyro_scale = gyro.gyroSensor[i].gyroDev.scale;
+            } else if ((gyro_sample_rate != gyro.gyroSensor[i].gyroDev.gyroSampleRateHz) ||
+                       (gyro_scale != gyro.gyroSensor[i].gyroDev.scale)) {
+                gyro_hardware_compatible = false;
+            }
         }
+    }
 
-        gyroConfigMutable()->gyro_to_use = gyro.gyroToUse;
+    if (!gyro_hardware_compatible) {
+        // If the user enabled multiple IMU and they are not compatible types, then reset to using only the first IMU.
+        gyro.gyroEnabledBitmask = gyro.gyroEnabledBitmask & -gyro.gyroEnabledBitmask;
+        gyroConfigMutable()->gyro_enabled_bitmask = gyro.gyroEnabledBitmask;
         eepromWriteRequired = true;
     }
 
-    // Only allow using both gyros simultaneously if they are the same hardware type.
-    if (((gyroDetectionFlags & GYRO_ALL_MASK) == GYRO_ALL_MASK) && gyro.gyroSensor1.gyroDev.gyroHardware == gyro.gyroSensor2.gyroDev.gyroHardware) {
-        gyroDetectionFlags |= GYRO_IDENTICAL_MASK;
-    } else if (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_BOTH) {
-        // If the user selected "BOTH" and they are not the same type, then reset to using only the first gyro.
-        gyro.gyroToUse = GYRO_CONFIG_USE_GYRO_1;
-        gyroConfigMutable()->gyro_to_use = gyro.gyroToUse;
-        eepromWriteRequired = true;
-    }
+    static DMA_DATA uint8_t gyroBuf[GYRO_COUNT][2][GYRO_BUF_SIZE / 2];
 
-    if (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_2 || gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_BOTH) {
-        static DMA_DATA uint8_t gyroBuf2[GYRO_BUF_SIZE];
-        // SPI DMA buffer required per device
-        gyro.gyroSensor2.gyroDev.dev.txBuf = gyroBuf2;
-        gyro.gyroSensor2.gyroDev.dev.rxBuf = &gyroBuf2[GYRO_BUF_SIZE / 2];
+    for (int i = 0; i < GYRO_COUNT; i++) {
+        if (gyroDetectedFlags & GYRO_MASK(i)) {  // Only initialize detected gyros
+            // SPI DMA buffer required per device
+            gyro.gyroSensor[i].gyroDev.dev.txBuf = gyroBuf[i][0];
+            gyro.gyroSensor[i].gyroDev.dev.rxBuf = gyroBuf[i][1];
 
-        gyroInitSensor(&gyro.gyroSensor2, gyroDeviceConfig(1));
-        gyro.gyroHasOverflowProtection = gyro.gyroHasOverflowProtection && gyro.gyroSensor2.gyroDev.gyroHasOverflowProtection;
-        detectedSensors[SENSOR_INDEX_GYRO] = gyro.gyroSensor2.gyroDev.gyroHardware;
+            gyroInitSensor(&gyro.gyroSensor[i], gyroDeviceConfig(i));
+
+            gyro.gyroHasOverflowProtection = gyro.gyroHasOverflowProtection
+                                             && gyro.gyroSensor[i].gyroDev.gyroHasOverflowProtection;
+        }
     }
-#endif
 
     if (eepromWriteRequired) {
         writeEEPROM();
     }
 
-    if (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_1 || gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_BOTH) {
-        static DMA_DATA uint8_t gyroBuf1[GYRO_BUF_SIZE];
-        // SPI DMA buffer required per device
-        gyro.gyroSensor1.gyroDev.dev.txBuf = gyroBuf1;
-        gyro.gyroSensor1.gyroDev.dev.rxBuf = &gyroBuf1[GYRO_BUF_SIZE / 2];
-        gyroInitSensor(&gyro.gyroSensor1, gyroDeviceConfig(0));
-        gyro.gyroHasOverflowProtection =  gyro.gyroHasOverflowProtection && gyro.gyroSensor1.gyroDev.gyroHasOverflowProtection;
-        detectedSensors[SENSOR_INDEX_GYRO] = gyro.gyroSensor1.gyroDev.gyroHardware;
+    // Use the first enabled gyro for our scale and raw sensor dev
+    int firstGyro = firstEnabledGyro();
+    if (firstGyro >= 0) {
+        detectedSensors[SENSOR_INDEX_GYRO] = gyro.gyroSensor[firstGyro].gyroDev.gyroHardware;
+        gyro.scale = gyro.gyroSensor[firstGyro].gyroDev.scale;
+        gyro.rawSensorDev = &gyro.gyroSensor[firstGyro].gyroDev;
+    } else {
+        // no gyros enabled
+        detectedSensors[SENSOR_INDEX_GYRO] = GYRO_NONE;
+        gyro.scale = 1.0f;
+        gyro.rawSensorDev = NULL;
     }
-
-    // Copy the sensor's scale to the high-level gyro object. If running in "BOTH" mode
-    // then logic above requires both sensors to be the same so we'll use sensor1's scale.
-    // This will need to be revised if we ever allow different sensor types to be used simultaneously.
-    // Likewise determine the appropriate raw data for use in DEBUG_GYRO_RAW
-    gyro.scale = gyro.gyroSensor1.gyroDev.scale;
-    gyro.rawSensorDev = &gyro.gyroSensor1.gyroDev;
-#if defined(USE_MULTI_GYRO)
-    if (gyro.gyroToUse == GYRO_CONFIG_USE_GYRO_2) {
-        gyro.scale = gyro.gyroSensor2.gyroDev.scale;
-        gyro.rawSensorDev = &gyro.gyroSensor2.gyroDev;
-    }
-#endif
 
     if (gyro.rawSensorDev) {
         gyro.sampleRateHz = gyro.rawSensorDev->gyroSampleRateHz;
@@ -706,9 +742,9 @@ bool gyroInit(void)
     return true;
 }
 
-gyroDetectionFlags_t getGyroDetectionFlags(void)
+uint8_t getGyroDetectedFlags(void)
 {
-    return gyroDetectionFlags;
+    return gyroDetectedFlags;
 }
 
 void gyroSetTargetLooptime(uint8_t pidDenom)
@@ -723,37 +759,43 @@ void gyroSetTargetLooptime(uint8_t pidDenom)
     }
 }
 
-
 gyroDev_t *gyroActiveDev(void)
 {
-    return &ACTIVE_GYRO->gyroDev;
+    return gyro.rawSensorDev;
 }
 
 const mpuDetectionResult_t *gyroMpuDetectionResult(void)
 {
-    return &ACTIVE_GYRO->gyroDev.mpuDetectionResult;
+    return &gyro.rawSensorDev->mpuDetectionResult;
 }
 
 int16_t gyroRateDps(int axis)
 {
-    return lrintf(gyro.gyroADCf[axis] / ACTIVE_GYRO->gyroDev.scale);
+    return lrintf(gyro.gyroADCf[axis] / gyro.rawSensorDev->scale);
 }
 
 #ifdef USE_GYRO_REGISTER_DUMP
-static extDevice_t *gyroSensorDevByInstance(uint8_t whichSensor)
+static extDevice_t *gyroExtDevice(uint8_t idx)
 {
-#ifdef USE_MULTI_GYRO
-    if (whichSensor == GYRO_CONFIG_USE_GYRO_2) {
-        return &gyro.gyroSensor2.gyroDev.dev;
-    }
-#else
-    UNUSED(whichSensor);
-#endif
-    return &gyro.gyroSensor1.gyroDev.dev;
+    return &gyro.gyroSensor[idx].gyroDev.dev;
 }
 
 uint8_t gyroReadRegister(uint8_t whichSensor, uint8_t reg)
 {
-    return mpuGyroReadRegister(gyroSensorDevByInstance(whichSensor), reg);
+    if (whichSensor < GYRO_COUNT) {
+        return mpuGyroReadRegister(gyroExtDevice(whichSensor), reg);
+    } else {
+        return 0;
+    }
 }
 #endif // USE_GYRO_REGISTER_DUMP
+
+int firstEnabledGyro(void)
+{
+    if (gyro.gyroEnabledBitmask != 0) {
+        return llog2(gyro.gyroEnabledBitmask & -gyro.gyroEnabledBitmask);
+    } else {
+        // no gyro is enabled
+        return -1;
+    }
+}

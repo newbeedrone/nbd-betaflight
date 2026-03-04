@@ -28,7 +28,7 @@
 
 #include "platform.h"
 
-#if defined(USE_I2C) && !defined(SOFT_I2C)
+#if defined(USE_I2C) && !defined(USE_SOFT_I2C)
 
 #include "common/utils.h"
 
@@ -39,6 +39,14 @@
 
 #include "pg/bus_i2c.h"
 
+PG_REGISTER_ARRAY_WITH_RESET_FN(i2cConfig_t, I2CDEV_COUNT, i2cConfig, PG_I2C_CONFIG, 1);
+
+#ifndef I2C0_SCL_PIN
+#define I2C0_SCL_PIN NONE
+#endif
+#ifndef I2C0_SDA_PIN
+#define I2C0_SDA_PIN NONE
+#endif
 #ifndef I2C1_SCL_PIN
 #define I2C1_SCL_PIN NONE
 #endif
@@ -65,13 +73,16 @@
 #endif
 
 typedef struct i2cDefaultConfig_s {
-    I2CDevice device;
+    i2cDevice_e device;
     ioTag_t ioTagScl, ioTagSda;
     bool pullUp;
     uint16_t clockSpeed;
 } i2cDefaultConfig_t;
 
 static const i2cDefaultConfig_t i2cDefaultConfig[] = {
+#ifdef USE_I2C_DEVICE_0
+    { I2CDEV_0, IO_TAG(I2C0_SCL_PIN), IO_TAG(I2C0_SDA_PIN), I2C0_PULLUP, I2C0_CLOCKSPEED },
+#endif
 #ifdef USE_I2C_DEVICE_1
     { I2CDEV_1, IO_TAG(I2C1_SCL_PIN), IO_TAG(I2C1_SDA_PIN), I2C1_PULLUP, I2C1_CLOCKSPEED },
 #endif
@@ -88,18 +99,16 @@ static const i2cDefaultConfig_t i2cDefaultConfig[] = {
 
 void pgResetFn_i2cConfig(i2cConfig_t *i2cConfig)
 {
-    memset(i2cConfig, 0, sizeof(*i2cConfig));
+    memset(i2cConfig, 0, sizeof(*i2cConfig) * I2CDEV_COUNT);
 
     for (size_t index = 0 ; index < ARRAYLEN(i2cDefaultConfig) ; index++) {
         const i2cDefaultConfig_t *defconf = &i2cDefaultConfig[index];
-        int device = defconf->device;
+        const i2cDevice_e device = defconf->device;
         i2cConfig[device].ioTagScl = defconf->ioTagScl;
         i2cConfig[device].ioTagSda = defconf->ioTagSda;
         i2cConfig[device].pullUp = defconf->pullUp;
         i2cConfig[device].clockSpeed = defconf->clockSpeed;
     }
 }
-
-PG_REGISTER_ARRAY_WITH_RESET_FN(i2cConfig_t, I2CDEV_COUNT, i2cConfig, PG_I2C_CONFIG, 1);
 
 #endif // defined(USE_I2C) && !defined(USE_SOFT_I2C)

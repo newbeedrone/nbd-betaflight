@@ -41,6 +41,7 @@
 #include "drivers/rangefinder/rangefinder.h"
 #include "drivers/rangefinder/rangefinder_hcsr04.h"
 #include "drivers/rangefinder/rangefinder_lidartf.h"
+#include "drivers/rangefinder/rangefinder_lidarmt.h"
 #include "drivers/time.h"
 
 #include "fc/runtime_config.h"
@@ -90,7 +91,6 @@ PG_RESET_TEMPLATE(sonarConfig_t, sonarConfig,
 static bool rangefinderDetect(rangefinderDev_t * dev, uint8_t rangefinderHardwareToUse)
 {
     rangefinderType_e rangefinderHardware = RANGEFINDER_NONE;
-    requestedSensors[SENSOR_INDEX_RANGEFINDER] = rangefinderHardwareToUse;
 
 #if !defined(USE_RANGEFINDER_HCSR04) && !defined(USE_RANGEFINDER_TF)
     UNUSED(dev);
@@ -108,23 +108,28 @@ static bool rangefinderDetect(rangefinderDev_t * dev, uint8_t rangefinderHardwar
 #endif
             break;
 
-        case RANGEFINDER_TFMINI:
 #if defined(USE_RANGEFINDER_TF)
-            if (lidarTFminiDetect(dev)) {
-                rangefinderHardware = RANGEFINDER_TFMINI;
-                rescheduleTask(TASK_RANGEFINDER, TASK_PERIOD_MS(RANGEFINDER_TF_TASK_PERIOD_MS));
+        case RANGEFINDER_TFMINI:
+        case RANGEFINDER_TF02:
+        case RANGEFINDER_TFNOVA:
+            if (lidarTFDetect(dev, rangefinderHardwareToUse)) {
+                rangefinderHardware = rangefinderHardwareToUse;
+                rescheduleTask(TASK_RANGEFINDER, TASK_PERIOD_MS(dev->delayMs));
             }
 #endif
             break;
 
-        case RANGEFINDER_TF02:
-#if defined(USE_RANGEFINDER_TF)
-            if (lidarTF02Detect(dev)) {
-                rangefinderHardware = RANGEFINDER_TF02;
-                rescheduleTask(TASK_RANGEFINDER, TASK_PERIOD_MS(RANGEFINDER_TF_TASK_PERIOD_MS));
+#if defined(USE_RANGEFINDER_MT)
+        case RANGEFINDER_MTF01:
+        case RANGEFINDER_MTF02:
+        case RANGEFINDER_MTF01P:
+        case RANGEFINDER_MTF02P:
+            if (mtRangefinderDetect(dev, rangefinderHardwareToUse)) {
+                rangefinderHardware = rangefinderHardwareToUse;
+                rescheduleTask(TASK_RANGEFINDER, TASK_PERIOD_MS(dev->delayMs));
             }
-#endif
             break;
+#endif
 
         case RANGEFINDER_NONE:
             rangefinderHardware = RANGEFINDER_NONE;
@@ -230,7 +235,7 @@ void rangefinderUpdate(void)
     }
 }
 
-bool isSurfaceAltitudeValid(void)
+static bool isSurfaceAltitudeValid(void)
 {
 
     /*

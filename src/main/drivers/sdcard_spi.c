@@ -110,10 +110,9 @@ static void sdcard_reset(void)
     }
 }
 
-
 // Called in ISR context
 // Wait until idle indicated by a read value of SDCARD_IDLE_TOKEN
-busStatus_e sdcard_callbackIdle(uint32_t arg)
+static busStatus_e sdcard_callbackIdle(uintptr_t arg)
 {
     sdcard_t *sdcard = (sdcard_t *)arg;
     extDevice_t *dev = &sdcard->dev;
@@ -122,7 +121,8 @@ busStatus_e sdcard_callbackIdle(uint32_t arg)
 
     if (idleByte == SDCARD_IDLE_TOKEN) {
         // Default for next call to sdcard_callbackNotIdle()
-        sdcard->idleCount = SDCARD_MAXIMUM_BYTE_DELAY_FOR_CMD_REPLY;        return BUS_READY;
+        sdcard->idleCount = SDCARD_MAXIMUM_BYTE_DELAY_FOR_CMD_REPLY;
+        return BUS_READY;
     }
 
     if (--sdcard->idleCount <= 0) {
@@ -133,10 +133,9 @@ busStatus_e sdcard_callbackIdle(uint32_t arg)
     return BUS_BUSY;
 }
 
-
 // Called in ISR context
 // Wait until idle is no longer indicated by a read value of SDCARD_IDLE_TOKEN
-busStatus_e sdcard_callbackNotIdle(uint32_t arg)
+static busStatus_e sdcard_callbackNotIdle(uintptr_t arg)
 {
     sdcard_t *sdcard = (sdcard_t *)arg;
     extDevice_t *dev = &sdcard->dev;
@@ -153,7 +152,6 @@ busStatus_e sdcard_callbackNotIdle(uint32_t arg)
 
     return BUS_BUSY;
 }
-
 
 /**
  * The SD card spec requires 8 clock cycles to be sent by us on the bus after most commands so it can finish its
@@ -340,9 +338,9 @@ typedef enum {
     SDCARD_RECEIVE_ERROR
 } sdcardReceiveBlockStatus_e;
 
-// Called in ISR context
+/// Called in ISR context
 // Wait until the arrival of the SDCARD_SINGLE_BLOCK_READ_START_TOKEN token
-busStatus_e sdcard_callbackNotIdleDataBlock(uint32_t arg)
+static busStatus_e sdcard_callbackNotIdleDataBlock(uintptr_t arg)
 {
     sdcard_t *sdcard = (sdcard_t *)arg;
     extDevice_t *dev = &sdcard->dev;
@@ -373,7 +371,7 @@ static sdcardReceiveBlockStatus_e sdcard_receiveDataBlock(uint8_t *buffer, int c
 {
     uint8_t dataToken;
 
-    sdcard.idleCount = SDCARD_MAXIMUM_BYTE_DELAY_FOR_CMD_REPLY;
+    sdcard.idleCount = 8;
 
     // Note that this does not release the CS at the end of the transaction
     busSegment_t segments[] = {
@@ -395,7 +393,7 @@ static sdcardReceiveBlockStatus_e sdcard_receiveDataBlock(uint8_t *buffer, int c
         return SDCARD_RECEIVE_BLOCK_IN_PROGRESS;
     case SDCARD_SINGLE_BLOCK_READ_START_TOKEN:
        return SDCARD_RECEIVE_SUCCESS;
-    default: 
+    default:
        return SDCARD_RECEIVE_ERROR;
     }
 }
@@ -538,9 +536,9 @@ static bool sdcard_checkInitDone(void)
     return status == 0x00;
 }
 
-void sdcardSpi_preInit(const sdcardConfig_t *config)
+static void sdcardSpi_preinit(const sdcardConfig_t *config)
 {
-    spiPreinitRegister(config->chipSelectTag, IOCFG_IPU, 1);
+    ioPreinitByTag(config->chipSelectTag, IOCFG_IPU, PREINIT_PIN_STATE_HIGH);
 }
 
 /**
@@ -569,7 +567,7 @@ static void sdcardSpi_init(const sdcardConfig_t *config, const spiPinConfig_t *s
     sdcard.dev.busType_u.spi.csnPin = chipSelectIO;
 
     // Set the callback argument when calling back to this driver for DMA completion
-    sdcard.dev.callbackArg = (uint32_t)&sdcard;
+    sdcard.dev.callbackArg = (uintptr_t)&sdcard;
 
     // Max frequency is initially 400kHz
 
@@ -1103,7 +1101,7 @@ static void sdcardSpi_setProfilerCallback(sdcard_profilerCallback_c callback)
 #endif
 
 sdcardVTable_t sdcardSpiVTable = {
-    sdcardSpi_preInit,
+    sdcardSpi_preinit,
     sdcardSpi_init,
     sdcardSpi_readBlock,
     sdcardSpi_beginWriteBlocks,

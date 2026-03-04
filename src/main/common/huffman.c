@@ -18,15 +18,11 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "platform.h"
 
 #ifdef USE_HUFFMAN
 
 #include "huffman.h"
-
 
 int huffmanEncodeBuf(uint8_t *outBuf, int outBufLen, const uint8_t *inBuf, int inLen, const huffmanTable_t *huffmanTable)
 {
@@ -38,7 +34,7 @@ int huffmanEncodeBuf(uint8_t *outBuf, int outBufLen, const uint8_t *inBuf, int i
 
     for (int ii = 0; ii < inLen; ++ii) {
         const int huffCodeLen = huffmanTable[*inBuf].codeLen;
-        const uint16_t huffCode = huffmanTable[*inBuf].code;
+        const uint16_t huffCode = huffmanTable[*inBuf].code << 4;
         ++inBuf;
         uint16_t testBit = 0x8000;
 
@@ -75,7 +71,7 @@ int huffmanEncodeBufStreaming(huffmanState_t *state, const uint8_t *inBuf, int i
 
     for (const uint8_t *pos = inBuf, *end = inBuf + inLen; pos < end; ++pos) {
         const int huffCodeLen = huffmanTable[*pos].codeLen;
-        const uint16_t huffCode = huffmanTable[*pos].code;
+        const uint16_t huffCode = huffmanTable[*pos].code << 4;
         uint16_t testBit = 0x8000;
 
         for (int jj = 0; jj < huffCodeLen; ++jj) {

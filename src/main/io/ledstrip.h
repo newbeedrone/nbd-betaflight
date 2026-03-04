@@ -33,7 +33,7 @@
 #define LED_CONFIGURABLE_COLOR_COUNT   16
 #define LED_MODE_COUNT                  6
 #define LED_DIRECTION_COUNT             6
-#define LED_BASEFUNCTION_COUNT          7
+#define LED_BASEFUNCTION_COUNT          10
 #define LED_OVERLAY_COUNT               7
 #define LED_SPECIAL_COLOR_COUNT        11
 
@@ -129,7 +129,10 @@ typedef enum {
     LED_FUNCTION_BATTERY,
     LED_FUNCTION_RSSI,
     LED_FUNCTION_GPS,
-    LED_FUNCTION_THRUST_RING
+    LED_FUNCTION_THRUST_RING,
+    LED_FUNCTION_GPS_BAR,
+    LED_FUNCTION_BATTERY_BAR,
+    LED_FUNCTION_ALTITUDE
 } ledBaseFunctionId_e;
 
 typedef enum {
@@ -236,3 +239,5 @@ void updateRequiredOverlay(void);
 
 uint8_t getLedProfile(void);
 void setLedProfile(uint8_t profile);
+uint8_t getLedBrightness(void);
+void setLedBrightness(uint8_t brightness);

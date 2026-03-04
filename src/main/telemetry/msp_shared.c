@@ -40,7 +40,6 @@
 #include "telemetry/msp_shared.h"
 #include "telemetry/smartport.h"
 
-
 /*
 ---------------------------------------------------------------
 How MSP frames are sent over CRSF:
@@ -59,14 +58,14 @@ MSP might be MSPv1 or MSPv2 or MSPv1_Jumbo.
 MSP_body might be sent in chunks.
 First (or only) chunk must always set start bit (#4) of status byte.
 Each next chunk must have increased sequence number in status byte.
-Size of chunk is recovered from size of CRSF frame. 
-Although last / only CRSF frame might have size bigger than needed for MSP-body. 
+Size of chunk is recovered from size of CRSF frame.
+Although last / only CRSF frame might have size bigger than needed for MSP-body.
 Extra bytes must be ignored. So, the real size of MSP-body must be parsed from the MSP-body itself.
-CRSF frames might be any size until maximum of 64 bytes for a CRSF frame. 
+CRSF frames might be any size until maximum of 64 bytes for a CRSF frame.
 So, maximum chunk size is 57 bytes. Although, MSP-body might be sent in shorter chunks.
 Although, first chunk must consist full size any type of the MSP frame.
 
-MSP-CRC is not sent over CRSF due to ther is already CRC of CRSF frame. 
+MSP-CRC is not sent over CRSF due to ther is already CRC of CRSF frame.
 So, it must be recalculated of needed for MSP-receiver.
 
 MSP frame must be returned to the origin address of the request
@@ -95,9 +94,9 @@ enum { // error codes (they are not sent anywhere)
 
 enum { // minimum length for a frame.
     MIN_LENGTH_CHUNK         = 2, // status + at_least_one_byte
-    MIN_LENGTH_REQUEST_V1    = 3, // status + length + ID 
-    MIN_LENGTH_REQUEST_JUMBO = 5, // status + length=FF + ID + length_lo + length_hi 
-    MIN_LENGTH_REQUEST_V2    = 6, // status + flag + ID_lo + ID_hi + size_lo + size_hi 
+    MIN_LENGTH_REQUEST_V1    = 3, // status + length + ID
+    MIN_LENGTH_REQUEST_JUMBO = 5, // status + length=FF + ID + length_lo + length_hi
+    MIN_LENGTH_REQUEST_V2    = 6, // status + flag + ID_lo + ID_hi + size_lo + size_hi
 };
 
 enum { // byte position(index) in msp-over-telemetry request payload
@@ -160,7 +159,7 @@ static void processMspPacket(void)
     sbufSwitchToReader(&responsePacket.buf, responseBuffer);
 }
 
-void sendMspErrorResponse(uint8_t error, int16_t cmd)
+static void sendMspErrorResponse(uint8_t error, int16_t cmd)
 {
     responsePacket.cmd = cmd;
     responsePacket.result = 0;
@@ -251,7 +250,7 @@ bool handleMspFrame(uint8_t *const payload, uint8_t const payloadLength, uint8_t
         sbufWriteData(&requestPacket.buf, sbufInput.ptr, payloadIncoming);
         sbufAdvance(&sbufInput, payloadIncoming);
         return false;
-    } else { // this is the last/only chunk 
+    } else { // this is the last/only chunk
         if (payloadExpecting) {
             sbufWriteData(&requestPacket.buf, sbufInput.ptr, payloadExpecting);
             sbufAdvance(&sbufInput, payloadExpecting);
@@ -272,13 +271,14 @@ bool handleMspFrame(uint8_t *const payload, uint8_t const payloadLength, uint8_t
 bool sendMspReply(const uint8_t payloadSizeMax, mspResponseFnPtr responseFn)
 {
     static uint8_t seq = 0;
+    static bool headerSent = false;   
 
     uint8_t payloadArray[payloadSizeMax];
     sbuf_t payloadBufStruct;
     sbuf_t *payloadBuf = sbufInit(&payloadBufStruct, payloadArray, payloadArray + payloadSizeMax);
 
     // detect first reply packet
-    if (responsePacket.buf.ptr == responseBuffer) {
+    if (!headerSent) {
         // this is the first frame of the response packet. Add proper header and size.
         // header
         uint8_t status = MSP_STATUS_START_MASK | (seq++ & MSP_STATUS_SEQUENCE_MASK) | (lastRequestVersion << MSP_STATUS_VERSION_SHIFT);
@@ -292,17 +292,18 @@ bool sendMspReply(const uint8_t payloadSizeMax, mspResponseFnPtr responseFn)
             if (size >= 0xff) {
                 // Sending Jumbo-frame
                 sbufWriteU8(payloadBuf, 0xff);
-                sbufWriteU8(payloadBuf, responsePacket.cmd); 
+                sbufWriteU8(payloadBuf, responsePacket.cmd);
                 sbufWriteU16(payloadBuf, (uint16_t)size);
             } else {
                 sbufWriteU8(payloadBuf, size);
-                sbufWriteU8(payloadBuf, responsePacket.cmd); 
+                sbufWriteU8(payloadBuf, responsePacket.cmd);
             }
         } else { // MSPv2
             sbufWriteU8 (payloadBuf, responsePacket.flags);  // MSPv2 flags
             sbufWriteU16(payloadBuf, responsePacket.cmd);    // command is 16 bit in MSPv2
             sbufWriteU16(payloadBuf, (uint16_t)size);        // size is 16 bit in MSPv2
         }
+        headerSent = true;  
     } else {
         sbufWriteU8(payloadBuf, (seq++ & MSP_STATUS_SEQUENCE_MASK) | (lastRequestVersion << MSP_STATUS_VERSION_SHIFT)); // header without 'start' flag
     }
@@ -323,6 +324,7 @@ bool sendMspReply(const uint8_t payloadSizeMax, mspResponseFnPtr responseFn)
     sbufSwitchToReader(&responsePacket.buf, responseBuffer);// for CRC calculation
 
     responseFn(payloadArray, payloadBuf->ptr - payloadArray);
+    headerSent = false; // reset for the next response
     return false;
 }
 

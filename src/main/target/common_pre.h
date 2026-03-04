@@ -114,9 +114,14 @@
 #define USE_ACCGYRO_BMI270
 #define USE_GYRO_SPI_ICM42605
 #define USE_GYRO_SPI_ICM42688P
+#define USE_ACCGYRO_ICM45686
+#define USE_ACCGYRO_ICM45605
+#define USE_ACCGYRO_IIM42652
+#define USE_ACCGYRO_IIM42653
 #define USE_ACC_SPI_ICM42605
 #define USE_ACC_SPI_ICM42688P
 #define USE_ACCGYRO_LSM6DSV16X
+#define USE_ACCGYRO_ICM40609D
 
 #if TARGET_FLASH_SIZE > 512
 #define USE_ACC_MPU6050
@@ -202,8 +207,10 @@
 
 #define USE_VTX
 #define USE_OSD
+#if !defined(USE_OSD_SD) && !defined(USE_OSD_HD)
 #define USE_OSD_SD
 #define USE_OSD_HD
+#endif
 #define USE_BLACKBOX
 
 #if TARGET_FLASH_SIZE >= 1024
@@ -213,7 +220,7 @@
 #define USE_SERIALRX_JETIEXBUS
 #define USE_SERIALRX_SUMD       // Graupner Hott protocol
 #define USE_SERIALRX_SUMH       // Graupner legacy protocol
-
+#define USE_SERIALRX_MAVLINK    // MAVLink protocol for serial RX
 #endif // USE_SERIALRX
 
 #if defined(USE_TELEMETRY)
@@ -243,6 +250,8 @@
 #define USE_EMFAT_AUTORUN
 #define USE_EMFAT_ICON
 #define USE_ESCSERIAL_SIMONK
+#define USE_ALTITUDE_HOLD
+#define USE_POSITION_HOLD
 
 #if !defined(USE_GPS)
 #define USE_GPS
@@ -266,8 +275,9 @@
 #define USE_RANGEFINDER
 #define USE_RANGEFINDER_HCSR04
 #define USE_RANGEFINDER_TF
+#define USE_OPTICALFLOW_MT
 
-#endif // TARGET_FLASH_SIZE > 512
+#endif // TARGET_FLASH_SIZE >= 1024
 
 #endif // !defined(CLOUD_BUILD)
 
@@ -295,7 +305,9 @@
 #define USE_HUFFMAN
 
 #define PID_PROFILE_COUNT 4
-#define CONTROL_RATE_PROFILE_COUNT  4
+#ifndef CONTROL_RATE_PROFILE_COUNT
+#define CONTROL_RATE_PROFILE_COUNT 4 // or maybe 6
+#endif
 
 #define USE_CLI_BATCH
 #define USE_RESOURCE_MGMT
@@ -318,7 +330,7 @@
 
 #define USE_GYRO_LPF2
 #define USE_DYN_LPF
-#define USE_D_MIN
+#define USE_D_MAX
 
 #define USE_THROTTLE_BOOST
 #define USE_INTEGRATED_YAW_CONTROL
@@ -326,7 +338,6 @@
 #define USE_ITERM_RELAX
 #define USE_RC_SMOOTHING_FILTER
 #define USE_THRUST_LINEARIZATION
-#define USE_TPA_MODE
 
 #ifdef USE_SERIALRX_SPEKTRUM
 #define USE_SPEKTRUM_BIND
@@ -361,7 +372,6 @@
 
 #define USE_AIRMODE_LPF
 #define USE_GYRO_DLPF_EXPERIMENTAL
-#define USE_MULTI_GYRO
 #define USE_SENSOR_NAMES
 #define USE_UNCOMMON_MIXERS
 #define USE_SIGNATURE
@@ -394,12 +404,10 @@
 #define USE_GPS_RESCUE
 #endif // USE_GPS
 
-
-#if (defined(USE_OSD_HD) || defined(USE_OSD_SD)) && !defined(USE_OSD)
+#if (defined(USE_OSD_HD) || defined(USE_OSD_SD) || defined(USE_FRSKYOSD)) && !defined(USE_OSD)
 // If either USE_OSD_SD for USE_OSD_HD are defined, ensure that USE_OSD is also defined
 #define USE_OSD
 #endif
-
 
 #if defined(USE_OSD)
 
@@ -441,6 +449,11 @@
 
 #endif // defined(USE_SERIALRX_CRSF)
 
+// The SERIALRX_MAVLINK provider can not work without TELEMETRY_MAVLINK
+#if defined(USE_SERIALRX_MAVLINK) && !defined(USE_TELEMETRY_MAVLINK)
+#define USE_TELEMETRY_MAVLINK
+#endif
+
 // USE_RACE_PRO feature pack
 #ifdef USE_RACE_PRO
 
@@ -463,3 +476,88 @@
 #endif
 
 #endif // USE_RACE_PRO
+
+#ifdef USE_WING
+
+#ifndef USE_SERVOS
+#define USE_SERVOS
+#endif
+
+#ifndef USE_ADVANCED_TPA
+#define USE_ADVANCED_TPA
+#endif
+
+#undef USE_YAW_SPIN_RECOVERY
+#undef USE_LAUNCH_CONTROL
+#undef USE_ABSOLUTE_CONTROL
+#undef USE_INTEGRATED_YAW_CONTROL
+#undef USE_RUNAWAY_TAKEOFF
+
+#endif // USE_WING
+
+#if defined(USE_POSITION_HOLD) && !defined(USE_GPS)
+#error "USE_POSITION_HOLD requires USE_GPS to be defined"
+#endif
+
+// backwards compatibility for older config.h targets
+#ifndef GYRO_CONFIG_USE_GYRO_1
+#define GYRO_CONFIG_USE_GYRO_1 0
+#endif
+
+#ifndef GYRO_CONFIG_USE_GYRO_2
+#define GYRO_CONFIG_USE_GYRO_2 1
+#endif
+
+#ifndef GYRO_CONFIG_USE_GYRO_BOTH
+#define GYRO_CONFIG_USE_GYRO_BOTH 2
+#endif
+
+#ifdef DEFAULT_GYRO_TO_USE
+  #ifndef DEFAULT_GYRO_ENABLED
+    #if DEFAULT_GYRO_TO_USE == GYRO_CONFIG_USE_GYRO_1
+      #define DEFAULT_GYRO_ENABLED GYRO_MASK(0)
+    #elif DEFAULT_GYRO_TO_USE == GYRO_CONFIG_USE_GYRO_2
+      #define DEFAULT_GYRO_ENABLED GYRO_MASK(1)
+    #elif DEFAULT_GYRO_TO_USE == GYRO_CONFIG_USE_GYRO_BOTH
+      #define DEFAULT_GYRO_ENABLED (GYRO_MASK(0) | GYRO_MASK(1))
+    #endif
+  #endif
+#elif !defined(DEFAULT_GYRO_ENABLED)
+  // assume one gyro
+  #define DEFAULT_GYRO_ENABLED GYRO_MASK(0)
+#endif
+
+#ifndef GYRO_COUNT
+  #ifdef GYRO_1_CS_PIN
+    #define GYRO_1_DEFINED 1
+  #else
+    #define GYRO_1_DEFINED 0
+  #endif
+
+  #ifdef GYRO_2_CS_PIN
+    #define GYRO_2_DEFINED 1
+  #else
+    #define GYRO_2_DEFINED 0
+  #endif
+
+  #ifdef GYRO_3_CS_PIN
+    #define GYRO_3_DEFINED 1
+  #else
+    #define GYRO_3_DEFINED 0
+  #endif
+
+  #ifdef GYRO_4_CS_PIN
+    #define GYRO_4_DEFINED 1
+  #else
+    #define GYRO_4_DEFINED 0
+  #endif
+
+  #define GYRO_COUNT_RAW (GYRO_1_DEFINED + GYRO_2_DEFINED + GYRO_3_DEFINED + GYRO_4_DEFINED)
+
+  // Ensure GYRO_COUNT is at least 1
+  #if GYRO_COUNT_RAW > 0
+    #define GYRO_COUNT GYRO_COUNT_RAW
+  #else
+    #define GYRO_COUNT 1
+  #endif
+#endif

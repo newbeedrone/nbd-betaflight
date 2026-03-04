@@ -48,7 +48,7 @@
 uint8_t writeCache[512 * FATFS_BLOCK_CACHE_SIZE] __attribute__ ((aligned (4)));
 uint32_t cacheCount = 0;
 
-void cache_write(uint8_t *buffer)
+static void cache_write(uint8_t *buffer)
 {
     if (cacheCount == sizeof(writeCache)) {
         // Prevents overflow
@@ -58,12 +58,12 @@ void cache_write(uint8_t *buffer)
     cacheCount += 512;
 }
 
-uint16_t cache_getCount(void)
+static uint16_t cache_getCount(void)
 {
     return (cacheCount / 512);
 }
 
-void cache_reset(void)
+static void cache_reset(void)
 {
     cacheCount = 0;
 }
@@ -586,13 +586,13 @@ static sdcardOperationStatus_e sdcardSdio_beginWriteBlocks(uint32_t blockIndex, 
 static bool sdcardSdio_readBlock(uint32_t blockIndex, uint8_t *buffer, sdcard_operationCompleteCallback_c callback, uint32_t callbackData)
 {
     if (sdcard.state != SDCARD_STATE_READY) {
-		if (sdcard.state == SDCARD_STATE_WRITING_MULTIPLE_BLOCKS) {
-			if (sdcard_endWriteBlocks() != SDCARD_OPERATION_SUCCESS) {
-				return false;
-			}
-		} else {
-			return false;
-		}
+        if (sdcard.state == SDCARD_STATE_WRITING_MULTIPLE_BLOCKS) {
+            if (sdcard_endWriteBlocks() != SDCARD_OPERATION_SUCCESS) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
 #ifdef SDCARD_PROFILING

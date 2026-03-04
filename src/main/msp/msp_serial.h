@@ -27,7 +27,16 @@
 #include "msp/msp.h"
 
 // Each MSP port requires state and a receive buffer, revisit this default if someone needs more than 3 MSP ports.
+#ifndef MAX_MSP_PORT_COUNT
 #define MAX_MSP_PORT_COUNT 3
+#endif
+
+typedef enum {
+    PORT_IDLE,
+    PORT_MSP_PACKET,
+    PORT_CLI_ACTIVE,
+    PORT_CLI_CMD
+} mspPortState_e;
 
 typedef enum {
     MSP_IDLE,
@@ -48,7 +57,7 @@ typedef enum {
     MSP_CHECKSUM_V2_NATIVE,
 
     MSP_COMMAND_RECEIVED
-} mspState_e;
+} mspPacketState_e;
 
 typedef enum {
     MSP_PACKET_COMMAND,
@@ -68,7 +77,7 @@ typedef enum {
 } mspPendingSystemRequest_e;
 
 #define MSP_PORT_INBUF_SIZE 192
-#define MSP_PORT_OUTBUF_SIZE_MIN 320
+#define MSP_PORT_OUTBUF_SIZE_MIN 512 // As of 2021/08/10 MSP_BOXNAMES generates a 307 byte response for page 1. There has been overflow issues with 320 byte buffer.
 
 #ifdef USE_FLASHFS
 #define MSP_PORT_DATAFLASH_BUFFER_SIZE 4096
@@ -100,7 +109,8 @@ typedef struct mspPort_s {
     struct serialPort_s *port; // null when port unused.
     timeMs_t lastActivityMs;
     mspPendingSystemRequest_e pendingRequest;
-    mspState_e c_state;
+    mspPortState_e portState;
+    mspPacketState_e packetState;
     mspPacketType_e packetType;
     uint8_t inBuf[MSP_PORT_INBUF_SIZE];
     uint16_t cmdMSP;
@@ -120,6 +130,6 @@ void mspSerialProcess(mspEvaluateNonMspData_e evaluateNonMspData, mspProcessComm
 void mspSerialAllocatePorts(void);
 void mspSerialReleasePortIfAllocated(struct serialPort_s *serialPort);
 void mspSerialReleaseSharedTelemetryPorts(void);
-mspDescriptor_t getMspSerialPortDescriptor(const uint8_t portIdentifier);
+mspDescriptor_t getMspSerialPortDescriptor(const serialPortIdentifier_e portIdentifier);
 int mspSerialPush(serialPortIdentifier_e port, uint8_t cmd, uint8_t *data, int datalen, mspDirection_e direction, mspVersion_e mspVersion);
 uint32_t mspSerialTxBytesFree(void);

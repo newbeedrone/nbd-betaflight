@@ -46,7 +46,7 @@
 #include "drivers/compass/compass_lis2mdl.h"
 #include "drivers/compass/compass_lis3mdl.h"
 #include "drivers/compass/compass_mpu925x_ak8963.h"
-#include "drivers/compass/compass_qmc5883l.h"
+#include "drivers/compass/compass_qmc5883.h"
 #include "drivers/compass/compass_ist8310.h"
 
 #include "drivers/io.h"
@@ -96,18 +96,30 @@ PG_REGISTER_WITH_RESET_FN(compassConfig_t, compassConfig, PG_COMPASS_CONFIG, 4);
 #define COMPASS_BUS_BUSY_INTERVAL_US 500
 // If we check for new mag data, and there is none, try again in 1000us
 #define COMPASS_RECHECK_INTERVAL_US 1000
-// default compass read interval, for those with no specified ODR, will be TASK_COMPASS_RATE_HZ 
+// default compass read interval, for those with no specified ODR, will be TASK_COMPASS_RATE_HZ
 static uint32_t compassReadIntervalUs = TASK_PERIOD_HZ(TASK_COMPASS_RATE_HZ);
 
-void pgResetFn_compassConfig(compassConfig_t *compassConfig)
-{
-    compassConfig->mag_alignment = ALIGN_DEFAULT;
-    memset(&compassConfig->mag_customAlignment, 0x00, sizeof(compassConfig->mag_customAlignment));
-    compassConfig->mag_hardware = MAG_DEFAULT;
+#ifndef MAG_ALIGN
+#define MAG_ALIGN ALIGN_DEFAULT
+#endif
+#ifndef MAG_ALIGN_ROLL
+#define MAG_ALIGN_ROLL 0
+#endif
+#ifndef MAG_ALIGN_PITCH
+#define MAG_ALIGN_PITCH 0
+#endif
+#ifndef MAG_ALIGN_YAW
+#define MAG_ALIGN_YAW 0
+#endif
 
 #ifndef MAG_I2C_ADDRESS
 #define MAG_I2C_ADDRESS 0
 #endif
+
+void pgResetFn_compassConfig(compassConfig_t *compassConfig)
+{
+    compassConfig->mag_alignment = MAG_ALIGN;
+    compassConfig->mag_hardware = MAG_DEFAULT;
 
 // Generate a reasonable default for backward compatibility
 // Strategy is
@@ -142,6 +154,11 @@ void pgResetFn_compassConfig(compassConfig_t *compassConfig)
     compassConfig->mag_spi_csn = IO_TAG_NONE;
 #endif
     compassConfig->interruptTag = IO_TAG(MAG_INT_EXTI);
+
+
+    compassConfig->mag_customAlignment.roll = MAG_ALIGN_ROLL;
+    compassConfig->mag_customAlignment.pitch = MAG_ALIGN_PITCH;
+    compassConfig->mag_customAlignment.yaw = MAG_ALIGN_YAW;
 }
 
 static int16_t magADCRaw[XYZ_AXIS_COUNT];
@@ -150,15 +167,15 @@ void compassPreInit(void)
 {
 #ifdef USE_SPI
     if (compassConfig()->mag_busType == BUS_TYPE_SPI) {
-        spiPreinitRegister(compassConfig()->mag_spi_csn, IOCFG_IPU, 1);
+        ioPreinitByTag(compassConfig()->mag_spi_csn, IOCFG_IPU, PREINIT_PIN_STATE_HIGH);
     }
 #endif
 }
 
 #if !defined(SIMULATOR_BUILD)
-bool compassDetect(magDev_t *magDev, uint8_t *alignment)
+static bool compassDetect(magDev_t *magDev, uint8_t *alignment)
 {
-    *alignment = ALIGN_DEFAULT;  // may be overridden if target specifies MAG_*_ALIGN
+    *alignment = MAG_ALIGN;
 
     magSensor_e magHardware = MAG_NONE;
 
@@ -221,9 +238,6 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
         }
 
         if (hmc5883lDetect(magDev)) {
-#ifdef MAG_HMC5883_ALIGN
-            *alignment = MAG_HMC5883_ALIGN;
-#endif
             magHardware = MAG_HMC5883;
             break;
         }
@@ -237,9 +251,6 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
         }
 
         if (lis2mdlDetect(magDev)) {
-#ifdef MAG_LIS3MDL_ALIGN
-            *alignment = MAG_LIS2MDL_ALIGN;
-#endif
             magHardware = MAG_LIS2MDL;
             break;
         }
@@ -253,9 +264,6 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
         }
 
         if (lis3mdlDetect(magDev)) {
-#ifdef MAG_LIS3MDL_ALIGN
-            *alignment = MAG_LIS3MDL_ALIGN;
-#endif
             magHardware = MAG_LIS3MDL;
             break;
         }
@@ -269,9 +277,6 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
         }
 
         if (ak8975Detect(magDev)) {
-#ifdef MAG_AK8975_ALIGN
-            *alignment = MAG_AK8975_ALIGN;
-#endif
             magHardware = MAG_AK8975;
             break;
         }
@@ -290,9 +295,6 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
         }
 
         if (ak8963Detect(magDev)) {
-#ifdef MAG_AK8963_ALIGN
-            *alignment = MAG_AK8963_ALIGN;
-#endif
             magHardware = MAG_AK8963;
             break;
         }
@@ -305,10 +307,7 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
             dev->busType_u.i2c.address = compassConfig()->mag_i2c_address;
         }
 
-        if (qmc5883lDetect(magDev)) {
-#ifdef MAG_QMC5883L_ALIGN
-            *alignment = MAG_QMC5883L_ALIGN;
-#endif
+        if (qmc5883Detect(magDev)) {
             magHardware = MAG_QMC5883;
             break;
         }
@@ -322,9 +321,6 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
         }
 
         if (ist8310Detect(magDev)) {
-#ifdef MAG_IST8310_ALIGN
-            *alignment = MAG_IST8310_ALIGN;
-#endif
             magHardware = MAG_IST8310;
             break;
         }
@@ -357,7 +353,7 @@ bool compassDetect(magDev_t *magDev, uint8_t *alignment)
     return true;
 }
 #else
-bool compassDetect(magDev_t *dev, sensor_align_e *alignment)
+static bool compassDetect(magDev_t *dev, sensor_align_e *alignment)
 {
     UNUSED(dev);
     UNUSED(alignment);
@@ -386,14 +382,14 @@ bool compassInit(void)
         magDev.magAlignment = compassConfig()->mag_alignment;
     }
 
-    buildRotationMatrixFromAlignment(&compassConfig()->mag_customAlignment, &magDev.rotationMatrix);
+    buildRotationMatrixFromAngles(&magDev.rotationMatrix, &compassConfig()->mag_customAlignment);
 
     compassBiasEstimatorInit(&compassBiasEstimator, LAMBDA_MIN, P0);
 
     if (magDev.magOdrHz) {
         // For Mags that send data at a fixed ODR, we wait some quiet period after a read before checking for new data
         // allow two re-check intervals, plus a margin for clock variations in mag vs FC
-        uint16_t odrInterval = 1e6 / magDev.magOdrHz;
+        uint16_t odrInterval = (1000 * 1000) / magDev.magOdrHz;
         compassReadIntervalUs =  odrInterval - (2 * COMPASS_RECHECK_INTERVAL_US) - (odrInterval / 20);
     } else {
         // Mags which have no specified ODR will be pinged at the compass task rate
@@ -405,7 +401,7 @@ bool compassInit(void)
 
 bool compassIsHealthy(void)
 {
-    return (mag.magADC[X] != 0) && (mag.magADC[Y] != 0) && (mag.magADC[Z] != 0);
+    return (mag.magADC.x != 0) && (mag.magADC.y != 0) && (mag.magADC.z != 0);
 }
 
 void compassStartCalibration(void)
@@ -449,15 +445,15 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
 
     // if we get here, we have new data to parse
     for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
-        mag.magADC[axis] = magADCRaw[axis];
+        mag.magADC.v[axis] = magADCRaw[axis];
     }
     // If debug_mode is DEBUG_GPS_RESCUE_HEADING, we should update the magYaw value, after which isNewMagADCFlag will be set false
     mag.isNewMagADCFlag = true;
 
     if (magDev.magAlignment == ALIGN_CUSTOM) {
-        alignSensorViaMatrix(mag.magADC, &magDev.rotationMatrix);
+        alignSensorViaMatrix(&mag.magADC, &magDev.rotationMatrix);
     } else {
-        alignSensorViaRotation(mag.magADC, magDev.magAlignment);
+        alignSensorViaRotation(&mag.magADC, magDev.magAlignment);
     }
 
     // get stored cal/bias values
@@ -486,7 +482,7 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
             if (didMovementStart) {
                 // LED will flash at task rate while calibrating, looks like 'ON' all the time.
                 LED0_ON;
-                compassBiasEstimatorApply(&compassBiasEstimator, mag.magADC);
+                compassBiasEstimatorApply(&compassBiasEstimator, &mag.magADC);
             }
         } else {
             // mag cal process is not complete until the new cal values are saved
@@ -502,7 +498,7 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
                     // there was no movement, and no new calibration values were saved
                     beeper(BEEPER_ACC_CALIBRATION_FAIL); // calibration fail beep
                 }
-                // didMovementStart remains true until next run 
+                // didMovementStart remains true until next run
                 // signal that the calibration process is finalised, whether successful or not, by setting end time to zero
                 magCalProcessActive = false;
             }
@@ -511,18 +507,18 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
 
     // remove saved cal/bias; this is zero while calibrating
     for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
-        mag.magADC[axis] -= magZero->raw[axis];
+        mag.magADC.v[axis] -= magZero->raw[axis];
     }
 
     if (debugMode == DEBUG_MAG_CALIB) {
         for (int axis = 0; axis < XYZ_AXIS_COUNT; axis++) {
-            // DEBUG 0-2: magADC[X], magADC[Y], magADC[Z]
-            DEBUG_SET(DEBUG_MAG_CALIB, axis, lrintf(mag.magADC[axis]));
+            // DEBUG 0-2: magADC.x, magADC.y, magADC.z
+            DEBUG_SET(DEBUG_MAG_CALIB, axis, lrintf(mag.magADC.v[axis]));
             // DEBUG 4-6: estimated magnetometer bias, increases above zero when calibration starts
             DEBUG_SET(DEBUG_MAG_CALIB, axis + 4, lrintf(compassBiasEstimator.b[axis]));
         }
         // DEBUG 3: absolute vector length of magADC, should stay constant independent of the orientation of the quad
-        DEBUG_SET(DEBUG_MAG_CALIB, 3, lrintf(sqrtf(sq(mag.magADC[X]) + sq(mag.magADC[Y]) + sq(mag.magADC[Z]))));
+        DEBUG_SET(DEBUG_MAG_CALIB, 3, lrintf(vector3Norm(&mag.magADC)));
         // DEBUG 7: adaptive forgetting factor lambda, only while analysing cal data
         // after the transient phase it should converge to 2000
         // set dsiplayed lambda to zero unless calibrating, to indicate start and finish in Sensors tab
@@ -539,7 +535,7 @@ uint32_t compassUpdate(timeUs_t currentTimeUs)
         static timeUs_t previousTimeUs = 0;
         const timeDelta_t dataIntervalUs = cmpTimeUs(currentTimeUs, previousTimeUs); // time since last data received
         previousTimeUs = currentTimeUs;
-        const uint16_t actualCompassDataRateHz = 1e6 / dataIntervalUs;
+        const uint16_t actualCompassDataRateHz = 1e6f / dataIntervalUs;
         timeDelta_t executeTimeUs = micros() - currentTimeUs;
         DEBUG_SET(DEBUG_MAG_TASK_RATE, 0, TASK_COMPASS_RATE_HZ);
         DEBUG_SET(DEBUG_MAG_TASK_RATE, 1, actualCompassDataRateHz);
@@ -561,7 +557,7 @@ void compassBiasEstimatorInit(compassBiasEstimator_t *cBE, const float lambda_mi
         cBE->U[i][i] = 1.0f;
     }
 
-    compassBiasEstimatorUpdate(cBE, lambda_min, p0); 
+    compassBiasEstimatorUpdate(cBE, lambda_min, p0);
 
     cBE->lambda = lambda_min;
 }
@@ -574,17 +570,17 @@ void compassBiasEstimatorUpdate(compassBiasEstimator_t *cBE, const float lambda_
     // update diagonal entries for faster convergence
     for (unsigned i = 0; i < 4; i++) {
         cBE->D[i] = p0;
-    } 
+    }
 }
 
 // apply one estimation step of the compass bias estimator
-void compassBiasEstimatorApply(compassBiasEstimator_t *cBE, float *mag)
+void compassBiasEstimatorApply(compassBiasEstimator_t *cBE, vector3_t *mag)
 {
     // update phi
     float phi[4];
-    phi[0] = sq(mag[0]) + sq(mag[1]) + sq(mag[2]);
+    phi[0] = sq(mag->x) + sq(mag->y) + sq(mag->z);
     for (unsigned i = 0; i < 3; i++) {
-        phi[i + 1] = mag[i];
+        phi[i + 1] = mag->v[i];
     }
 
     // update e

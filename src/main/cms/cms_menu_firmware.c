@@ -53,7 +53,6 @@
 
 #include "cms_menu_firmware.h"
 
-
 // Calibration
 
 #define CALIBRATION_STATUS_MAX_LENGTH 6
@@ -196,8 +195,10 @@ static const void *cmsx_FirmwareInit(displayPort_t *pDisp)
 {
     UNUSED(pDisp);
 
-    strncpy(manufacturerId, getManufacturerId(), MAX_MANUFACTURER_ID_LENGTH + 1);
-    strncpy(boardName, getBoardName(), MAX_BOARD_NAME_LENGTH + 1);
+    strncpy(manufacturerId, getManufacturerId(), MAX_MANUFACTURER_ID_LENGTH);
+    manufacturerId[MAX_MANUFACTURER_ID_LENGTH] = 0;
+    strncpy(boardName, getBoardName(), MAX_BOARD_NAME_LENGTH);
+    boardName[MAX_BOARD_NAME_LENGTH] = 0;
 
     return NULL;
 }

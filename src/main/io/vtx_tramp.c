@@ -140,7 +140,7 @@ static int trampReceivePos = 0;
 static timeUs_t trampLastTimeUs = 0;
 
 // Calculate tramp protocol checksum of provided buffer
-static uint8_t trampChecksum(uint8_t *trampBuf)
+static uint8_t trampChecksum(const uint8_t *trampBuf)
 {
     uint8_t cksum = 0;
 
@@ -654,9 +654,9 @@ bool vtxTrampInit(void)
     if (portConfig) {
         portOptions_e portOptions = 0;
 #if defined(USE_VTX_COMMON)
-        portOptions = portOptions | (vtxConfig()->halfDuplex ? SERIAL_BIDIR : SERIAL_UNIDIR);
+        portOptions |= vtxConfig()->halfDuplex ? SERIAL_BIDIR : 0;
 #else
-        portOptions = SERIAL_BIDIR;
+        portOptions |= SERIAL_BIDIR;
 #endif
 
         trampSerialPort = openSerialPort(portConfig->identifier, FUNCTION_VTX_TRAMP, NULL, NULL, 9600, MODE_RXTX, portOptions);

@@ -23,6 +23,7 @@
 #include "platform.h"
 
 typedef enum {
+    OWNER_INVALID = -1,
     OWNER_FREE = 0,
     OWNER_PWMINPUT,
     OWNER_PPMINPUT,
@@ -37,7 +38,7 @@ typedef enum {
     OWNER_ADC_CURR,
     OWNER_ADC_EXT,
     OWNER_ADC_RSSI,
-    OWNER_SERIAL_TX,
+    OWNER_SERIAL_TX,   // TX must be just before RX
     OWNER_SERIAL_RX,
     OWNER_PINDEBUG,
     OWNER_TIMER,
@@ -114,20 +115,30 @@ typedef enum {
     OWNER_SWD,
     OWNER_RX_SPI_EXPRESSLRS_RESET,
     OWNER_RX_SPI_EXPRESSLRS_BUSY,
-    OWNER_SOFTSERIAL_TX,
+    OWNER_SOFTSERIAL_TX,         // TX must be just before RX
     OWNER_SOFTSERIAL_RX,
-    OWNER_LPUART_TX,
+    OWNER_LPUART_TX,             // TX must be just before RX
     OWNER_LPUART_RX,
+    OWNER_GYRO_CLKIN,
+    OWNER_PIOUART_TX,            // TX must be just before RX
+    OWNER_PIOUART_RX,
     OWNER_TOTAL_COUNT
 } resourceOwner_e;
 
 typedef struct resourceOwner_s {
     resourceOwner_e owner;
-    uint8_t resourceIndex;
+    uint8_t index;
 } resourceOwner_t;
 
-extern const char * const ownerNames[OWNER_TOTAL_COUNT];
+// Sentinels with global address identity; compare by pointer
+// (ptr == &resourceOwnerInvalid / &resourceOwnerFree) across modules.
+extern const resourceOwner_t resourceOwnerInvalid;
+extern const resourceOwner_t resourceOwnerFree;
+
+const char *getOwnerName(resourceOwner_e owner);
 
 #define RESOURCE_INDEX(x) (x + 1)
-// TODO(hertz@): only used by vtx_rtc6707_soft_spi and probably for display purposes
+
+// NOTE: Display-only legacy constant; currently used by vtx_rtc6707_soft_spi.
+// Avoid introducing new dependencies on this in generic resource code.
 #define RESOURCE_SOFT_OFFSET    10

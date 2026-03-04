@@ -311,12 +311,13 @@ batteryState_e getBatteryState(void)
     return BATTERY_OK;
 }
 
-void ws2811LedStripInit(ioTag_t ioTag)
+void ws2811LedStripInit(ioTag_t ioTag, ledStripFormatRGB_e ledFormat)
 {
     UNUSED(ioTag);
+    UNUSED(ledFormat);
 }
 
-bool ws2811UpdateStrip(ledStripFormatRGB_e, uint8_t) {return true;}
+bool ws2811UpdateStrip(uint8_t) {return true;}
 
 void setLedValue(uint16_t index, const uint8_t value)
 {
@@ -386,11 +387,12 @@ int scaleRange(int x, int srcMin, int srcMax, int destMin, int destMax)
 }
 
 bool failsafeIsActive() { return false; }
-bool rxIsReceivingSignal() { return true; }
+bool isRxReceivingSignal() { return true; }
 
 bool isBeeperOn() { return false; };
 
 uint8_t calculateBatteryPercentageRemaining() { return 0; }
+uint32_t getEstimatedAltitudeCm() { return 0; }
 
 bool sensors(uint32_t mask)
 {
@@ -402,7 +404,7 @@ bool isArmingDisabled(void) { return false; }
 
 uint8_t getRssiPercent(void) { return 0; }
 
-bool isFlipOverAfterCrashActive(void) { return false; }
+bool isCrashFlipModeActive(void) { return false; }
 
 void ws2811LedStripEnable(void) { }
 

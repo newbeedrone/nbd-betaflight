@@ -46,6 +46,7 @@ typedef uint32_t timeUs_t;
 #define SECONDS_PER_MINUTE          60.0f
 
 static inline timeDelta_t cmpTimeUs(timeUs_t a, timeUs_t b) { return (timeDelta_t)(a - b); }
+static inline timeDelta_t cmpTimeMs(timeMs_t a, timeMs_t b) { return (timeDelta_t)(a - b); }
 static inline int32_t cmpTimeCycles(uint32_t a, uint32_t b) { return (int32_t)(a - b); }
 
 #define FORMATTED_DATE_TIME_BUFSIZE 30
@@ -62,8 +63,8 @@ PG_DECLARE(timeConfig_t, timeConfig);
 typedef int64_t rtcTime_t;
 
 rtcTime_t rtcTimeMake(int32_t secs, uint16_t millis);
-int32_t rtcTimeGetSeconds(rtcTime_t *t);
-uint16_t rtcTimeGetMillis(rtcTime_t *t);
+int32_t rtcTimeGetSeconds(const rtcTime_t *t);
+uint16_t rtcTimeGetMillis(const rtcTime_t *t);
 
 typedef struct _dateTime_s {
     // full year
@@ -96,7 +97,7 @@ bool dateTimeSplitFormatted(char *formatted, char **date, char **time);
 bool rtcHasTime(void);
 
 bool rtcGet(rtcTime_t *t);
-bool rtcSet(rtcTime_t *t);
+bool rtcSet(const rtcTime_t *t);
 
 bool rtcGetDateTime(dateTime_t *dt);
 bool rtcSetDateTime(dateTime_t *dt);

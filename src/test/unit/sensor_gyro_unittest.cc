@@ -21,14 +21,15 @@
 #include <limits.h>
 #include <algorithm>
 
-extern "C" {
-    #include <platform.h>
+#include "platform.h"
 
+extern "C" {
     #include "build/build_config.h"
     #include "build/debug.h"
     #include "common/axis.h"
     #include "common/maths.h"
     #include "common/utils.h"
+    #include "common/vector.h"
     #include "drivers/accgyro/accgyro_virtual.h"
     #include "drivers/accgyro/accgyro_mpu.h"
     #include "drivers/sensor.h"
@@ -157,7 +158,8 @@ extern "C" {
 
 uint32_t micros(void) {return 0;}
 void beeper(beeperMode_e) {}
-uint8_t detectedSensors[] = { GYRO_NONE, ACC_NONE };
+uint8_t detectedSensors[SENSOR_INDEX_COUNT] = { GYRO_NONE, ACC_NONE };
+uint8_t detectedGyros[GYRO_COUNT] = { GYRO_NONE };
 timeDelta_t getGyroUpdateRate(void) {return gyro.targetLooptime;}
 void sensorsSet(uint32_t) {}
 void schedulerResetTaskStatistics(taskId_e) {}

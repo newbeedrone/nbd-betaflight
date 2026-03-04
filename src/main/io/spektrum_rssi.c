@@ -50,7 +50,7 @@ static uint16_t spek_fade_last_sec_count = 0; // Stores the fade count at the la
 #endif
 
 // Linear mapping and interpolation function
-int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
+static int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
 {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -153,7 +153,7 @@ void spektrumHandleRSSI(volatile uint8_t spekFrame[])
                                                        0,resolution));
 #else
             // Do a direkt dBm to percent mapping, keeping the non-linear dBm logarithmic curve.
-            spekChannelData[rssi_channel] = (uint16_t)(map(rssi),
+            spekChannelData[rssi_channel] = (uint16_t)(map(rssi,
                                                        SPEKTRUM_RSSI_MIN, SPEKTRUM_RSSI_MAX,
                                                        0,resolution));
 #endif

@@ -36,13 +36,12 @@
 #include "drivers/vtx_common.h"
 #endif
 
-
 #if defined(USE_VTX_TABLE)
 int            vtxTableBandCount;
 int            vtxTableChannelCount;
 uint16_t       vtxTableFrequency[VTX_TABLE_MAX_BANDS][VTX_TABLE_MAX_CHANNELS];
 const char *   vtxTableBandNames[VTX_TABLE_MAX_BANDS + 1];
-char           vtxTableBandLetters[VTX_TABLE_MAX_BANDS + 1];
+NONSTRING char vtxTableBandLetters[VTX_TABLE_MAX_BANDS + 1];
 const char *   vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS + 1];
 bool           vtxTableIsFactoryBand[VTX_TABLE_MAX_BANDS];
 
@@ -69,7 +68,7 @@ const char *   vtxTableBandNames[VTX_TABLE_MAX_BANDS + 1] = {
         "FATSHARK",
         "RACEBAND",
 };
-char           vtxTableBandLetters[VTX_TABLE_MAX_BANDS + 1] = "-ABEFR";
+NONSTRING char vtxTableBandLetters[VTX_TABLE_MAX_BANDS + 1] = "-ABEFR";
 const char *   vtxTableChannelNames[VTX_TABLE_MAX_CHANNELS + 1] = {
         "-", "1", "2", "3", "4", "5", "6", "7", "8",
 };
@@ -160,7 +159,7 @@ void vtxTableConfigClearChannels(vtxTableConfig_t *config, int band, int channel
 }
 
 // Clear a channel name for "channel"
-void vtxTableConfigClearChannelNames(vtxTableConfig_t *config, int channel)
+static void vtxTableConfigClearChannelNames(vtxTableConfig_t *config, int channel)
 {
     tfp_sprintf(config->channelNames[channel], "%d", channel + 1);
 }

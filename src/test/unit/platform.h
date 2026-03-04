@@ -22,6 +22,14 @@
 
 #define USE_PARAMETER_GROUPS
 
+#define IOCFG_OUT_PP         0
+#define IOCFG_OUT_OD         0
+#define IOCFG_AF_PP          0
+#define IOCFG_AF_OD          0
+#define IOCFG_IPD            0
+#define IOCFG_IPU            0
+#define IOCFG_IN_FLOATING    0
+
 #define U_ID_0 0
 #define U_ID_1 1
 #define U_ID_2 2
@@ -29,11 +37,13 @@
 #define NOINLINE
 #define FAST_CODE
 #define FAST_CODE_NOINLINE
+#define FAST_CODE_PREF
 #define FAST_DATA_ZERO_INIT
 #define FAST_DATA
 
+
 #define PID_PROFILE_COUNT 4
-#define CONTROL_RATE_PROFILE_COUNT  4
+#define CONTROL_RATE_PROFILE_COUNT 4
 #define USE_MAG
 #define USE_BARO
 #define USE_GPS
@@ -112,6 +122,10 @@ typedef struct
 {
     void* test;
 } ADC_TypeDef;
+
+#define SPIDEV_COUNT 0
+#define I2CDEV_COUNT 0
+#define GYRO_COUNT 1
 
 #define WS2811_DMA_TC_FLAG (void *)1
 #define WS2811_DMA_HANDLER_IDENTIFER 0
