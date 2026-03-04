@@ -44,6 +44,7 @@
 #include "platform/rcc.h"
 
 #include "drivers/dma.h"
+#include "drivers/dma_reqmap.h"
 
 #include "drivers/serial.h"
 #include "drivers/serial_uart.h"
@@ -115,9 +116,17 @@ void uartReconfigure(uartPort_t *uartPort)
 
             xDMA_DeInit(uartPort->rxDMAResource);
             xDMA_Init(uartPort->rxDMAResource, &DMA_InitStructure);
+            dmaMuxEnable(dmaGetIdentifier(uartPort->rxDMAResource), uartPort->rxDMAMuxId);
             xDMA_Cmd(uartPort->rxDMAResource, TRUE);
-            usart_dma_receiver_enable(uartPort->USARTx,TRUE);
+            usart_dma_receiver_enable(uartPort->USARTx, TRUE);
             uartPort->rxDMAPos = xDMA_GetCurrDataCounter(uartPort->rxDMAResource);
+
+            // Enable IDLE interrupt in DMA RX mode so that rxCallback-based
+            // protocols (CRSF, etc.) can be notified when a burst of bytes
+            // has been transferred into the circular DMA buffer.
+            (void) uartPort->USARTx->sts;
+            (void) uartPort->USARTx->dt;
+            usart_interrupt_enable(uartPort->USARTx, USART_IDLE_INT, TRUE);
         } else {
             usart_flag_clear(uartPort->USARTx, USART_RDBF_FLAG);
             usart_interrupt_enable(uartPort->USARTx, USART_RDBF_INT, TRUE);
@@ -130,7 +139,6 @@ void uartReconfigure(uartPort_t *uartPort)
         if (uartPort->txDMAResource) {
             dma_default_para_init(&DMA_InitStructure);
             DMA_InitStructure.loop_mode_enable = FALSE;
-            DMA_InitStructure.peripheral_base_addr = uartPort->txDMAPeripheralBaseAddr;
             DMA_InitStructure.priority = DMA_PRIORITY_MEDIUM;
             DMA_InitStructure.peripheral_inc_enable = FALSE;
             DMA_InitStructure.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
@@ -140,8 +148,13 @@ void uartReconfigure(uartPort_t *uartPort)
             DMA_InitStructure.buffer_size = uartPort->port.txBufferSize;
             DMA_InitStructure.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
 
+            if (uartPort->txDMAPeripheralBaseAddr == 0) {
+                uartPort->txDMAPeripheralBaseAddr = (uint32_t)&uartPort->USARTx->dt;
+            }
+            DMA_InitStructure.peripheral_base_addr = uartPort->txDMAPeripheralBaseAddr;
             xDMA_DeInit(uartPort->txDMAResource);
             xDMA_Init(uartPort->txDMAResource, &DMA_InitStructure);
+            dmaMuxEnable(dmaGetIdentifier(uartPort->txDMAResource), uartPort->txDMAMuxId);
             xDMA_ITConfig(uartPort->txDMAResource, DMA_IT_TCIF, TRUE);
             xDMA_SetCurrDataCounter(uartPort->txDMAResource, 0);
             usart_dma_transmitter_enable(uartPort->USARTx, TRUE);
@@ -242,9 +255,11 @@ void uartTryStartTxDMA(uartPort_t *s)
 
 static void handleUsartTxDma(uartPort_t *s)
 {
+    uartDevice_t *uart = container_of(s, uartDevice_t, port);
+
     uartTryStartTxDMA(s);
 
-    if (s->txDMAEmpty) {
+    if (s->txDMAEmpty && (uart->txPinState != TX_PIN_IGNORE)) {
         // Switch TX to an input with pullup so it's state can be monitored
         uartTxMonitor(s);
     }
@@ -257,6 +272,13 @@ void uartDmaIrqHandler(dmaChannelDescriptor_t* descriptor)
     {
         DMA_CLEAR_FLAG(descriptor, DMA_IT_TCIF);
         DMA_CLEAR_FLAG(descriptor, DMA_IT_HTIF);
+
+        // AT32 channel-based DMA does not auto-clear CHEN upon transfer
+        // completion (same as STM32G4). Must explicitly disable the channel
+        // so that IS_DMA_ENABLED() in uartTryStartTxDMA() returns false
+        // and allows the next transfer to proceed.
+        xDMA_Cmd(s->txDMAResource, FALSE);
+
         handleUsartTxDma(s);
     }
 
@@ -282,7 +304,10 @@ void uartIrqHandler(uartPort_t *s)
         usart_flag_clear(s->USARTx, USART_TDC_FLAG);
 
         // Switch TX to an input with pull-up so it's state can be monitored
-        uartTxMonitor(s);
+        uartDevice_t *uart = container_of(s, uartDevice_t, port);
+        if (uart->txPinState != TX_PIN_IGNORE) {
+            uartTxMonitor(s);
+        }
     }
 
     if (!s->txDMAResource && (usart_flag_get(s->USARTx, USART_TDBE_FLAG) == SET)) {
@@ -299,6 +324,20 @@ void uartIrqHandler(uartPort_t *s)
     }
 
     if (usart_flag_get(s->USARTx, USART_IDLEF_FLAG) == SET) {
+        if (s->rxDMAResource && s->port.rxCallback) {
+            // DMA RX mode: drain all newly received bytes from the circular
+            // DMA buffer and deliver them one-by-one through rxCallback.
+            // rxDMAPos and rxDMAHead both count DOWN from bufferSize toward 0.
+            uint32_t rxDMAHead = xDMA_GetCurrDataCounter(s->rxDMAResource);
+            while (s->rxDMAPos != rxDMAHead) {
+                uint8_t ch = s->port.rxBuffer[s->port.rxBufferSize - s->rxDMAPos];
+                s->port.rxCallback(ch, s->port.rxCallbackData);
+                if (--s->rxDMAPos == 0) {
+                    s->rxDMAPos = s->port.rxBufferSize;
+                }
+            }
+        }
+
         if (s->port.idleCallback) {
             s->port.idleCallback();
         }
