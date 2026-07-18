@@ -621,21 +621,6 @@ if (isMotorProtocolDshot()) {
         }
 #endif
 
-#ifdef USE_BRUSHED_FLIPOVERAFTERCRASH
-        if (isModeActivationConditionPresent(BOXFLIPOVERAFTERCRASH)) {
-            if (!IS_RC_MODE_ACTIVE(BOXFLIPOVERAFTERCRASH)) {
-                flipOverAfterCrashActive = false;
-                motorReverse(false);
-            } else {
-                flipOverAfterCrashActive = true;
-#ifdef USE_RUNAWAY_TAKEOFF
-                runawayTakeoffCheckDisabled = false;
-#endif
-                motorReverse(true);
-            }
-        }
-#endif
-
 #ifdef USE_LAUNCH_CONTROL
         if (!crashFlipModeActive && (canUseLaunchControl() || (tryingToArm == ARMING_DELAYED_LAUNCH_CONTROL))) {
             if (launchControlState == LAUNCH_CONTROL_DISABLED) {  // only activate if it hasn't already been triggered
