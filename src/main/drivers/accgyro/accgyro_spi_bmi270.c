@@ -535,6 +535,14 @@ static void bmi270SpiGyroInit(gyroDev_t *gyro)
 {
     extDevice_t *dev = &gyro->dev;
 
+#ifdef GYRO_SPI_FORCE_NO_DMA
+    // On targets where the gyro shares its SPI bus with other devices
+    // (e.g. MAX7456 OSD / RTC6705 VTX), gyro DMA transfers corrupt the
+    // shared bus traffic (gyro reads zero, acc reads garbage), so force
+    // polled access for the gyro/acc device only.
+    spiDmaEnable(dev, false);
+#endif
+
     bmi270Config(gyro);
 
     bmi270IntExtiInit(gyro);
